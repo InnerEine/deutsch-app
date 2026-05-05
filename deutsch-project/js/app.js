@@ -35,14 +35,286 @@ function hasBackend() {
   return S.staticMode === false && !!S.apiUrl;
 }
 
+const XP_THRESHOLDS = [
+  { level: 'A1', xp: 0 },
+  { level: 'A2', xp: 200 },
+  { level: 'B1', xp: 500 },
+  { level: 'B2', xp: 1000 },
+  { level: 'C1', xp: 2000 },
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first_step', icon: '🌱', title: 'Первый шаг', desc: 'Пройти онбординг' },
+  { id: 'first_word', icon: '📖', title: 'Первое слово', desc: 'Выучить первое слово' },
+  { id: 'week_streak', icon: '🔥', title: 'Неделя подряд', desc: '7 дней стрика' },
+  { id: 'ten_lessons', icon: '🏆', title: '10 уроков', desc: 'Завершить 10 уроков' },
+  { id: 'polyglot', icon: '💬', title: 'Полиглот', desc: '10 реплик без ошибок' },
+  { id: 'expert', icon: '🧠', title: 'Знаток', desc: 'Выучить 50 слов' },
+];
+
+function normalizeWord(word) {
+  return {
+    de: word.de,
+    ru: word.ru,
+    ex: word.ex || word.example || '',
+    cat: word.cat || word.category || 'Everyday',
+    example: word.example || word.ex || '',
+    category: word.category || word.cat || 'Everyday',
+  };
+}
+
+function lessonWordsFor(lesson) {
+  if (Array.isArray(lesson.words) && lesson.words.length) return lesson.words.map(normalizeWord);
+  const all = (typeof vocabularyData !== 'undefined' ? vocabularyData : []).map(normalizeWord);
+  const categoryWords = all.filter((word) => word.cat === lesson.category);
+  if (lesson.id === 'lesson-greetings') return categoryWords.slice(0, 8);
+  if (lesson.id === 'lesson-numbers-time') return categoryWords.filter((word) => ['die Zeit', 'die Uhr', 'der Tag', 'die Woche', 'die Frage', 'die Antwort'].includes(word.de));
+  return categoryWords.slice(0, 8);
+}
+
+function normalizeLesson(lesson, index = 0) {
+  const quiz = (lesson.quiz || []).map((item) => ({
+    ...item,
+    q: item.q || item.question,
+    opts: item.opts || item.options || [],
+    a: Number.isInteger(item.a) ? item.a : item.correct,
+  }));
+  return {
+    ...lesson,
+    quiz,
+    words: lessonWordsFor(lesson),
+    de: lesson.de || (typeof lessonGermanTitles !== 'undefined' ? lessonGermanTitles[lesson.id] : '') || lesson.title,
+    color: lesson.color || (typeof lessonColors !== 'undefined' ? lessonColors[index % lessonColors.length] : 'c-gold'),
+    type: lesson.type || `${lesson.category || 'Everyday'} ${lesson.level || 'A1'}`,
+  };
+}
+
+const REQUIRED_LESSONS = typeof lessonsData !== 'undefined' ? lessonsData.map(normalizeLesson) : [];
+const APP_LESSONS = REQUIRED_LESSONS.length
+  ? [...REQUIRED_LESSONS, ...GENERAL_LESSONS.filter((lesson) => !['g1', 'g2'].includes(lesson.id))]
+  : GENERAL_LESSONS;
+
+function uniqueLessons(list) {
+  const seen = new Set();
+  return list.filter((lesson) => {
+    if (seen.has(lesson.id)) return false;
+    seen.add(lesson.id);
+    return true;
+  });
+}
+
 function getAllSpecLessons() {
   return S.specs.flatMap((spec) => SPEC_LESSONS[spec] || []);
 }
 
+function getAllLessonsForProgress() {
+  return uniqueLessons([...APP_LESSONS, ...GENERAL_LESSONS, ...getAllSpecLessons()]);
+}
+
 function getCompletedWordCount() {
-  return [...GENERAL_LESSONS, ...getAllSpecLessons()]
+  return getAllLessonsForProgress()
     .filter((lesson) => S.completedLessons.includes(lesson.id))
     .reduce((sum, lesson) => sum + lesson.words.length, 0);
+}
+
+function getLearnedWordSet() {
+  const learned = new Set();
+  getAllLessonsForProgress()
+    .filter((lesson) => S.completedLessons.includes(lesson.id))
+    .forEach((lesson) => lesson.words.forEach((word) => learned.add(word.de)));
+  Object.entries(S.vocabProgress || {}).forEach(([word, progress]) => {
+    if (progress && progress.level > 0) learned.add(word);
+  });
+  return learned;
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function dayDiff(fromDate, toDate) {
+  const from = new Date(`${fromDate}T00:00:00`);
+  const to = new Date(`${toDate}T00:00:00`);
+  return Math.round((to - from) / 86400000);
+}
+
+function getTodayStats() {
+  const key = todayKey();
+  S.dailyStats = S.dailyStats && typeof S.dailyStats === 'object' ? S.dailyStats : {};
+  S.dailyStats[key] = S.dailyStats[key] || { words: 0, lessons: 0, celebrated: false };
+  return S.dailyStats[key];
+}
+
+function refreshStreakForMissedDay() {
+  const today = todayKey();
+  if (S.lastStudyDate && dayDiff(S.lastStudyDate, today) > 1) {
+    S.streakCount = 0;
+    saveS();
+  }
+}
+
+function recordStudyActivity() {
+  const today = todayKey();
+  if (S.lastStudyDate === today) return;
+  if (S.lastStudyDate && dayDiff(S.lastStudyDate, today) === 1) S.streakCount = (S.streakCount || 0) + 1;
+  else S.streakCount = 1;
+  S.lastStudyDate = today;
+  saveS();
+}
+
+function addXP(amount, reason = '', anchor = null) {
+  S.xp = Number(S.xp || S.points || 0) + amount;
+  S.points = S.xp;
+  saveS();
+  if (anchor) showXPFloating(anchor, amount);
+  updateHeaderLevel();
+  checkAchievements();
+  return S.xp;
+}
+
+function getXPLevelInfo() {
+  const xp = Number(S.xp || S.points || 0);
+  let current = XP_THRESHOLDS[0];
+  let next = XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
+  for (let i = 0; i < XP_THRESHOLDS.length; i += 1) {
+    if (xp >= XP_THRESHOLDS[i].xp) {
+      current = XP_THRESHOLDS[i];
+      next = XP_THRESHOLDS[i + 1] || XP_THRESHOLDS[i];
+    }
+  }
+  const span = Math.max(next.xp - current.xp, 1);
+  const progress = current === next ? 100 : Math.max(0, Math.min(100, ((xp - current.xp) / span) * 100));
+  return { xp, current, next, progress };
+}
+
+function updateHeaderLevel() {
+  const levelInfo = getXPLevelInfo();
+  const level = levelInfo.current.level;
+  S.level = S.level || level;
+  const hdrLevel = document.getElementById('hdrLevel');
+  if (hdrLevel) hdrLevel.textContent = level;
+}
+
+function renderKPI(id, value, emptyText) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (value > 0) {
+    el.textContent = value;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = emptyText;
+    el.classList.add('empty');
+  }
+}
+
+function fireConfetti() {
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 90, spread: 70, origin: { y: 0.18 } });
+  }
+}
+
+function showAchievementPopup(item) {
+  const popup = document.createElement('div');
+  popup.className = 'achievement-popup';
+  popup.textContent = `Новое достижение! ${item.icon} ${item.title}`;
+  document.body.appendChild(popup);
+  requestAnimationFrame(() => popup.classList.add('on'));
+  fireConfetti();
+  setTimeout(() => popup.classList.remove('on'), 3000);
+  setTimeout(() => popup.remove(), 3400);
+}
+
+function checkAchievements() {
+  const owned = new Set(S.achievements || []);
+  const learnedWords = getLearnedWordSet().size;
+  const checks = {
+    first_step: !!S.onboardingDone,
+    first_word: learnedWords >= 1,
+    week_streak: (S.streakCount || 0) >= 7,
+    ten_lessons: S.completedLessons.length >= 10,
+    polyglot: (S.aiCleanStreak || 0) >= 10,
+    expert: learnedWords >= 50,
+  };
+  ACHIEVEMENTS.forEach((item) => {
+    if (checks[item.id] && !owned.has(item.id)) {
+      owned.add(item.id);
+      S.achievements = [...owned];
+      saveS();
+      showAchievementPopup(item);
+    }
+  });
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const grid = document.getElementById('achievementsGrid');
+  if (!grid) return;
+  const owned = new Set(S.achievements || []);
+  grid.innerHTML = ACHIEVEMENTS.map((item) => `
+    <div class="ach-badge${owned.has(item.id) ? ' got' : ''}">
+      <div class="ach-icon">${item.icon}</div>
+      <div class="ach-title">${item.title}</div>
+      <div class="ach-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+function updateDailyGoal(type) {
+  const stats = getTodayStats();
+  if (type === 'word') stats.words = Math.min(10, (stats.words || 0) + 1);
+  if (type === 'lesson') stats.lessons = Math.min(1, (stats.lessons || 0) + 1);
+  const complete = stats.words >= 10 || stats.lessons >= 1;
+  if (complete && !stats.celebrated) {
+    stats.celebrated = true;
+    setTimeout(fireConfetti, 150);
+  }
+  saveS();
+}
+
+function renderDailyGoal() {
+  const el = document.getElementById('dailyGoal');
+  if (!el) return;
+  const stats = getTodayStats();
+  const wordProgress = Math.min(100, ((stats.words || 0) / 10) * 100);
+  const lessonProgress = Math.min(100, (stats.lessons || 0) * 100);
+  const progress = Math.max(wordProgress, lessonProgress);
+  const done = progress >= 100;
+  const wordsLabel = stats.words ? `${stats.words}/10 слов` : 'слова ждут';
+  const lessonLabel = stats.lessons ? '1/1 урок' : 'урок ждёт';
+  const valueText = (stats.words || stats.lessons)
+    ? `${wordsLabel} · ${lessonLabel}`
+    : 'Начни урок или карточки 👇';
+  el.classList.toggle('done', done);
+  el.innerHTML = `
+    <div class="daily-head">
+      <span>Цель на сегодня</span>
+      <span class="daily-value">${valueText}</span>
+    </div>
+    <div class="daily-bar"><div class="daily-fill" style="width:${progress}%"></div></div>
+    <div class="daily-copy" style="margin-top:10px;">${done ? 'Цель выполнена. Отличный темп!' : 'Выучи 10 слов или заверши 1 урок, чтобы закрыть день.'}</div>
+  `;
+}
+
+function showXPFloating(anchor, amount) {
+  const target = anchor.closest ? anchor.closest('.rep-card') || anchor : anchor;
+  if (!target) return;
+  const float = document.createElement('div');
+  float.className = 'xp-float';
+  float.textContent = `+${amount} XP`;
+  target.appendChild(float);
+  setTimeout(() => float.remove(), 1000);
+}
+
+function applyTheme(theme) {
+  S.theme = theme === 'light' ? 'light' : 'dark';
+  document.body.classList.toggle('dark', S.theme === 'dark');
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = S.theme === 'dark' ? '☀️' : '🌙';
+  saveS();
+}
+
+function toggleTheme() {
+  applyTheme(S.theme === 'dark' ? 'light' : 'dark');
 }
 
 function getProfileSummary() {
@@ -58,9 +330,11 @@ function getProfileSummary() {
 }
 
 async function initApp() {
+  applyTheme(S.theme || 'dark');
+  refreshStreakForMissedDay();
   document.getElementById('hdrAvatar').textContent = avatarLetter(S.name);
   document.getElementById('hdrName').textContent = S.name || 'Azamat';
-  document.getElementById('hdrLevel').textContent = S.level || 'A1';
+  updateHeaderLevel();
   document.getElementById('dName').textContent = S.name || 'Azamat';
 
   const specLabel = SPECIALIZATIONS
@@ -86,6 +360,7 @@ async function initApp() {
   renderVocab();
   renderPhrases();
   renderLogin();
+  checkAchievements();
 }
 
 function goPage(name) {
@@ -105,10 +380,34 @@ function goPage(name) {
 }
 
 function updateDash() {
-  document.getElementById('kpi-words').textContent = getCompletedWordCount();
-  document.getElementById('kpi-lessons').textContent = S.completedLessons.length;
-  document.getElementById('kpi-hw').textContent = Object.values(S.hwDone).filter(Boolean).length;
-  document.getElementById('kpi-streak').textContent = S.points;
+  refreshStreakForMissedDay();
+  const learnedWords = getLearnedWordSet().size;
+  const completedLessons = S.completedLessons.length;
+  const doneHW = Object.values(S.hwDone).filter(Boolean).length;
+  renderKPI('kpi-words', learnedWords, 'Начни первый урок, чтобы слова появились здесь 👇');
+  renderKPI('kpi-lessons', completedLessons, 'Открой урок ниже и заверши первый квиз 👇');
+  renderKPI('kpi-hw', doneHW, 'Сдай первое задание в разделе “Задания” 👇');
+  const streakEl = document.getElementById('kpi-streak');
+  streakEl.textContent = (S.streakCount || 0) > 0 ? `🔥 ${S.streakCount} дней подряд` : 'Заверши урок сегодня, чтобы зажечь серию 👇';
+  streakEl.classList.toggle('empty', !(S.streakCount > 0));
+
+  const levelInfo = getXPLevelInfo();
+  const xpPanel = document.getElementById('xpPanel');
+  if (xpPanel) {
+    xpPanel.innerHTML = `
+      <div class="xp-head">
+        <span>Прогресс уровня</span>
+        <span class="xp-value">${levelInfo.xp} XP</span>
+      </div>
+      <div class="xp-route">
+        <span>${levelInfo.current.level}</span>
+        <div class="xp-bar"><div class="xp-fill" style="width:${levelInfo.progress}%"></div></div>
+        <span>${levelInfo.next.level}</span>
+      </div>
+    `;
+  }
+  renderDailyGoal();
+  renderAchievements();
 
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   const levelNames = {
@@ -131,13 +430,13 @@ function updateDash() {
       <div class="lvl-name">${level}</div>
       <div class="lvl-sub">${levelNames[level]}</div>
       <div class="lvl-prog">
-        <div class="lvl-prog-fill" style="width:${isDone ? 100 : isCur ? Math.round((S.completedLessons.length / Math.max(GENERAL_LESSONS.length, 1)) * 100) : 0}%"></div>
+        <div class="lvl-prog-fill" style="width:${isDone ? 100 : isCur ? Math.round((S.completedLessons.length / Math.max(APP_LESSONS.length, 1)) * 100) : 0}%"></div>
       </div>
     `;
     lt.appendChild(item);
   });
 
-  const nextLesson = GENERAL_LESSONS.find((lesson) => !S.completedLessons.includes(lesson.id));
+  const nextLesson = APP_LESSONS.find((lesson) => !S.completedLessons.includes(lesson.id));
   const nextLessonEl = document.getElementById('nextLesson');
   if (nextLesson) {
     nextLessonEl.innerHTML = `
@@ -177,9 +476,9 @@ function renderPlan() {
   const generalGrid = document.getElementById('generalGrid');
   generalGrid.innerHTML = '';
 
-  GENERAL_LESSONS.forEach((lesson, index) => {
+  APP_LESSONS.forEach((lesson, index) => {
     const done = S.completedLessons.includes(lesson.id);
-    const unlocked = done || index === 0 || S.completedLessons.includes(GENERAL_LESSONS[index - 1]?.id);
+    const unlocked = done || index === 0 || S.completedLessons.includes(APP_LESSONS[index - 1]?.id);
     const card = document.createElement('div');
     card.className = `plan-card ${lesson.color}${unlocked ? '' : ' locked'}`;
     card.innerHTML = `
@@ -322,9 +621,9 @@ function renderHW(filter) {
 
   document.getElementById('hwStats').innerHTML = `
     <div class="hw-stat"><div class="hw-sn" style="color:var(--gold)">${total}</div><div class="hw-sl">Всего</div></div>
-    <div class="hw-stat"><div class="hw-sn" style="color:var(--green)">${done}</div><div class="hw-sl">Сдано</div></div>
-    <div class="hw-stat"><div class="hw-sn" style="color:var(--muted)">${pending}</div><div class="hw-sl">Активных</div></div>
-    <div class="hw-stat"><div class="hw-sn" style="color:var(--red)">${overdue}</div><div class="hw-sl">Просрочено</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--green)">${done || 'пока нет'}</div><div class="hw-sl">Сдано</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--muted)">${pending || 'всё чисто'}</div><div class="hw-sl">Активных</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--red)">${overdue || 'нет'}</div><div class="hw-sl">Просрочено</div></div>
   `;
 
   if (curHWFilter === 'done') list = list.filter((item) => S.hwDone[item.id]);
@@ -401,7 +700,7 @@ async function submitHW(id) {
   const input = document.getElementById(`hwtxt-${id}`);
   if (input && input.value.trim()) S.hwAnswers[id] = input.value.trim();
   S.hwDone[id] = true;
-  S.points += 5;
+  addXP(5, 'homework');
   saveS();
   syncProfile();
   toast('🏆 Задание сдано! Sehr gut!');
@@ -443,9 +742,15 @@ function toggleHWDone(id) {
 let curVocabFilter = 'all';
 
 function getAllVocab() {
-  const general = GENERAL_LESSONS.flatMap((lesson) => lesson.words);
-  const spec = S.specs.flatMap((specId) => SPEC_VOCAB[specId] || []);
-  return [...general, ...spec];
+  const primary = typeof vocabularyData !== 'undefined' ? vocabularyData.map(normalizeWord) : APP_LESSONS.flatMap((lesson) => lesson.words);
+  const spec = S.specs.flatMap((specId) => SPEC_VOCAB[specId] || []).map(normalizeWord);
+  const seen = new Set();
+  return [...primary, ...spec].filter((word) => {
+    const key = `${word.de}|${word.cat}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function renderVocab(filter) {
@@ -545,12 +850,12 @@ function retakeTest() {
 let QS = { lesson: null, phase: 'vocab', idx: 0, score: 0, answered: false };
 
 function openLessonById(id) {
-  const lesson = [...GENERAL_LESSONS, ...getAllSpecLessons()].find((item) => item.id === id);
+  const lesson = [...APP_LESSONS, ...GENERAL_LESSONS, ...getAllSpecLessons()].find((item) => item.id === id);
   if (lesson) openLesson(lesson);
 }
 
 function openLesson(lesson) {
-  QS = { lesson, phase: 'vocab', idx: 0, score: 0, answered: false };
+  QS = { lesson: normalizeLesson(lesson), phase: lesson.theory ? 'theory' : 'vocab', idx: 0, score: 0, answered: false };
   document.getElementById('modalTtl').textContent = lesson.title;
   renderModal();
   document.getElementById('lessonModal').classList.add('on');
@@ -567,6 +872,34 @@ document.getElementById('lessonModal').addEventListener('click', function modalB
 function renderModal() {
   const lesson = QS.lesson;
   const body = document.getElementById('modalBody');
+
+  if (QS.phase === 'theory') {
+    body.innerHTML = `
+      <div class="lesson-theory">${esc(lesson.theory)}</div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="QS.phase='examples';renderModal()">Примеры →</button>
+      </div>
+    `;
+    return;
+  }
+
+  if (QS.phase === 'examples') {
+    body.innerHTML = `
+      <div class="lesson-example-grid">
+        ${(lesson.examples || []).map((item) => `
+          <div class="lesson-example">
+            <div class="lesson-example-de">${esc(item.de)}</div>
+            <div class="lesson-example-ru">${esc(item.ru)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="QS.phase='theory';renderModal()">← Теория</button>
+        <button class="btn btn-gold" onclick="QS.phase='quiz';QS.idx=0;QS.score=0;QS.answered=false;renderModal()">Квиз →</button>
+      </div>
+    `;
+    return;
+  }
 
   if (QS.phase === 'vocab') {
     body.innerHTML = `
@@ -592,10 +925,12 @@ function renderModal() {
 
   const quiz = lesson.quiz || [];
   if (QS.idx >= quiz.length) {
-    const perfect = QS.score === quiz.length;
-    if (perfect && !S.completedLessons.includes(lesson.id)) {
+    const passed = QS.score >= Math.ceil(quiz.length / 2);
+    if (passed && !S.completedLessons.includes(lesson.id)) {
       S.completedLessons.push(lesson.id);
-      S.points += 10;
+      recordStudyActivity();
+      addXP(10, 'lesson');
+      updateDailyGoal('lesson');
       saveS();
       syncProgress(lesson.id, true, QS.score);
       syncProfile();
@@ -603,14 +938,15 @@ function renderModal() {
     body.innerHTML = `
       <div style="text-align:center;padding:20px 0;">
         <span class="qz-score">${QS.score}/${quiz.length}</span>
-        <div class="qz-msg">${perfect ? 'PERFEKT! УРОК ЗАВЕРШЁН' : QS.score >= Math.ceil(quiz.length / 2) ? 'GUT GEMACHT!' : 'ПОПРОБУЙ ЕЩЁ РАЗ'}</div>
+        <div class="qz-msg">${passed ? 'УРОК ЗАВЕРШЁН · +10 XP' : 'ПОПРОБУЙ ЕЩЁ РАЗ'}</div>
         <div class="btn-row" style="justify-content:center;">
-          ${!perfect ? `<button class="btn btn-ghost" onclick="QS.idx=0;QS.score=0;QS.answered=false;renderModal()">Повторить</button>` : ''}
+          ${!passed ? `<button class="btn btn-ghost" onclick="QS.idx=0;QS.score=0;QS.answered=false;renderModal()">Повторить</button>` : ''}
           <button class="btn btn-gold" onclick="closeModal();renderPlan();updateDash()">Готово</button>
         </div>
       </div>
     `;
-    if (perfect) toast(`🏆 Урок завершён: ${lesson.title}`);
+    if (passed) toast(`🏆 Урок завершён: ${lesson.title}`);
+    checkAchievements();
     return;
   }
 
@@ -633,7 +969,10 @@ function answerQ(selected) {
     button.classList.add(index === question.a ? 'ok' : 'no');
     button.disabled = true;
   });
-  if (selected === question.a) QS.score += 1;
+  if (selected === question.a) {
+    QS.score += 1;
+    addXP(5, 'quiz');
+  }
   document.getElementById('qnxt').style.display = 'inline-flex';
 }
 
@@ -646,10 +985,7 @@ function nextQ() {
 let REP = { words: [], idx: 0 };
 
 function getTodayWords(today) {
-  const allWords = [
-    ...GENERAL_LESSONS.flatMap((lesson) => lesson.words.map((word) => ({ de: word.de, ru: word.ru, ex: word.ex }))),
-    ...Object.values(SPEC_VOCAB).flatMap((items) => items.map((word) => ({ de: word.de, ru: word.ru, ex: word.ex }))),
-  ];
+  const allWords = getAllVocab().map(normalizeWord);
   return allWords.filter((word) => {
     const progress = S.vocabProgress[word.de];
     if (!progress) return true;
@@ -691,7 +1027,8 @@ function showCard() {
   `;
   document.getElementById('repBack').style.display = 'none';
   document.getElementById('repActions').style.display = 'none';
-  document.querySelector('.rep-card').classList.remove('flipped');
+  document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = false; });
+  document.querySelector('.rep-card').classList.remove('flipped', 'flash-correct', 'shake');
 }
 
 function flipCard() {
@@ -702,6 +1039,8 @@ function flipCard() {
 
 function repAnswer(correct) {
   const word = REP.words[REP.idx];
+  const card = document.querySelector('.rep-card');
+  document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = true; });
   const progress = S.vocabProgress[word.de] || { level: 0, nextReview: new Date().toISOString().split('T')[0] };
   progress.level = correct ? Math.min(progress.level + 1, 5) : Math.max(progress.level - 1, 0);
 
@@ -711,16 +1050,34 @@ function repAnswer(correct) {
   progress.nextReview = next.toISOString().split('T')[0];
 
   S.vocabProgress[word.de] = progress;
+  recordStudyActivity();
+  if (correct) {
+    addXP(2, 'word', card);
+    updateDailyGoal('word');
+    if (card) {
+      card.classList.remove('flash-correct');
+      void card.offsetWidth;
+      card.classList.add('flash-correct');
+    }
+  } else if (card) {
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+  }
   saveS();
   syncVocabProgress(word.de, progress.level, progress.nextReview);
 
-  REP.idx += 1;
-  if (REP.idx >= REP.words.length) {
-    document.getElementById('repCard').style.display = 'none';
-    document.getElementById('repDone').style.display = 'block';
-  } else {
-    showCard();
-  }
+  setTimeout(() => {
+    REP.idx += 1;
+    if (REP.idx >= REP.words.length) {
+      document.getElementById('repCard').style.display = 'none';
+      document.getElementById('repDone').style.display = 'block';
+    } else {
+      showCard();
+    }
+    updateDash();
+    checkAchievements();
+  }, correct ? 650 : 380);
 }
 
 async function apiRequest(endpoint, data = null, method = 'GET') {

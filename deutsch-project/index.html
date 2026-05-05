@@ -7,9 +7,464 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<style>
+:root {
+  --bg: #f7f4ef;
+  --bg2: #ffffff;
+  --bg3: #ece8df;
+  --border: #ded6c9;
+  --border2: #c9bfaf;
+  --text: #1f2430;
+  --muted: #677084;
+  --gold: #f0c060;
+  --gold2: #c8950a;
+  --green: #3dd68c;
+  --red: #f05555;
+  --blue: #5b9ef0;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+  --teal: #2dd4bf;
+  --brown: #b88968;
+  --gray: #9aa3b2;
+  --pink: #f472b6;
+  --hdr-bg: rgba(247,244,239,0.94);
+}
+body.dark {
+  --bg: #07080a;
+  --bg2: #0e1014;
+  --bg3: #15171d;
+  --border: #1e2128;
+  --border2: #2a2e38;
+  --text: #e8eaf0;
+  --muted: #8a91a3;
+  --hdr-bg: rgba(7,8,10,0.95);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden;}
+a,button,input,textarea,select{font:inherit;}
+p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── HEADER ── */
+.hdr{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:90;background:var(--hdr-bg);backdrop-filter:blur(12px);}
+.hdr-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-1px;color:var(--gold);}
+.hdr-logo span{color:var(--muted);}
+.hdr-actions{display:flex;align-items:center;gap:10px;min-width:0;}
+.hdr-user{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border2);padding:8px 16px;border-radius:40px;max-width:100%;}
+.hdr-avatar{width:30px;height:30px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#000;}
+.hdr-name{font-size:13px;font-weight:500;word-break:break-word;}
+.hdr-level{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);background:rgba(240,192,96,0.1);padding:2px 8px;border-radius:20px;border:1px solid rgba(240,192,96,0.2);}
+.theme-toggle{width:38px;height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.theme-toggle:hover{border-color:var(--gold);transform:translateY(-1px);}
+
+/* ── NAV ── */
+.nav{display:flex;gap:2px;padding:0 32px;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:14px 20px;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.on{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* ── PAGE ── */
+.page{display:none;}
+.page.on{display:block;}
+
+/* ── ONBOARDING OVERLAY ── */
+#onboarding{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;}
+#onboarding.hidden{display:none;}
+.ob-wrap{width:100%;max-width:640px;}
+.ob-step{display:none;}
+.ob-step.on{display:block;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.ob-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.ob-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(36px,7vw,64px);line-height:1;letter-spacing:-2px;margin-bottom:16px;}
+.ob-title em{color:var(--gold);font-style:normal;}
+.ob-sub{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:36px;max-width:480px;}
+
+/* NAME INPUT */
+.ob-input{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:500;padding:18px 20px;border-radius:12px;outline:none;transition:border-color .2s;}
+.ob-input:focus{border-color:var(--gold);}
+.ob-input::placeholder{color:var(--muted);}
+
+/* SPEC GRID */
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:32px;}
+.spec-card{border:1px solid var(--border);padding:20px;border-radius:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.spec-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;}
+.spec-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.spec-card.sel{border-color:var(--gold);background:rgba(240,192,96,0.05);}
+.spec-icon{font-size:28px;margin-bottom:10px;}
+.spec-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;}
+.spec-desc{font-size:11px;color:var(--muted);line-height:1.5;}
+.spec-check{position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;background:var(--gold);display:none;align-items:center;justify-content:center;font-size:10px;color:#000;}
+.spec-card.sel .spec-check{display:flex;}
+
+/* LEVEL TEST */
+.lt-progress{height:3px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden;}
+.lt-bar{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .4s ease;border-radius:2px;}
+.lt-q-num{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:12px;}
+.lt-word{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(34px,6.4vw,60px);letter-spacing:0;line-height:1.18;margin-bottom:32px;color:var(--text);padding-bottom:.08em;overflow:visible;overflow-wrap:break-word;word-break:normal;}
+.lt-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.lt-opt{border:1px solid var(--border2);padding:14px 18px;background:var(--bg3);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-radius:10px;text-align:left;transition:all .2s;}
+.lt-opt:hover{border-color:var(--border2);background:var(--bg2);transform:translateX(3px);}
+.lt-opt.correct{border-color:var(--green);background:rgba(61,214,140,0.1);color:var(--green);}
+.lt-opt.wrong{border-color:var(--red);background:rgba(240,85,85,0.1);color:var(--red);}
+.lt-opt:disabled{cursor:not-allowed;}
+
+/* RESULT */
+.result-ring{width:140px;height:140px;border-radius:50%;border:4px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 28px;position:relative;}
+.result-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:4px solid var(--gold);clip-path:inset(0 0 0 0);}
+.result-score{font-family:'Syne',sans-serif;font-weight:800;font-size:44px;color:var(--gold);line-height:1;}
+.result-of{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.result-level{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:var(--text);text-align:center;margin-bottom:8px;}
+.result-desc{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:32px;}
+
+/* BUTTONS */
+.btn{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:14px 28px;border:none;cursor:pointer;border-radius:10px;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{background:#f5ca70;transform:translateY(-1px);}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
+.btn-ghost:hover{border-color:var(--border2);background:var(--bg2);}
+.btn-green{background:var(--green);color:#000;}
+.btn-green:hover{opacity:.9;}
+.btn-blue{background:var(--blue);color:#000;}
+.btn-blue:hover{opacity:.9;}
+.btn-red{background:var(--red);color:#000;}
+.btn-red:hover{opacity:.9;}
+.btn-teal{background:var(--teal);color:#000;}
+.btn-teal:hover{opacity:.9;}
+.btn-sm{font-size:12px;padding:8px 16px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+
+/* ── MAIN APP ── */
+.container{max-width:1100px;margin:0 auto;padding:40px 32px;min-width:0;}
+
+/* DASHBOARD */
+.dash-greeting{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(32px,5vw,56px);letter-spacing:-2px;line-height:1;margin-bottom:8px;}
+.dash-greeting em{color:var(--gold);font-style:normal;}
+.dash-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:36px;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:32px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:12px;}
+.kpi-val{font-family:'Syne',sans-serif;font-weight:800;font-size:36px;color:var(--gold);line-height:1;}
+.kpi-val.empty{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;line-height:1.45;color:var(--text);}
+.kpi-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+
+.xp-panel,.daily-goal,.achievements-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:24px;}
+.xp-head,.daily-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.xp-value,.daily-value{color:var(--gold);font-weight:700;}
+.xp-route{display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.xp-route span{color:var(--text);font-weight:700;}
+.xp-bar,.daily-bar{height:9px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;overflow:hidden;flex:1;}
+.xp-fill,.daily-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:999px;transition:width .6s ease;}
+.daily-goal.done{border-color:rgba(61,214,140,.45);box-shadow:0 0 24px rgba(61,214,140,.08);}
+.daily-copy{font-size:13px;color:var(--muted);line-height:1.6;}
+
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;}
+.ach-badge{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:14px;transition:all .25s;filter:grayscale(1);opacity:.48;}
+.ach-badge.got{filter:none;opacity:1;border-color:rgba(240,192,96,.35);background:rgba(240,192,96,.08);}
+.ach-icon{font-size:24px;margin-bottom:8px;}
+.ach-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px;}
+.ach-desc{font-size:11px;color:var(--muted);line-height:1.45;}
+.achievement-popup{position:fixed;left:50%;top:22px;transform:translate(-50%,-80px);opacity:0;z-index:1000;background:var(--bg2);border:1px solid var(--gold);box-shadow:0 18px 60px rgba(0,0,0,.28);border-radius:12px;padding:14px 18px;font-family:'Syne',sans-serif;font-weight:700;color:var(--text);transition:all .35s ease;text-align:center;max-width:min(92vw,420px);}
+.achievement-popup.on{transform:translate(-50%,0);opacity:1;}
+
+.section-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;}
+.plan-card{background:var(--bg2);border:1px solid var(--border);padding:22px;border-radius:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.plan-card::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.plan-card.c-gold::after{background:var(--gold);}
+.plan-card.c-green::after{background:var(--green);}
+.plan-card.c-blue::after{background:var(--blue);}
+.plan-card.c-purple::after{background:var(--purple);}
+.plan-card.c-teal::after{background:var(--teal);}
+.plan-card.c-orange::after{background:var(--orange);}
+.plan-card.c-red::after{background:var(--red);}
+.plan-card.c-brown::after{background:var(--brown);}
+.plan-card.c-gray::after{background:var(--gray);}
+.plan-card.c-pink::after{background:var(--pink);}
+.plan-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.plan-card.locked{opacity:.4;cursor:not-allowed;}
+.plan-type{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.plan-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:4px;}
+.plan-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.plan-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);}
+.plan-status{position:absolute;top:16px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+.plan-status.done{color:var(--green);}
+.plan-status.cur{color:var(--gold);}
+
+/* LEVEL BAR */
+.level-track{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+.lvl-item{flex:1;min-width:80px;border:1px solid var(--border);padding:14px;border-radius:10px;text-align:center;}
+.lvl-item.cur{border-color:var(--gold);background:rgba(240,192,96,0.06);}
+.lvl-item.done{border-color:rgba(61,214,140,0.3);background:rgba(61,214,140,0.04);}
+.lvl-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--gold);}
+.lvl-item.done .lvl-name{color:var(--green);}
+.lvl-sub{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.lvl-prog{height:2px;background:var(--border);margin-top:10px;border-radius:1px;overflow:hidden;}
+.lvl-prog-fill{height:100%;background:var(--gold);transition:width 1s;}
+
+/* VOCAB TABLE */
+.vocab-table{width:100%;border-collapse:collapse;}
+.vocab-table th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+.vocab-table td{padding:13px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top;}
+.vocab-table tr:hover td{background:var(--bg2);}
+.vt-de{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-weight:500;}
+.vt-ru{color:var(--text);}
+.vt-ex{color:var(--muted);font-style:italic;font-size:12px;}
+.vt-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);}
+
+/* QUIZ MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+.modal-bg.on{display:flex;}
+.modal{background:var(--bg);border:1px solid var(--border2);max-width:560px;width:100%;max-height:90vh;overflow-y:auto;border-radius:16px;animation:fadeUp .3s ease;}
+.modal-hdr{padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-ttl{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;}
+.modal-close{background:none;border:1px solid var(--border2);color:var(--muted);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;transition:all .2s;}
+.modal-close:hover{border-color:var(--red);color:var(--red);}
+.modal-body{padding:28px 24px;}
+
+/* HOMEWORK */
+.hw-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.hw-fb{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:8px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;}
+.hw-fb:hover,.hw-fb.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,96,0.05);}
+.hw-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:24px;}
+.hw-stat{background:var(--bg2);border:1px solid var(--border);padding:14px;border-radius:10px;}
+.hw-sn{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(16px,2.6vw,28px);line-height:1.05;}
+.hw-sl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.hw-list{display:flex;flex-direction:column;gap:10px;}
+.hw-card{background:var(--bg2);border:1px solid var(--border);padding:18px 20px;border-radius:12px;transition:all .2s;}
+.hw-card.hw-ok{border-left:3px solid var(--green);opacity:.75;}
+.hw-card.hw-late{border-left:3px solid var(--red);}
+.hw-card.hw-today{border-left:3px solid var(--gold);}
+.hw-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+.hw-meta{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.hw-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
+.hw-b-writing{background:#0a1525;color:#5b9ef0;border:1px solid #1a2f4a;}
+.hw-b-translation{background:#15102a;color:#a78bfa;border:1px solid #2a1f4a;}
+.hw-b-listening{background:#0a2015;color:#3dd68c;border:1px solid #1a4030;}
+.hw-b-grammar{background:#251a08;color:#fb923c;border:1px solid #4a3010;}
+.hw-b-reading{background:#251010;color:#f05555;border:1px solid #4a2020;}
+.hw-due{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+.hw-due.late{color:var(--red);}
+.hw-due.today{color:var(--gold);}
+.hw-ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:4px;}
+.hw-dsc{font-size:12px;color:var(--muted);line-height:1.6;}
+.hw-acts{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;}
+.hw-chk{width:30px;height:30px;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;border-radius:8px;font-size:13px;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.hw-chk:hover{border-color:var(--green);color:var(--green);}
+.hw-chk.chk{border-color:var(--green);background:rgba(61,214,140,.1);color:var(--green);}
+.hw-ans-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:6px 10px;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;white-space:nowrap;}
+.hw-ans-btn:hover{border-color:var(--gold);color:var(--gold);}
+.hw-ans-area{margin-top:14px;border-top:1px solid var(--border);padding-top:14px;display:none;}
+.hw-ans-area.on{display:block;}
+.hw-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:14px;resize:vertical;min-height:100px;outline:none;border-radius:10px;line-height:1.7;transition:border-color .2s;}
+.hw-textarea:focus{border-color:var(--gold);}
+.hw-textarea::placeholder{color:var(--muted);}
+.hw-saved{margin-top:10px;background:rgba(61,214,140,0.05);border:1px solid rgba(61,214,140,0.2);padding:12px 14px;border-radius:8px;}
+.hw-saved-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.hw-saved-txt{font-size:12px;color:var(--muted);line-height:1.6;white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;}
+
+/* VOCAB PAGE */
+.vocab-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+.vf-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:8px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;}
+.vf-btn:hover,.vf-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,96,.05);}
+.vocab-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+
+/* PHRASES */
+.phrases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px;}
+.ph-card{background:var(--bg2);border:1px solid var(--border);padding:16px;border-radius:10px;transition:all .2s;cursor:pointer;}
+.ph-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.ph-de{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--gold);font-weight:500;margin-bottom:5px;}
+.ph-ru{font-size:12px;color:var(--muted);}
+.ph-cat{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--border2);letter-spacing:2px;text-transform:uppercase;margin-top:8px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--bg3);border:1px solid var(--gold);padding:12px 20px;font-family:'IBM Plex Mono',monospace;font-size:12px;z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;border-radius:10px;max-width:280px;}
+.toast.on{transform:translateY(0);opacity:1;}
+
+/* QUIZ inside modal */
+.qz-prog{height:2px;background:var(--border);margin-bottom:28px;border-radius:1px;overflow:hidden;}
+.qz-bar{height:100%;background:var(--gold);transition:width .3s;}
+.qz-num{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:10px;}
+.qz-word{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(30px,5.2vw,48px);letter-spacing:0;margin-bottom:28px;line-height:1.18;padding-bottom:.08em;overflow:visible;overflow-wrap:break-word;word-break:normal;}
+.qz-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.qz-opt{border:1px solid var(--border2);padding:13px 16px;background:var(--bg3);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:10px;text-align:left;transition:all .2s;}
+.qz-opt:hover{border-color:var(--border2);background:var(--bg2);transform:translateX(3px);}
+.qz-opt.ok{border-color:var(--green);background:rgba(61,214,140,.1);color:var(--green);}
+.qz-opt.no{border-color:var(--red);background:rgba(240,85,85,.1);color:var(--red);}
+.qz-next{margin-top:16px;display:none;}
+.qz-next.on{display:inline-flex;}
+.qz-score{font-family:'Syne',sans-serif;font-weight:800;font-size:64px;color:var(--gold);line-height:1;text-align:center;display:block;margin-bottom:6px;}
+.qz-msg{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
+.lesson-theory{font-size:14px;line-height:1.8;color:var(--text);white-space:pre-line;margin-bottom:22px;}
+.lesson-example-grid{display:grid;gap:10px;margin-bottom:22px;}
+.lesson-example{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.lesson-example-de{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-size:13px;margin-bottom:5px;}
+.lesson-example-ru{font-size:12px;color:var(--muted);}
+
+/* Misc */
+.tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);letter-spacing:1px;}
+.spec-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(240,192,96,.08);border:1px solid rgba(240,192,96,.2);padding:5px 12px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:1px;}
+
+@media(max-width:600px){
+  .hdr,.nav{padding-left:16px;padding-right:16px;}
+  .container{padding:24px 16px;}
+  .hw-stats{grid-template-columns:repeat(2,1fr);}
+  .lt-opts,.qz-opts{grid-template-columns:1fr;}
+  .vocab-table td:last-child{display:none;}
+}
+
+/* ── AI PRACTICE ── */
+.pr-scenarios{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:32px;}
+.pr-card{background:var(--bg2);border:1px solid var(--border);padding:22px;border-radius:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.pr-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 0 24px rgba(45,212,191,.08);}
+.pr-card-icon{font-size:32px;margin-bottom:10px;}
+.pr-card-spec{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:6px;}
+.pr-card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:4px;}
+.pr-card-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+.pr-card-diff{position:absolute;top:14px;right:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:20px;}
+.pr-card-diff.easy{background:rgba(61,214,140,.1);color:var(--green);border:1px solid rgba(61,214,140,.2);}
+.pr-card-diff.med{background:rgba(240,192,96,.1);color:var(--gold);border:1px solid rgba(240,192,96,.2);}
+.pr-card-diff.hard{background:rgba(240,85,85,.1);color:var(--red);border:1px solid rgba(240,85,85,.2);}
+
+.pr-chat-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.pr-scenario-name{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;}
+.pr-scenario-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+
+.pr-tip{background:rgba(45,212,191,.06);border:1px solid rgba(45,212,191,.15);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal);line-height:1.6;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;}
+.pr-clean-counter{display:inline-flex;align-items:center;gap:6px;background:rgba(91,158,240,.1);border:1px solid rgba(91,158,240,.2);border-radius:999px;padding:7px 12px;margin-bottom:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue);}
+
+.pr-messages{min-height:300px;max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding:4px 0;margin-bottom:16px;}
+.pr-msg{display:flex;gap:10px;animation:fadeUp .25s ease;}
+.pr-msg.user{flex-direction:row-reverse;}
+.pr-bubble{max-width:75%;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.6;}
+.pr-msg.ai .pr-bubble{background:var(--bg3);border:1px solid var(--border2);border-radius:12px 12px 12px 3px;}
+.pr-msg.user .pr-bubble{background:rgba(91,158,240,.18);border:1px solid rgba(91,158,240,.32);border-radius:12px 12px 3px 12px;color:var(--text);}
+.pr-msg.system .pr-bubble{background:rgba(240,192,96,.07);border:1px solid rgba(240,192,96,.15);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:12px;max-width:100%;border-radius:8px;}
+.pr-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;}
+.pr-msg.ai .pr-avatar{background:rgba(45,212,191,.15);border:1px solid rgba(45,212,191,.2);}
+.pr-msg.user .pr-avatar{background:rgba(240,192,96,.15);border:1px solid rgba(240,192,96,.2);}
+.pr-correction{margin-top:8px;padding:8px 12px;background:rgba(240,85,85,.08);border-left:2px solid var(--red);border-radius:0 6px 6px 0;font-size:12px;color:#f08080;font-family:'IBM Plex Mono',monospace;}
+.pr-correction b{color:var(--red);}
+.pr-wrong-inline{text-decoration:line-through;color:var(--red);background:rgba(240,85,85,.1);padding:1px 4px;border-radius:4px;}
+.pr-right-inline{color:var(--green);background:rgba(61,214,140,.1);padding:1px 4px;border-radius:4px;margin-left:5px;}
+.pr-clean-inline{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blue);}
+.pr-good{margin-top:8px;padding:8px 12px;background:rgba(61,214,140,.08);border-left:2px solid var(--green);border-radius:0 6px 6px 0;font-size:12px;color:var(--green);font-family:'IBM Plex Mono',monospace;}
+
+.pr-typing{display:flex;align-items:center;gap:5px;padding:8px 0;}
+.pr-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:dot-bounce .8s infinite;}
+.pr-dot:nth-child(2){animation-delay:.15s;}
+.pr-dot:nth-child(3){animation-delay:.3s;}
+@keyframes dot-bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-6px);}}
+
+.pr-input-wrap{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px 16px;transition:border-color .2s;}
+.pr-input-wrap:focus-within{border-color:rgba(45,212,191,.4);}
+.pr-input{width:100%;background:none;border:none;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;resize:none;line-height:1.5;max-height:120px;}
+.pr-input::placeholder{color:var(--muted);}
+.pr-send{background:var(--teal);border:none;color:#000;width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:18px;font-weight:700;transition:all .2s;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.pr-send:hover{opacity:.85;transform:scale(1.05);}
+.pr-send:disabled{opacity:.4;cursor:not-allowed;}
+.pr-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.pr-action-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 12px;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;}
+.pr-action-btn:hover{border-color:var(--teal);color:var(--teal);}
+
+.pr-hint{background:rgba(240,192,96,.07);border:1px solid rgba(240,192,96,.2);border-radius:8px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);margin-bottom:10px;line-height:1.6;}
+
+/* ── REPETITION ── */
+.rep-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:32px;text-align:center;min-height:300px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
+.rep-card.flash-correct{animation:green-flash .45s ease;}
+.rep-card.shake{animation:shake .35s ease;}
+.rep-front, .rep-back{position:absolute;inset:0;padding:32px;display:flex;flex-direction:column;justify-content:center;text-align:center;}
+.rep-back{background:var(--bg2);transform:rotateY(180deg);}
+.rep-card.flipped .rep-front{transform:rotateY(180deg);}
+.rep-card.flipped .rep-back{transform:rotateY(0deg);}
+.rep-actions{display:flex;gap:12px;justify-content:center;margin-top:20px;}
+.rep-actions button{flex:1;max-width:120px;}
+.xp-float{position:absolute;left:50%;top:24px;transform:translateX(-50%);font-family:'Syne',sans-serif;font-weight:800;color:var(--green);pointer-events:none;animation:xp-pop 1s ease forwards;text-shadow:0 2px 12px rgba(0,0,0,.25);z-index:4;}
+@keyframes green-flash{0%{box-shadow:0 0 0 rgba(61,214,140,0);}35%{box-shadow:0 0 38px rgba(61,214,140,.35);border-color:var(--green);}100%{box-shadow:0 0 0 rgba(61,214,140,0);}}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+@keyframes xp-pop{0%{opacity:0;transform:translate(-50%,12px) scale(.9);}20%{opacity:1;}100%{opacity:0;transform:translate(-50%,-42px) scale(1.08);}}
+
+/* responsive overrides and profile */
+.hdr{gap:16px;}
+.hdr-user{max-width:100%;}
+.hdr-name{word-break:break-word;}
+.nav{scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.container{min-width:0;}
+.plan-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));}
+.phrases-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));}
+.hw-stats{grid-template-columns:repeat(4,minmax(0,1fr));}
+.pr-scenarios{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));}
+.pr-bubble{min-width:0;}
+html{overflow-x:hidden;}
+a,button,input,textarea,select{font:inherit;}
+p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
+
+.profile-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;}
+.profile-hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.profile-avatar{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;flex-shrink:0;}
+.profile-copy{min-width:0;flex:1;}
+.profile-title{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;line-height:1.05;letter-spacing:-1px;}
+.profile-sub{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6;max-width:640px;}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.profile-metric{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;}
+.profile-metric-value{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;line-height:1;color:var(--gold);}
+.profile-metric-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+.profile-summary{background:rgba(255,255,255,.015);border:1px solid var(--border);border-radius:12px;padding:10px 14px;}
+.profile-summary-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);}
+.profile-summary-row:last-child{border-bottom:none;}
+.profile-summary-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.profile-summary-value{font-size:13px;color:var(--text);text-align:right;word-break:break-word;}
+
+@media(max-width:900px){
+  .hdr{padding:16px 18px;flex-wrap:wrap;align-items:flex-start;}
+  .hdr-actions{width:100%;justify-content:space-between;}
+  .hdr-user{min-width:0;flex:1;border-radius:18px;justify-content:flex-start;}
+  .nav{padding:0 16px;scrollbar-width:none;}
+  .nav::-webkit-scrollbar{display:none;}
+  .container{padding:28px 18px;}
+  .dash-meta,.section-label{letter-spacing:1.5px;}
+  .plan-card,.pr-card,.hw-card,.ph-card,.profile-panel{padding:18px;}
+  .pr-bubble{max-width:88%;}
+}
+
+@media(max-width:600px){
+  html{overflow-x:hidden;}
+  .hdr,.nav{padding-left:16px;padding-right:16px;}
+  .nav-btn{font-size:9px;letter-spacing:1px;padding:12px 14px;}
+  .container{padding:24px 16px;}
+  .btn{width:100%;justify-content:center;}
+  .btn-row{display:grid;grid-template-columns:1fr;}
+  .hw-stats{grid-template-columns:repeat(2,1fr);}
+  .lt-opts,.qz-opts{grid-template-columns:1fr;}
+  .vocab-table td:last-child{display:none;}
+  .hw-top{flex-direction:column;}
+  .hw-acts{width:100%;flex-direction:row;justify-content:space-between;align-items:center;}
+  .pr-msg{gap:8px;}
+  .pr-bubble{max-width:calc(100% - 42px);font-size:13px;padding:11px 13px;}
+  .pr-actions{display:grid;grid-template-columns:1fr;}
+  .profile-title{font-size:22px;}
+  .profile-summary-row{flex-direction:column;align-items:flex-start;}
+  .profile-summary-value{text-align:left;}
+  .rep-card,.rep-front,.rep-back{padding:22px;}
+  .ob-title,.dash-greeting{letter-spacing:-1px;}
+  .ob-sub,.hw-dsc,.pr-card-desc,.profile-sub{font-size:13px;}
+}
+
+</style>
 </head>
 <body>
+<script>
+  document.body.classList.toggle('dark', (localStorage.getItem('theme') || 'dark') === 'dark');
+</script>
 
 <!-- ═══════════════ ONBOARDING ═══════════════ -->
 <div id="onboarding">
@@ -89,10 +544,13 @@
 <!-- ═══════════════ APP ═══════════════ -->
 <header class="hdr" id="appHdr" style="display:none;">
   <div class="hdr-logo">DEUTSCH<span>.app</span></div>
-  <div class="hdr-user">
-    <div class="hdr-avatar" id="hdrAvatar">A</div>
-    <div class="hdr-name" id="hdrName">Азамат</div>
-    <div class="hdr-level" id="hdrLevel">A1</div>
+  <div class="hdr-actions">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
+    <div class="hdr-user">
+      <div class="hdr-avatar" id="hdrAvatar">A</div>
+      <div class="hdr-name" id="hdrName">Азамат</div>
+      <div class="hdr-level" id="hdrLevel">A1</div>
+    </div>
   </div>
 </header>
 
@@ -115,12 +573,16 @@
     <div class="container">
       <div class="dash-greeting">Привет, <em id="dName">Азамат</em>!</div>
       <div class="dash-meta" id="dMeta">уровень A1 · немецкий с нуля</div>
+      <div class="xp-panel" id="xpPanel"></div>
       <div class="kpi-row">
         <div class="kpi"><div class="kpi-val" id="kpi-words">0</div><div class="kpi-label">Слов выучено</div></div>
         <div class="kpi"><div class="kpi-val" id="kpi-lessons">0</div><div class="kpi-label">Уроков</div></div>
         <div class="kpi"><div class="kpi-val" id="kpi-hw">0</div><div class="kpi-label">Заданий сдано</div></div>
-        <div class="kpi"><div class="kpi-val" id="kpi-streak">0</div><div class="kpi-label">Очки</div></div>
+        <div class="kpi"><div class="kpi-val" id="kpi-streak">🔥 0 дней подряд</div><div class="kpi-label">Серия</div></div>
       </div>
+      <div class="daily-goal" id="dailyGoal"></div>
+      <div class="section-label">Достижения</div>
+      <div class="achievements-panel"><div class="ach-grid" id="achievementsGrid"></div></div>
       <div class="section-label">Уровни</div>
       <div class="level-track" id="levelTrack"></div>
       <div class="section-label">Следующий урок</div>
@@ -198,6 +660,7 @@
           </div>
         </div>
         <div class="pr-tip" id="prTip"></div>
+        <div class="pr-clean-counter" id="cleanCounter">Реплик без ошибок: 0 🎯</div>
         <div class="pr-messages" id="chatMessages"></div>
         <div class="pr-input-wrap">
           <div class="pr-hint" id="prHint" style="display:none;"></div>
@@ -312,14 +775,3026 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- JS — подключаем по порядку -->
-<script src="js/data.js"></script>
-<script src="js/config.js"></script>
-<script src="js/state.js"></script>
-<script src="js/onboarding.js"></script>
-<script src="js/app.js"></script>
-<script src="js/practice.js"></script>
-<script src="js/boot.js"></script>
+<!-- JS — встроено для статического однофайлового приложения -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+// Source: js\data.js
+// ═══════════════════════════════════
+// DATA — все данные приложения
+// ═══════════════════════════════════
+
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+
+const SPECIALIZATIONS = [
+  { id:'it',    icon:'💻', name:'IT / Системный администратор', desc:'Сети, серверы, Active Directory, Linux, DevOps' },
+  { id:'med',   icon:'🏥', name:'Медицина / Здравоохранение',   desc:'Клиническая терминология, анамнез, диагнозы' },
+  { id:'law',   icon:'⚖️', name:'Юриспруденция / Право',        desc:'Договоры, судопроизводство, законодательство' },
+  { id:'fin',   icon:'💰', name:'Финансы / Банковское дело',    desc:'Бухгалтерия, инвестиции, банковские операции' },
+  { id:'eng',   icon:'⚙️', name:'Инженерия / Производство',     desc:'Технические чертежи, оборудование, стандарты' },
+  { id:'biz',   icon:'📊', name:'Бизнес / Менеджмент',          desc:'Переговоры, презентации, деловая переписка' },
+];
+
+const LEVEL_TEST = [
+  {q:"Hallo",opts:["Пока","Привет","Спасибо","Да"],a:1,lvl:'A1'},
+  {q:"danke",opts:["пожалуйста","нет","спасибо","да"],a:2,lvl:'A1'},
+  {q:"das Haus",opts:["машина","дом","стол","дерево"],a:1,lvl:'A1'},
+  {q:"ich arbeite",opts:["я учусь","я иду","я работаю","я сплю"],a:2,lvl:'A1'},
+  {q:"der Bahnhof",opts:["аэропорт","вокзал","больница","рынок"],a:1,lvl:'A2'},
+  {q:"Wie spät ist es?",opts:["Сколько стоит?","Который час?","Как далеко?","Что это?"],a:1,lvl:'A2'},
+  {q:"Ich würde gern...",opts:["Я должен...","Я не могу...","Я хотел бы...","Мне нравится..."],a:2,lvl:'B1'},
+  {q:"obwohl",opts:["потому что","хотя","если","когда"],a:1,lvl:'B1'},
+  {q:"das Gleichgewicht",opts:["возможность","равновесие","противоречие","исследование"],a:1,lvl:'B2'},
+  {q:"ungeachtet",opts:["несмотря на","согласно","вместо","благодаря"],a:0,lvl:'B2'},
+];
+
+const vocabularyData = [
+  { de: 'das Haus', ru: 'дом', example: 'Das Haus ist groß und hell.', category: 'Everyday' },
+  { de: 'das Wasser', ru: 'вода', example: 'Ich trinke jeden Morgen Wasser.', category: 'Everyday' },
+  { de: 'die Arbeit', ru: 'работа', example: 'Die Arbeit beginnt um neun Uhr.', category: 'Everyday' },
+  { de: 'der Morgen', ru: 'утро', example: 'Der Morgen ist ruhig.', category: 'Everyday' },
+  { de: 'der Abend', ru: 'вечер', example: 'Am Abend lerne ich Deutsch.', category: 'Everyday' },
+  { de: 'die Zeit', ru: 'время', example: 'Ich habe heute wenig Zeit.', category: 'Everyday' },
+  { de: 'die Familie', ru: 'семья', example: 'Meine Familie wohnt in der Stadt.', category: 'Everyday' },
+  { de: 'der Freund', ru: 'друг', example: 'Mein Freund kommt aus Berlin.', category: 'Everyday' },
+  { de: 'die Straße', ru: 'улица', example: 'Die Straße ist sehr lang.', category: 'Everyday' },
+  { de: 'der Bahnhof', ru: 'вокзал', example: 'Der Bahnhof ist links.', category: 'Everyday' },
+  { de: 'das Essen', ru: 'еда', example: 'Das Essen schmeckt gut.', category: 'Everyday' },
+  { de: 'der Kaffee', ru: 'кофе', example: 'Der Kaffee ist heiß.', category: 'Everyday' },
+  { de: 'das Brot', ru: 'хлеб', example: 'Das Brot ist frisch.', category: 'Everyday' },
+  { de: 'die Uhr', ru: 'часы', example: 'Die Uhr zeigt acht Uhr.', category: 'Everyday' },
+  { de: 'der Tag', ru: 'день', example: 'Der Tag ist schön.', category: 'Everyday' },
+  { de: 'die Woche', ru: 'неделя', example: 'Die Woche hat sieben Tage.', category: 'Everyday' },
+  { de: 'das Geld', ru: 'деньги', example: 'Ich brauche Geld für die Fahrkarte.', category: 'Everyday' },
+  { de: 'die Frage', ru: 'вопрос', example: 'Ich habe eine Frage.', category: 'Everyday' },
+  { de: 'die Antwort', ru: 'ответ', example: 'Die Antwort ist richtig.', category: 'Everyday' },
+  { de: 'lernen', ru: 'учиться', example: 'Wir lernen jeden Tag Deutsch.', category: 'Everyday' },
+  { de: 'der Computer', ru: 'компьютер', example: 'Der Computer startet schnell.', category: 'IT' },
+  { de: 'die Software', ru: 'программное обеспечение', example: 'Die Software läuft stabil.', category: 'IT' },
+  { de: 'das Netzwerk', ru: 'сеть', example: 'Das Netzwerk ist heute langsam.', category: 'IT' },
+  { de: 'der Fehler', ru: 'ошибка', example: 'Der Fehler steht im Log.', category: 'IT' },
+  { de: 'die Daten', ru: 'данные', example: 'Die Daten werden gespeichert.', category: 'IT' },
+  { de: 'entwickeln', ru: 'разрабатывать', example: 'Wir entwickeln eine neue App.', category: 'IT' },
+  { de: 'speichern', ru: 'сохранять', example: 'Bitte speichern Sie die Datei.', category: 'IT' },
+  { de: 'der Server', ru: 'сервер', example: 'Der Server ist erreichbar.', category: 'IT' },
+  { de: 'die Datenbank', ru: 'база данных', example: 'Die Datenbank enthält Kundendaten.', category: 'IT' },
+  { de: 'das Passwort', ru: 'пароль', example: 'Das Passwort ist zu kurz.', category: 'IT' },
+  { de: 'die Datei', ru: 'файл', example: 'Die Datei liegt im Ordner.', category: 'IT' },
+  { de: 'der Ordner', ru: 'папка', example: 'Der Ordner ist leer.', category: 'IT' },
+  { de: 'die Anwendung', ru: 'приложение', example: 'Die Anwendung reagiert nicht.', category: 'IT' },
+  { de: 'der Bildschirm', ru: 'экран', example: 'Der Bildschirm bleibt schwarz.', category: 'IT' },
+  { de: 'die Tastatur', ru: 'клавиатура', example: 'Die Tastatur funktioniert gut.', category: 'IT' },
+  { de: 'die Cloud', ru: 'облако', example: 'Wir speichern Backups in der Cloud.', category: 'IT' },
+  { de: 'das Backup', ru: 'резервная копия', example: 'Das Backup läuft nachts.', category: 'IT' },
+  { de: 'die Verbindung', ru: 'соединение', example: 'Die Verbindung ist unterbrochen.', category: 'IT' },
+  { de: 'aktualisieren', ru: 'обновлять', example: 'Wir aktualisieren das System.', category: 'IT' },
+  { de: 'testen', ru: 'тестировать', example: 'Die Entwickler testen den Code.', category: 'IT' },
+  { de: 'der Arzt', ru: 'врач', example: 'Der Arzt untersucht den Patienten.', category: 'Медицина' },
+  { de: 'die Ärztin', ru: 'врач-женщина', example: 'Die Ärztin spricht mit der Patientin.', category: 'Медицина' },
+  { de: 'das Krankenhaus', ru: 'больница', example: 'Das Krankenhaus ist in der Nähe.', category: 'Медицина' },
+  { de: 'die Diagnose', ru: 'диагноз', example: 'Die Diagnose ist noch nicht klar.', category: 'Медицина' },
+  { de: 'das Rezept', ru: 'рецепт', example: 'Der Arzt schreibt ein Rezept.', category: 'Медицина' },
+  { de: 'die Symptome', ru: 'симптомы', example: 'Welche Symptome haben Sie?', category: 'Медицина' },
+  { de: 'der Patient', ru: 'пациент', example: 'Der Patient hat Fieber.', category: 'Медицина' },
+  { de: 'die Patientin', ru: 'пациентка', example: 'Die Patientin braucht Ruhe.', category: 'Медицина' },
+  { de: 'die Untersuchung', ru: 'обследование', example: 'Die Untersuchung dauert zehn Minuten.', category: 'Медицина' },
+  { de: 'die Schmerzen', ru: 'боли', example: 'Ich habe starke Schmerzen.', category: 'Медицина' },
+  { de: 'das Fieber', ru: 'температура', example: 'Das Fieber ist hoch.', category: 'Медицина' },
+  { de: 'die Tablette', ru: 'таблетка', example: 'Nehmen Sie eine Tablette nach dem Essen.', category: 'Медицина' },
+  { de: 'die Apotheke', ru: 'аптека', example: 'Die Apotheke ist neben dem Krankenhaus.', category: 'Медицина' },
+  { de: 'die Behandlung', ru: 'лечение', example: 'Die Behandlung beginnt heute.', category: 'Медицина' },
+  { de: 'die Therapie', ru: 'терапия', example: 'Die Therapie hilft gut.', category: 'Медицина' },
+  { de: 'der Termin', ru: 'приём', example: 'Ich habe einen Termin beim Arzt.', category: 'Медицина' },
+  { de: 'die Versicherung', ru: 'страховка', example: 'Die Versicherung bezahlt die Behandlung.', category: 'Медицина' },
+  { de: 'der Blutdruck', ru: 'кровяное давление', example: 'Der Blutdruck ist normal.', category: 'Медицина' },
+  { de: 'der Notfall', ru: 'экстренный случай', example: 'Das ist ein medizinischer Notfall.', category: 'Медицина' },
+  { de: 'husten', ru: 'кашлять', example: 'Ich huste seit drei Tagen.', category: 'Медицина' },
+];
+
+const lessonsData = [
+  {
+    id: 'lesson-greetings',
+    title: 'Приветствия и знакомство',
+    level: 'A1',
+    category: 'Everyday',
+    theory: `В немецком знакомстве важны короткие устойчивые формулы: Hallo, Guten Tag, Ich heiße... и Freut mich. Для нейтральной и вежливой речи используй Sie: Wie heißen Sie? Woher kommen Sie?
+
+Если говоришь с коллегой или новым знакомым в неформальной ситуации, можно использовать du: Wie heißt du? Ich bin Azamat. В A1 достаточно назвать имя, страну и профессию одной-двумя простыми фразами.`,
+    examples: [
+      { de: 'Hallo, ich heiße Azamat.', ru: 'Привет, меня зовут Азамат.' },
+      { de: 'Guten Tag, wie heißen Sie?', ru: 'Добрый день, как вас зовут?' },
+      { de: 'Ich komme aus Pakistan.', ru: 'Я из Пакистана.' },
+      { de: 'Freut mich, Sie kennenzulernen.', ru: 'Приятно с вами познакомиться.' },
+    ],
+    quiz: [
+      { question: 'Как перевести “Guten Tag”?', options: ['Добрый день', 'Доброй ночи', 'До свидания', 'Спасибо'], correct: 0 },
+      { question: 'Выбери фразу “Меня зовут Азамат”.', options: ['Ich heiße Azamat.', 'Ich habe Azamat.', 'Ich komme Azamat.', 'Ich bin aus Azamat.'], correct: 0 },
+      { question: 'Что означает “Freut mich”?', options: ['Я устал', 'Приятно познакомиться', 'Где вокзал?', 'До завтра'], correct: 1 },
+    ],
+  },
+  {
+    id: 'lesson-numbers-time',
+    title: 'Числа и время',
+    level: 'A1',
+    category: 'Everyday',
+    theory: `Числа нужны для времени, цен, адресов и встреч. На старте выучи eins, zwei, drei, zehn, zwanzig и вопрос Wie spät ist es? — “Который час?”.
+
+Для полного часа немецкий использует простую схему: Es ist acht Uhr. Для расписания и встреч добавляй um: Der Termin ist um neun Uhr. Это значит “в девять часов”.`,
+    examples: [
+      { de: 'Es ist acht Uhr.', ru: 'Сейчас восемь часов.' },
+      { de: 'Der Termin ist um neun Uhr.', ru: 'Приём в девять часов.' },
+      { de: 'Ich arbeite von acht bis fünf.', ru: 'Я работаю с восьми до пяти.' },
+      { de: 'Wie spät ist es?', ru: 'Который час?' },
+    ],
+    quiz: [
+      { question: 'Что значит “Wie spät ist es?”', options: ['Сколько это стоит?', 'Который час?', 'Как вас зовут?', 'Где работа?'], correct: 1 },
+      { question: 'Как сказать “в девять часов”?', options: ['um neun Uhr', 'am neun Uhr', 'in neun Uhr', 'von neun Uhr'], correct: 0 },
+      { question: 'Как переводится “zehn”?', options: ['три', 'пять', 'десять', 'двадцать'], correct: 2 },
+    ],
+  },
+  {
+    id: 'lesson-it-workday',
+    title: 'IT: рабочий день программиста',
+    level: 'A1',
+    category: 'IT',
+    theory: `В IT-немецком на A1 полезны слова der Computer, die Software, der Fehler, die Daten и глаголы entwickeln, testen, speichern. С ними можно описать рабочий день очень простыми предложениями.
+
+Порядок слов в обычном предложении: подлежащее + глагол + остальная информация. Например: Ich entwickle eine App. Wir testen den Code. Если говоришь о проблеме, используй Es gibt einen Fehler — “есть ошибка”.`,
+    examples: [
+      { de: 'Ich entwickle eine App.', ru: 'Я разрабатываю приложение.' },
+      { de: 'Wir testen den Code.', ru: 'Мы тестируем код.' },
+      { de: 'Ich speichere die Daten.', ru: 'Я сохраняю данные.' },
+      { de: 'Es gibt einen Fehler im Programm.', ru: 'В программе есть ошибка.' },
+    ],
+    quiz: [
+      { question: 'Как переводится “der Fehler”?', options: ['сервер', 'ошибка', 'экран', 'папка'], correct: 1 },
+      { question: 'Выбери “Мы тестируем код”.', options: ['Wir testen den Code.', 'Wir speichern den Kaffee.', 'Der Code testet uns.', 'Ich teste die Uhr.'], correct: 0 },
+      { question: 'Что значит “speichern”?', options: ['сохранять', 'лечить', 'знакомиться', 'покупать'], correct: 0 },
+    ],
+  },
+  {
+    id: 'lesson-doctor',
+    title: 'Медицина: у врача',
+    level: 'A1',
+    category: 'Медицина',
+    theory: `На приёме у врача важно коротко описать состояние: Ich habe Schmerzen, Ich habe Fieber, Mir ist nicht gut. Врач часто спрашивает Seit wann? — “С каких пор?”.
+
+Для базового диалога хватит слов der Arzt, der Patient, die Symptome, die Untersuchung и das Rezept. После осмотра можно услышать: Ich schreibe ein Rezept — “Я выпишу рецепт”.`,
+    examples: [
+      { de: 'Ich habe Schmerzen.', ru: 'У меня боли.' },
+      { de: 'Seit wann haben Sie Fieber?', ru: 'С каких пор у вас температура?' },
+      { de: 'Der Arzt untersucht den Patienten.', ru: 'Врач осматривает пациента.' },
+      { de: 'Ich brauche ein Rezept.', ru: 'Мне нужен рецепт.' },
+    ],
+    quiz: [
+      { question: 'Что значит “die Symptome”?', options: ['страховка', 'симптомы', 'сеть', 'ответ'], correct: 1 },
+      { question: 'Как сказать “У меня температура”?', options: ['Ich habe Fieber.', 'Ich bin Rezept.', 'Ich mache Arzt.', 'Ich speichere Fieber.'], correct: 0 },
+      { question: 'Как переводится “das Krankenhaus”?', options: ['аптека', 'больница', 'приём', 'таблетка'], correct: 1 },
+    ],
+  },
+];
+
+const lessonColors = ['c-gold', 'c-green', 'c-blue', 'c-teal'];
+const lessonGermanTitles = {
+  'lesson-greetings': 'Begrüßung und Vorstellung',
+  'lesson-numbers-time': 'Zahlen und Uhrzeit',
+  'lesson-it-workday': 'IT-Arbeitstag',
+  'lesson-doctor': 'Beim Arzt',
+};
+
+const GENERAL_LESSONS = [
+  { id:'g1', title:'Знакомство', de:'Vorstellung', color:'c-gold', type:'Базовый A1',
+    words:[
+      {de:'Hallo',ru:'Привет',ex:'Hallo! Wie geht\'s?',cat:'general'},
+      {de:'Ich bin',ru:'Я / Меня зовут',ex:'Ich bin Azamat.',cat:'general'},
+      {de:'mein Name',ru:'моё имя',ex:'Mein Name ist Azamat.',cat:'general'},
+      {de:'Woher kommen Sie?',ru:'Откуда вы?',ex:'Ich komme aus Tadschikistan.',cat:'general'},
+      {de:'Freut mich',ru:'Приятно познакомиться',ex:'Freut mich!',cat:'general'},
+      {de:'Guten Tag',ru:'Добрый день',ex:'Guten Tag, Herr Müller.',cat:'general'},
+      {de:'Auf Wiedersehen',ru:'До свидания',ex:'Auf Wiedersehen!',cat:'general'},
+      {de:'Wie geht es Ihnen?',ru:'Как у вас дела?',ex:'Wie geht es Ihnen?',cat:'general'},
+      {de:'Danke, gut',ru:'Спасибо, хорошо',ex:'Danke, gut.',cat:'general'},
+      {de:'Entschuldigung',ru:'Извините',ex:'Entschuldigung!',cat:'general'},
+    ],
+    quiz:[
+      {q:'Hallo',opts:['Пока','Привет','Спасибо','Да'],a:1},
+      {q:'mein Name',opts:['мой дом','моё имя','мой город','мой друг'],a:1},
+    ]
+  },
+  { id:'g2', title:'Числа 1–100', de:'Zahlen', color:'c-green', type:'Базовый A1',
+    words:[
+      {de:'eins',ru:'один',ex:'Ich habe eins.',cat:'general'},
+      {de:'zwei',ru:'два',ex:'Zwei Kaffee, bitte.',cat:'general'},
+      {de:'drei',ru:'три',ex:'Drei Personen.',cat:'general'},
+      {de:'vier',ru:'четыре',ex:'Vier Tage.',cat:'general'},
+      {de:'fünf',ru:'пять',ex:'Fünf Euro.',cat:'general'},
+      {de:'sechs',ru:'шесть',ex:'Sechs Monate.',cat:'general'},
+      {de:'sieben',ru:'семь',ex:'Sieben Jahre.',cat:'general'},
+      {de:'acht',ru:'восемь',ex:'Acht Stunden.',cat:'general'},
+      {de:'neun',ru:'девять',ex:'Neun Bücher.',cat:'general'},
+      {de:'zehn',ru:'десять',ex:'Es ist zehn Uhr.',cat:'general'},
+      {de:'elf',ru:'одиннадцать',ex:'Elf Uhr.',cat:'general'},
+      {de:'zwölf',ru:'двенадцать',ex:'Zwölf Monate.',cat:'general'},
+      {de:'dreizehn',ru:'тринадцать',ex:'Dreizehn.',cat:'general'},
+      {de:'vierzehn',ru:'четырнадцать',ex:'Vierzehn.',cat:'general'},
+      {de:'fünfzehn',ru:'пятнадцать',ex:'Fünfzehn.',cat:'general'},
+      {de:'sechzehn',ru:'шестнадцать',ex:'Sechzehn.',cat:'general'},
+      {de:'siebzehn',ru:'семнадцать',ex:'Siebzehn.',cat:'general'},
+      {de:'achtzehn',ru:'восемнадцать',ex:'Achtzehn.',cat:'general'},
+      {de:'neunzehn',ru:'девятнадцать',ex:'Neunzehn.',cat:'general'},
+      {de:'zwanzig',ru:'двадцать',ex:'Ich bin zwanzig.',cat:'general'},
+      {de:'einundzwanzig',ru:'двадцать один',ex:'Einundzwanzig.',cat:'general'},
+      {de:'dreißig',ru:'тридцать',ex:'Dreißig Euro.',cat:'general'},
+      {de:'vierzig',ru:'сорок',ex:'Vierzig.',cat:'general'},
+      {de:'fünfzig',ru:'пятьдесят',ex:'Fünfzig.',cat:'general'},
+      {de:'sechzig',ru:'шестьдесят',ex:'Sechzig.',cat:'general'},
+      {de:'siebzig',ru:'семьдесят',ex:'Siebzig.',cat:'general'},
+      {de:'achtzig',ru:'восемьдесят',ex:'Achtzig.',cat:'general'},
+      {de:'neunzig',ru:'девяносто',ex:'Neunzig.',cat:'general'},
+      {de:'hundert',ru:'сто',ex:'Hundert Euro.',cat:'general'},
+    ],
+    quiz:[
+      {q:'zehn',opts:['двадцать','десять','семь','три'],a:1},
+      {q:'hundert',opts:['тысяча','сто','миллион','десять'],a:1},
+    ]
+  },
+  { id:'g3', title:'Семья', de:'Familie', color:'c-blue', type:'A1',
+    words:[
+      {de:'die Mutter',ru:'мама',ex:'Meine Mutter heißt...',cat:'general'},
+      {de:'der Vater',ru:'папа',ex:'Mein Vater arbeitet.',cat:'general'},
+      {de:'der Bruder',ru:'брат',ex:'Ich habe einen Bruder.',cat:'general'},
+      {de:'die Schwester',ru:'сестра',ex:'Meine Schwester ist jung.',cat:'general'},
+    ],
+    quiz:[
+      {q:'die Mutter',opts:['папа','сестра','мама','дядя'],a:2},
+      {q:'der Bruder',opts:['дядя','брат','муж','сын'],a:1},
+    ]
+  },
+  { id:'g4', title:'Время и дни', de:'Zeit & Wochentage', color:'c-purple', type:'A1',
+    words:[
+      {de:'heute',ru:'сегодня',ex:'Heute ist Montag.',cat:'general'},
+      {de:'morgen',ru:'завтра',ex:'Morgen gehe ich.',cat:'general'},
+      {de:'der Montag',ru:'понедельник',ex:'Am Montag arbeite ich.',cat:'general'},
+      {de:'das Wochenende',ru:'выходные',ex:'Am Wochenende schlafe ich.',cat:'general'},
+    ],
+    quiz:[
+      {q:'heute',opts:['завтра','вчера','сегодня','сейчас'],a:2},
+      {q:'der Montag',opts:['пятница','воскресенье','понедельник','среда'],a:2},
+    ]
+  },
+  { id:'g5', title:'Еда и напитки', de:'Essen & Trinken', color:'c-teal', type:'A1',
+    words:[
+      {de:'das Brot',ru:'хлеб',ex:'Das Brot ist frisch.',cat:'general'},
+      {de:'der Kaffee',ru:'кофе',ex:'Ich trinke Kaffee.',cat:'general'},
+      {de:'das Wasser',ru:'вода',ex:'Ich möchte Wasser.',cat:'general'},
+      {de:'das Fleisch',ru:'мясо',ex:'Das Fleisch ist gut.',cat:'general'},
+    ],
+    quiz:[
+      {q:'das Brot',opts:['молоко','хлеб','мясо','кофе'],a:1},
+    ]
+  },
+  { id:'g6', title:'Грамматика: Артикли', de:'der/die/das', color:'c-orange', type:'A1',
+    words:[
+      {de:'der',ru:'артикль (муж.)',ex:'der Mann, der Tisch',cat:'general'},
+      {de:'die',ru:'артикль (жен./мн.ч.)',ex:'die Frau, die Kinder',cat:'general'},
+      {de:'das',ru:'артикль (ср.р.)',ex:'das Kind, das Haus',cat:'general'},
+      {de:'ein / eine',ru:'неопр. артикль',ex:'ein Mann, eine Frau',cat:'general'},
+    ],
+    quiz:[
+      {q:'Какой артикль у "Kind" (ребёнок)?',opts:['der','die','das','ein'],a:2},
+      {q:'Какой артикль у "Frau" (женщина)?',opts:['der','die','das','ein'],a:1},
+    ]
+  },
+  { id:'g7', title:'Цвета', de:'Farben', color:'c-red', type:'A1',
+    words:[
+      {de:'rot',ru:'красный',ex:'Das Auto ist rot.',cat:'general'},
+      {de:'blau',ru:'синий',ex:'Der Himmel ist blau.',cat:'general'},
+      {de:'grün',ru:'зелёный',ex:'Das Gras ist grün.',cat:'general'},
+      {de:'gelb',ru:'жёлтый',ex:'Die Sonne ist gelb.',cat:'general'},
+      {de:'schwarz',ru:'чёрный',ex:'Die Katze ist schwarz.',cat:'general'},
+      {de:'weiß',ru:'белый',ex:'Der Schnee ist weiß.',cat:'general'},
+    ],
+    quiz:[
+      {q:'rot',opts:['синий','красный','зелёный','жёлтый'],a:1},
+      {q:'blau',opts:['красный','синий','чёрный','белый'],a:1},
+    ]
+  },
+  { id:'g8', title:'Профессии', de:'Berufe', color:'c-brown', type:'A1',
+    words:[
+      {de:'der Arzt',ru:'врач',ex:'Mein Bruder ist Arzt.',cat:'general'},
+      {de:'der Lehrer',ru:'учитель',ex:'Die Lehrerin ist nett.',cat:'general'},
+      {de:'der Ingenieur',ru:'инженер',ex:'Er arbeitet als Ingenieur.',cat:'general'},
+      {de:'die Krankenschwester',ru:'медсестра',ex:'Die Krankenschwester hilft.',cat:'general'},
+      {de:'der Koch',ru:'повар',ex:'Der Koch kocht Essen.',cat:'general'},
+    ],
+    quiz:[
+      {q:'der Arzt',opts:['учитель','врач','инженер','повар'],a:1},
+      {q:'die Krankenschwester',opts:['врач','медсестра','учитель','инженер'],a:1},
+    ]
+  },
+  { id:'g9', title:'Город и транспорт', de:'Stadt & Verkehr', color:'c-gray', type:'A1',
+    words:[
+      {de:'die Stadt',ru:'город',ex:'Ich lebe in der Stadt.',cat:'general'},
+      {de:'das Auto',ru:'машина',ex:'Das Auto fährt schnell.',cat:'general'},
+      {de:'der Bus',ru:'автобус',ex:'Der Bus kommt.',cat:'general'},
+      {de:'die Straße',ru:'улица',ex:'Die Straße ist breit.',cat:'general'},
+      {de:'der Bahnhof',ru:'вокзал',ex:'Am Bahnhof warten.',cat:'general'},
+    ],
+    quiz:[
+      {q:'die Stadt',opts:['деревня','город','улица','дом'],a:1},
+      {q:'das Auto',opts:['велосипед','машина','автобус','поезд'],a:1},
+    ]
+  },
+  { id:'g10', title:'Дом и мебель', de:'Haus & Möbel', color:'c-pink', type:'A1',
+    words:[
+      {de:'das Haus',ru:'дом',ex:'Das Haus ist groß.',cat:'general'},
+      {de:'die Küche',ru:'кухня',ex:'In der Küche koche ich.',cat:'general'},
+      {de:'das Zimmer',ru:'комната',ex:'Mein Zimmer ist klein.',cat:'general'},
+      {de:'der Tisch',ru:'стол',ex:'Der Tisch ist rund.',cat:'general'},
+      {de:'der Stuhl',ru:'стул',ex:'Der Stuhl ist bequem.',cat:'general'},
+    ],
+    quiz:[
+      {q:'das Haus',opts:['квартира','дом','комната','кухня'],a:1},
+      {q:'der Tisch',opts:['стул','стол','кровать','шкаф'],a:1},
+    ]
+  },
+  // A2 lessons
+  { id:'g11', title:'Повседневные глаголы', de:'Alltagsverben', color:'c-gold', type:'A2',
+    words:[
+      {de:'essen',ru:'есть',ex:'Ich esse Brot.',cat:'general'},
+      {de:'trinken',ru:'пить',ex:'Ich trinke Wasser.',cat:'general'},
+      {de:'schlafen',ru:'спать',ex:'Ich schlafe gut.',cat:'general'},
+      {de:'arbeiten',ru:'работать',ex:'Er arbeitet viel.',cat:'general'},
+      {de:'lernen',ru:'учиться',ex:'Ich lerne Deutsch.',cat:'general'},
+    ],
+    quiz:[
+      {q:'essen',opts:['пить','есть','спать','работать'],a:1},
+      {q:'lernen',opts:['работать','учиться','спать','пить'],a:1},
+    ]
+  },
+  { id:'g12', title:'Времена года', de:'Jahreszeiten', color:'c-green', type:'A2',
+    words:[
+      {de:'der Frühling',ru:'весна',ex:'Im Frühling blühen Blumen.',cat:'general'},
+      {de:'der Sommer',ru:'лето',ex:'Im Sommer ist es heiß.',cat:'general'},
+      {de:'der Herbst',ru:'осень',ex:'Im Herbst fallen Blätter.',cat:'general'},
+      {de:'der Winter',ru:'зима',ex:'Im Winter schneit es.',cat:'general'},
+    ],
+    quiz:[
+      {q:'der Sommer',opts:['зима','лето','осень','весна'],a:1},
+      {q:'der Winter',opts:['весна','осень','зима','лето'],a:2},
+    ]
+  },
+  { id:'g13', title:'Погода', de:'Wetter', color:'c-blue', type:'A2',
+    words:[
+      {de:'sonnig',ru:'солнечно',ex:'Heute ist sonnig.',cat:'general'},
+      {de:'regnerisch',ru:'дождливо',ex:'Es ist regnerisch.',cat:'general'},
+      {de:'kalt',ru:'холодно',ex:'Es ist kalt draußen.',cat:'general'},
+      {de:'warm',ru:'тепло',ex:'Es ist warm.',cat:'general'},
+    ],
+    quiz:[
+      {q:'sonnig',opts:['дождливо','солнечно','холодно','тепло'],a:1},
+      {q:'kalt',opts:['тепло','солнечно','холодно','дождливо'],a:2},
+    ]
+  },
+  { id:'g14', title:'Магазины', de:'Einkaufen', color:'c-purple', type:'A2',
+    words:[
+      {de:'der Laden',ru:'магазин',ex:'Ich gehe in den Laden.',cat:'general'},
+      {de:'kaufen',ru:'покупать',ex:'Ich kaufe Brot.',cat:'general'},
+      {de:'teuer',ru:'дорогой',ex:'Das ist teuer.',cat:'general'},
+      {de:'billig',ru:'дешёвый',ex:'Das ist billig.',cat:'general'},
+    ],
+    quiz:[
+      {q:'kaufen',opts:['продавать','покупать','платить','идти'],a:1},
+      {q:'teuer',opts:['дешёвый','дорогой','большой','маленький'],a:1},
+    ]
+  },
+  { id:'g15', title:'Здоровье', de:'Gesundheit', color:'c-teal', type:'A2',
+    words:[
+      {de:'krank',ru:'больной',ex:'Ich bin krank.',cat:'general'},
+      {de:'gesund',ru:'здоровый',ex:'Er ist gesund.',cat:'general'},
+      {de:'der Schmerz',ru:'боль',ex:'Ich habe Schmerzen.',cat:'general'},
+      {de:'die Apotheke',ru:'аптека',ex:'Gehe zur Apotheke.',cat:'general'},
+    ],
+    quiz:[
+      {q:'krank',opts:['здоровый','больной','усталый','голодный'],a:1},
+      {q:'gesund',opts:['больной','здоровый','счастливый','грустный'],a:1},
+    ]
+  },
+  // B1 lessons
+  { id:'g16', title:'Будущее время', de:'Futur', color:'c-orange', type:'B1',
+    words:[
+      {de:'werden',ru:'становиться',ex:'Ich werde Arzt.',cat:'general'},
+      {de:'morgen',ru:'завтра',ex:'Morgen komme ich.',cat:'general'},
+      {de:'nächste Woche',ru:'на следующей неделе',ex:'Nächste Woche fahre ich.',cat:'general'},
+    ],
+    quiz:[
+      {q:'werden',opts:['быть','становиться','идти','делать'],a:1},
+    ]
+  },
+  { id:'g17', title:'Прошедшее время', de:'Perfekt', color:'c-red', type:'B1',
+    words:[
+      {de:'haben',ru:'иметь',ex:'Ich habe gegessen.',cat:'general'},
+      {de:'sein',ru:'быть',ex:'Ich bin gegangen.',cat:'general'},
+      {de:'gegessen',ru:'съел',ex:'Ich habe gegessen.',cat:'general'},
+    ],
+    quiz:[
+      {q:'haben',opts:['быть','иметь','делать','идти'],a:1},
+    ]
+  },
+  { id:'g18', title:'Модальные глаголы', de:'Modalverben', color:'c-brown', type:'B1',
+    words:[
+      {de:'können',ru:'мочь',ex:'Ich kann schwimmen.',cat:'general'},
+      {de:'müssen',ru:'должен',ex:'Ich muss arbeiten.',cat:'general'},
+      {de:'wollen',ru:'хотеть',ex:'Ich will essen.',cat:'general'},
+    ],
+    quiz:[
+      {q:'können',opts:['должен','хотеть','мочь','идти'],a:2},
+      {q:'müssen',opts:['мочь','должен','хотеть','делать'],a:1},
+    ]
+  },
+  { id:'g19', title:'Общие слова A1', de:'Allgemeine Wörter A1', color:'c-teal', type:'A1',
+    words:[
+      {de:'der Mann',ru:'мужчина',ex:'Der Mann ist groß.',cat:'general'},
+      {de:'die Frau',ru:'женщина',ex:'Die Frau ist schön.',cat:'general'},
+      {de:'das Kind',ru:'ребёнок',ex:'Das Kind spielt.',cat:'general'},
+      {de:'der Junge',ru:'мальчик',ex:'Der Junge läuft.',cat:'general'},
+      {de:'das Mädchen',ru:'девочка',ex:'Das Mädchen singt.',cat:'general'},
+      {de:'der Hund',ru:'собака',ex:'Der Hund bellt.',cat:'general'},
+      {de:'die Katze',ru:'кошка',ex:'Die Katze schläft.',cat:'general'},
+      {de:'das Buch',ru:'книга',ex:'Das Buch ist interessant.',cat:'general'},
+      {de:'der Tisch',ru:'стол',ex:'Der Tisch ist rund.',cat:'general'},
+      {de:'der Stuhl',ru:'стул',ex:'Der Stuhl ist bequem.',cat:'general'},
+      {de:'das Haus',ru:'дом',ex:'Das Haus ist groß.',cat:'general'},
+      {de:'die Tür',ru:'дверь',ex:'Die Tür ist offen.',cat:'general'},
+      {de:'das Fenster',ru:'окно',ex:'Das Fenster ist groß.',cat:'general'},
+      {de:'die Straße',ru:'улица',ex:'Die Straße ist breit.',cat:'general'},
+      {de:'das Auto',ru:'машина',ex:'Das Auto fährt.',cat:'general'},
+      {de:'der Bus',ru:'автобус',ex:'Der Bus kommt.',cat:'general'},
+      {de:'der Zug',ru:'поезд',ex:'Der Zug fährt schnell.',cat:'general'},
+      {de:'das Flugzeug',ru:'самолёт',ex:'Das Flugzeug fliegt.',cat:'general'},
+      {de:'das Essen',ru:'еда',ex:'Das Essen ist gut.',cat:'general'},
+      {de:'das Trinken',ru:'напиток',ex:'Das Trinken ist kalt.',cat:'general'},
+      {de:'das Wasser',ru:'вода',ex:'Ich trinke Wasser.',cat:'general'},
+      {de:'der Kaffee',ru:'кофе',ex:'Der Kaffee ist heiß.',cat:'general'},
+      {de:'der Tee',ru:'чай',ex:'Der Tee ist grün.',cat:'general'},
+      {de:'das Brot',ru:'хлеб',ex:'Das Brot ist frisch.',cat:'general'},
+      {de:'der Käse',ru:'сыр',ex:'Der Käse ist gelb.',cat:'general'},
+      {de:'die Milch',ru:'молоко',ex:'Die Milch ist kalt.',cat:'general'},
+      {de:'das Obst',ru:'фрукт',ex:'Das Obst ist süß.',cat:'general'},
+      {de:'der Apfel',ru:'яблоко',ex:'Der Apfel ist rot.',cat:'general'},
+      {de:'die Banane',ru:'банан',ex:'Die Banane ist gelb.',cat:'general'},
+      {de:'die Orange',ru:'апельсин',ex:'Die Orange ist orange.',cat:'general'},
+      {de:'die Schule',ru:'школа',ex:'Die Schule ist nah.',cat:'general'},
+      {de:'der Lehrer',ru:'учитель',ex:'Der Lehrer erklärt.',cat:'general'},
+      {de:'der Schüler',ru:'ученик',ex:'Der Schüler lernt.',cat:'general'},
+      {de:'die Arbeit',ru:'работа',ex:'Die Arbeit ist schwer.',cat:'general'},
+      {de:'der Chef',ru:'шеф',ex:'Der Chef ist streng.',cat:'general'},
+      {de:'der Kollege',ru:'коллега',ex:'Der Kollege hilft.',cat:'general'},
+      {de:'die Zeit',ru:'время',ex:'Die Zeit vergeht.',cat:'general'},
+      {de:'die Uhr',ru:'часы',ex:'Die Uhr tickt.',cat:'general'},
+      {de:'der Tag',ru:'день',ex:'Der Tag ist schön.',cat:'general'},
+      {de:'die Nacht',ru:'ночь',ex:'Die Nacht ist dunkel.',cat:'general'},
+      {de:'der Morgen',ru:'утро',ex:'Der Morgen ist früh.',cat:'general'},
+      {de:'der Abend',ru:'вечер',ex:'Der Abend ist spät.',cat:'general'},
+      {de:'die Woche',ru:'неделя',ex:'Die Woche hat 7 Tage.',cat:'general'},
+      {de:'der Monat',ru:'месяц',ex:'Der Monat ist lang.',cat:'general'},
+      {de:'das Jahr',ru:'год',ex:'Das Jahr hat 12 Monate.',cat:'general'},
+      {de:'der Frühling',ru:'весна',ex:'Im Frühling blühen Blumen.',cat:'general'},
+      {de:'der Sommer',ru:'лето',ex:'Im Sommer ist es heiß.',cat:'general'},
+      {de:'der Herbst',ru:'осень',ex:'Im Herbst fallen Blätter.',cat:'general'},
+      {de:'der Winter',ru:'зима',ex:'Im Winter schneit es.',cat:'general'},
+      {de:'sonnig',ru:'солнечно',ex:'Heute ist sonnig.',cat:'general'},
+      {de:'regnerisch',ru:'дождливо',ex:'Es ist regnerisch.',cat:'general'},
+      {de:'kalt',ru:'холодно',ex:'Es ist kalt.',cat:'general'},
+      {de:'warm',ru:'тепло',ex:'Es ist warm.',cat:'general'},
+      {de:'groß',ru:'большой',ex:'Das Haus ist groß.',cat:'general'},
+      {de:'klein',ru:'маленький',ex:'Das Kind ist klein.',cat:'general'},
+      {de:'lang',ru:'длинный',ex:'Der Tisch ist lang.',cat:'general'},
+      {de:'kurz',ru:'короткий',ex:'Der Rock ist kurz.',cat:'general'},
+      {de:'neu',ru:'новый',ex:'Das Auto ist neu.',cat:'general'},
+      {de:'alt',ru:'старый',ex:'Das Buch ist alt.',cat:'general'},
+      {de:'gut',ru:'хороший',ex:'Das Essen ist gut.',cat:'general'},
+      {de:'schlecht',ru:'плохой',ex:'Das Wetter ist schlecht.',cat:'general'},
+      {de:'schnell',ru:'быстрый',ex:'Der Zug ist schnell.',cat:'general'},
+      {de:'langsam',ru:'медленный',ex:'Der Bus ist langsam.',cat:'general'},
+      {de:'richtig',ru:'правильный',ex:'Das ist richtig.',cat:'general'},
+      {de:'falsch',ru:'неправильный',ex:'Das ist falsch.',cat:'general'},
+      {de:'hier',ru:'здесь',ex:'Ich bin hier.',cat:'general'},
+      {de:'dort',ru:'там',ex:'Das Buch ist dort.',cat:'general'},
+      {de:'links',ru:'слева',ex:'Links ist die Tür.',cat:'general'},
+      {de:'rechts',ru:'справа',ex:'Rechts ist das Fenster.',cat:'general'},
+      {de:'oben',ru:'сверху',ex:'Oben ist der Himmel.',cat:'general'},
+      {de:'unten',ru:'снизу',ex:'Unten ist der Boden.',cat:'general'},
+      {de:'viel',ru:'много',ex:'Ich habe viel Arbeit.',cat:'general'},
+      {de:'wenig',ru:'мало',ex:'Ich habe wenig Zeit.',cat:'general'},
+      {de:'immer',ru:'всегда',ex:'Ich komme immer pünktlich.',cat:'general'},
+      {de:'nie',ru:'никогда',ex:'Ich komme nie spät.',cat:'general'},
+      {de:'oft',ru:'часто',ex:'Ich gehe oft spazieren.',cat:'general'},
+      {de:'selten',ru:'редко',ex:'Ich esse selten Fleisch.',cat:'general'},
+      {de:'jetzt',ru:'сейчас',ex:'Jetzt ist es Zeit.',cat:'general'},
+      {de:'später',ru:'позже',ex:'Später gehe ich.',cat:'general'},
+      {de:'früher',ru:'раньше',ex:'Früher war es anders.',cat:'general'},
+      {de:'gestern',ru:'вчера',ex:'Gestern war ich krank.',cat:'general'},
+      {de:'morgen',ru:'завтра',ex:'Morgen komme ich.',cat:'general'},
+      {de:'kommen',ru:'приходить',ex:'Ich komme nach Hause.',cat:'general'},
+      {de:'gehen',ru:'идти',ex:'Ich gehe zur Schule.',cat:'general'},
+      {de:'fahren',ru:'ехать',ex:'Ich fahre mit dem Auto.',cat:'general'},
+      {de:'fliegen',ru:'летать',ex:'Das Flugzeug fliegt.',cat:'general'},
+      {de:'sprechen',ru:'говорить',ex:'Ich spreche Deutsch.',cat:'general'},
+      {de:'lesen',ru:'читать',ex:'Ich lese ein Buch.',cat:'general'},
+      {de:'schreiben',ru:'писать',ex:'Ich schreibe einen Brief.',cat:'general'},
+      {de:'sehen',ru:'видеть',ex:'Ich sehe den Hund.',cat:'general'},
+      {de:'hören',ru:'слышать',ex:'Ich höre Musik.',cat:'general'},
+      {de:'machen',ru:'делать',ex:'Ich mache Hausaufgaben.',cat:'general'},
+      {de:'haben',ru:'иметь',ex:'Ich habe ein Buch.',cat:'general'},
+      {de:'sein',ru:'быть',ex:'Ich bin müde.',cat:'general'},
+      {de:'werden',ru:'становиться',ex:'Ich werde Arzt.',cat:'general'},
+      {de:'können',ru:'мочь',ex:'Ich kann schwimmen.',cat:'general'},
+      {de:'müssen',ru:'должен',ex:'Ich muss arbeiten.',cat:'general'},
+      {de:'wollen',ru:'хотеть',ex:'Ich will essen.',cat:'general'},
+      {de:'mögen',ru:'нравиться',ex:'Ich mag Musik.',cat:'general'},
+      {de:'lieben',ru:'любить',ex:'Ich liebe dich.',cat:'general'},
+      {de:'hassen',ru:'ненавидеть',ex:'Ich hasse Regen.',cat:'general'},
+    ],
+    quiz:[
+      {q:'der Mann',opts:['женщина','мужчина','ребёнок','собака'],a:1},
+      {q:'das Haus',opts:['улица','дом','машина','школа'],a:1},
+    ]
+  },
+  { id:'g20', title:'Продвинутые слова A2-B1', de:'Fortgeschrittene Wörter A2-B1', color:'c-purple', type:'A2-B1',
+    words:[
+      {de:'die Möglichkeit',ru:'возможность',ex:'Es gibt eine Möglichkeit.',cat:'general'},
+      {de:'die Entscheidung',ru:'решение',ex:'Die Entscheidung ist gefallen.',cat:'general'},
+      {de:'die Erfahrung',ru:'опыт',ex:'Ich habe Erfahrung.',cat:'general'},
+      {de:'die Bedeutung',ru:'значение',ex:'Das hat Bedeutung.',cat:'general'},
+      {de:'die Entwicklung',ru:'развитие',ex:'Die Entwicklung ist schnell.',cat:'general'},
+      {de:'die Situation',ru:'ситуация',ex:'Die Situation ist kompliziert.',cat:'general'},
+      {de:'die Frage',ru:'вопрос',ex:'Das ist eine gute Frage.',cat:'general'},
+      {de:'die Antwort',ru:'ответ',ex:'Die Antwort ist klar.',cat:'general'},
+      {de:'die Information',ru:'информация',ex:'Ich brauche Information.',cat:'general'},
+      {de:'die Kommunikation',ru:'коммуникация',ex:'Die Kommunikation ist wichtig.',cat:'general'},
+      {de:'die Organisation',ru:'организация',ex:'Die Organisation ist gut.',cat:'general'},
+      {de:'die Produktion',ru:'производство',ex:'Die Produktion läuft.',cat:'general'},
+      {de:'die Qualität',ru:'качество',ex:'Die Qualität ist hoch.',cat:'general'},
+      {de:'die Quantität',ru:'количество',ex:'Die Quantität ist groß.',cat:'general'},
+      {de:'die Realität',ru:'реальность',ex:'Das ist die Realität.',cat:'general'},
+      {de:'die Sicherheit',ru:'безопасность',ex:'Sicherheit geht vor.',cat:'general'},
+      {de:'die Technologie',ru:'технология',ex:'Die Technologie entwickelt sich.',cat:'general'},
+      {de:'die Umwelt',ru:'окружающая среда',ex:'Die Umwelt schützen.',cat:'general'},
+      {de:'die Verantwortung',ru:'ответственность',ex:'Das ist meine Verantwortung.',cat:'general'},
+      {de:'die Zukunft',ru:'будущее',ex:'Die Zukunft ist ungewiss.',cat:'general'},
+      {de:'der Grund',ru:'причина',ex:'Der Grund ist klar.',cat:'general'},
+      {de:'der Unterschied',ru:'разница',ex:'Der Unterschied ist groß.',cat:'general'},
+      {de:'der Vorteil',ru:'преимущество',ex:'Das ist ein Vorteil.',cat:'general'},
+      {de:'der Nachteil',ru:'недостаток',ex:'Das ist ein Nachteil.',cat:'general'},
+      {de:'der Erfolg',ru:'успех',ex:'Der Erfolg ist da.',cat:'general'},
+      {de:'der Misserfolg',ru:'неудача',ex:'Das ist ein Misserfolg.',cat:'general'},
+      {de:'der Anfang',ru:'начало',ex:'Der Anfang ist schwer.',cat:'general'},
+      {de:'das Ende',ru:'конец',ex:'Das Ende ist nah.',cat:'general'},
+      {de:'der Teil',ru:'часть',ex:'Das ist ein Teil.',cat:'general'},
+      {de:'das Ganze',ru:'целое',ex:'Das Ganze ist wichtig.',cat:'general'},
+      {de:'die Gruppe',ru:'группа',ex:'Die Gruppe ist groß.',cat:'general'},
+      {de:'die Menge',ru:'толпа',ex:'Eine Menge Leute.',cat:'general'},
+      {de:'die Reihe',ru:'ряд',ex:'In der Reihe stehen.',cat:'general'},
+      {de:'die Serie',ru:'серия',ex:'Eine Serie schauen.',cat:'general'},
+      {de:'die Summe',ru:'сумма',ex:'Die Summe ist hoch.',cat:'general'},
+      {de:'die Zahl',ru:'число',ex:'Eine hohe Zahl.',cat:'general'},
+      {de:'die Art',ru:'вид',ex:'Eine Art von...',cat:'general'},
+      {de:'die Form',ru:'форма',ex:'Die Form ist rund.',cat:'general'},
+      {de:'die Größe',ru:'размер',ex:'Die Größe passt.',cat:'general'},
+      {de:'die Höhe',ru:'высота',ex:'Die Höhe ist 10m.',cat:'general'},
+      {de:'die Länge',ru:'длина',ex:'Die Länge ist 5m.',cat:'general'},
+      {de:'die Breite',ru:'ширина',ex:'Die Breite ist 2m.',cat:'general'},
+      {de:'die Tiefe',ru:'глубина',ex:'Die Tiefe ist groß.',cat:'general'},
+      {de:'die Richtung',ru:'направление',ex:'In diese Richtung.',cat:'general'},
+      {de:'die Seite',ru:'сторона',ex:'Auf der anderen Seite.',cat:'general'},
+      {de:'die Mitte',ru:'середина',ex:'In der Mitte.',cat:'general'},
+      {de:'der Ort',ru:'место',ex:'An diesem Ort.',cat:'general'},
+      {de:'der Platz',ru:'площадь',ex:'Auf dem Platz.',cat:'general'},
+      {de:'der Raum',ru:'пространство',ex:'Genug Raum.',cat:'general'},
+      {de:'die Stelle',ru:'место',ex:'An dieser Stelle.',cat:'general'},
+      {de:'die Position',ru:'позиция',ex:'Eine gute Position.',cat:'general'},
+      {de:'die Lage',ru:'положение',ex:'Die Lage ist schlecht.',cat:'general'},
+      {de:'die Bewegung',ru:'движение',ex:'Eine schnelle Bewegung.',cat:'general'},
+      {de:'die Geschwindigkeit',ru:'скорость',ex:'Hohe Geschwindigkeit.',cat:'general'},
+      {de:'die Kraft',ru:'сила',ex:'Mit voller Kraft.',cat:'general'},
+      {de:'die Energie',ru:'энергия',ex:'Erneuerbare Energie.',cat:'general'},
+      {de:'die Macht',ru:'власть',ex:'Die Macht haben.',cat:'general'},
+      {de:'die Freiheit',ru:'свобода',ex:'Freiheit ist wichtig.',cat:'general'},
+      {de:'die Gleichheit',ru:'равенство',ex:'Gleichheit für alle.',cat:'general'},
+      {de:'die Gerechtigkeit',ru:'справедливость',ex:'Gerechtigkeit walten.',cat:'general'},
+      {de:'die Wahrheit',ru:'правда',ex:'Die Wahrheit sagen.',cat:'general'},
+      {de:'die Lüge',ru:'ложь',ex:'Das ist eine Lüge.',cat:'general'},
+      {de:'die Hoffnung',ru:'надежда',ex:'Hoffnung haben.',cat:'general'},
+      {de:'die Angst',ru:'страх',ex:'Angst haben.',cat:'general'},
+      {de:'die Freude',ru:'радость',ex:'Freude empfinden.',cat:'general'},
+      {de:'die Trauer',ru:'горе',ex:'Trauer tragen.',cat:'general'},
+      {de:'die Liebe',ru:'любовь',ex:'Liebe fühlen.',cat:'general'},
+      {de:'der Hass',ru:'ненависть',ex:'Hass empfinden.',cat:'general'},
+      {de:'die Ruhe',ru:'покой',ex:'Ruhe finden.',cat:'general'},
+      {de:'die Eile',ru:'спешка',ex:'In Eile sein.',cat:'general'},
+      {de:'die Geduld',ru:'терпение',ex:'Geduld haben.',cat:'general'},
+      {de:'die Ungeduld',ru:'нетерпение',ex:'Ungeduld zeigen.',cat:'general'},
+      {de:'die Ruhe',ru:'тишина',ex:'Ruhe bewahren.',cat:'general'},
+      {de:'der Lärm',ru:'шум',ex:'Lärm machen.',cat:'general'},
+      {de:'die Ordnung',ru:'порядок',ex:'Ordnung halten.',cat:'general'},
+      {de:'das Chaos',ru:'хаос',ex:'Chaos stiften.',cat:'general'},
+      {de:'die Regel',ru:'правило',ex:'Regeln befolgen.',cat:'general'},
+      {de:'die Ausnahme',ru:'исключение',ex:'Eine Ausnahme machen.',cat:'general'},
+      {de:'die Norm',ru:'норма',ex:'Das ist die Norm.',cat:'general'},
+      {de:'die Abweichung',ru:'отклонение',ex:'Eine Abweichung feststellen.',cat:'general'},
+      {de:'die Tradition',ru:'традиция',ex:'Traditionen pflegen.',cat:'general'},
+      {de:'die Moderne',ru:'современность',ex:'Die Moderne umarmen.',cat:'general'},
+      {de:'die Kultur',ru:'культура',ex:'Kultur erleben.',cat:'general'},
+      {de:'die Kunst',ru:'искусство',ex:'Kunst schätzen.',cat:'general'},
+      {de:'die Musik',ru:'музыка',ex:'Musik hören.',cat:'general'},
+      {de:'die Literatur',ru:'литература',ex:'Literatur lesen.',cat:'general'},
+      {de:'die Wissenschaft',ru:'наука',ex:'Wissenschaft betreiben.',cat:'general'},
+      {de:'die Technik',ru:'техника',ex:'Technik anwenden.',cat:'general'},
+      {de:'die Wirtschaft',ru:'экономика',ex:'Wirtschaft studieren.',cat:'general'},
+      {de:'die Politik',ru:'политика',ex:'Politik machen.',cat:'general'},
+      {de:'die Gesellschaft',ru:'общество',ex:'Gesellschaft formen.',cat:'general'},
+      {de:'die Familie',ru:'семья',ex:'Familie unterstützen.',cat:'general'},
+      {de:'die Freundschaft',ru:'дружба',ex:'Freundschaft pflegen.',cat:'general'},
+      {de:'die Beziehung',ru:'отношения',ex:'Beziehungen aufbauen.',cat:'general'},
+      {de:'die Ehe',ru:'брак',ex:'Ehe schließen.',cat:'general'},
+      {de:'die Scheidung',ru:'развод',ex:'Scheidung einreichen.',cat:'general'},
+      {de:'die Geburt',ru:'рождение',ex:'Geburt feiern.',cat:'general'},
+      {de:'der Tod',ru:'смерть',ex:'Tod akzeptieren.',cat:'general'},
+      {de:'das Leben',ru:'жизнь',ex:'Leben genießen.',cat:'general'},
+    ],
+    quiz:[
+      {q:'die Möglichkeit',opts:['невозможность','возможность','реальность','ситуация'],a:1},
+      {q:'der Erfolg',opts:['неудача','успех','начало','конец'],a:1},
+    ]
+  },
+];
+
+const SPEC_VOCAB = {
+  it: [
+    {de:'das Netzwerk',ru:'сеть',ex:'Das Netzwerk ist ausgefallen.',cat:'IT'},
+    {de:'der Server',ru:'сервер',ex:'Der Server wird neu gestartet.',cat:'IT'},
+    {de:'die Firewall',ru:'брандмауэр',ex:'Die Firewall blockiert die Verbindung.',cat:'IT'},
+    {de:'die Sicherung',ru:'резервная копия / бэкап',ex:'Bitte erstellen Sie eine Sicherung.',cat:'IT'},
+    {de:'das Betriebssystem',ru:'операционная система',ex:'Das Betriebssystem muss aktualisiert werden.',cat:'IT'},
+    {de:'der Benutzer',ru:'пользователь',ex:'Der Benutzer hat kein Kennwort.',cat:'IT'},
+    {de:'das Kennwort',ru:'пароль',ex:'Ihr Kennwort ist abgelaufen.',cat:'IT'},
+    {de:'die Störung',ru:'сбой / неполадка',ex:'Es gibt eine Störung im System.',cat:'IT'},
+    {de:'der Zugriff',ru:'доступ',ex:'Der Zugriff wurde verweigert.',cat:'IT'},
+    {de:'die Verschlüsselung',ru:'шифрование',ex:'Wir nutzen starke Verschlüsselung.',cat:'IT'},
+    {de:'das Update',ru:'обновление',ex:'Das Update wird installiert.',cat:'IT'},
+    {de:'die Verbindung',ru:'соединение / подключение',ex:'Die Verbindung ist unterbrochen.',cat:'IT'},
+    {de:'die Datenbank',ru:'база данных',ex:'Die Datenbank ist beschädigt.',cat:'IT'},
+    {de:'der Code',ru:'код',ex:'Der Code muss überprüft werden.',cat:'IT'},
+    {de:'der Fehler',ru:'ошибка',ex:'Es gibt einen Fehler im Programm.',cat:'IT'},
+    {de:'die Hardware',ru:'аппаратное обеспечение',ex:'Die Hardware ist veraltet.',cat:'IT'},
+    {de:'die Software',ru:'программное обеспечение',ex:'Die Software läuft langsam.',cat:'IT'},
+    {de:'der Support',ru:'поддержка',ex:'Kontaktieren Sie den Support.',cat:'IT'},
+    {de:'die Cloud',ru:'облако',ex:'Daten in der Cloud speichern.',cat:'IT'},
+    {de:'das Backup',ru:'резервная копия',ex:'Machen Sie ein Backup.',cat:'IT'},
+  ],
+  med: [
+    {de:'der Patient',ru:'пациент',ex:'Der Patient hat Fieber.',cat:'Медицина'},
+    {de:'die Diagnose',ru:'диагноз',ex:'Die Diagnose lautet: Grippe.',cat:'Медицина'},
+    {de:'das Rezept',ru:'рецепт',ex:'Ich brauche ein Rezept.',cat:'Медицина'},
+    {de:'der Blutdruck',ru:'кровяное давление',ex:'Ihr Blutdruck ist zu hoch.',cat:'Медицина'},
+    {de:'die Tablette',ru:'таблетка',ex:'Nehmen Sie diese Tablette.',cat:'Медицина'},
+    {de:'die Untersuchung',ru:'обследование',ex:'Eine Untersuchung ist notwendig.',cat:'Медицина'},
+    {de:'das Krankenhaus',ru:'больница',ex:'Er ist im Krankenhaus.',cat:'Медицина'},
+    {de:'der Arzt',ru:'врач',ex:'Der Arzt untersucht mich.',cat:'Медицина'},
+    {de:'die Krankenschwester',ru:'медсестра',ex:'Die Krankenschwester hilft.',cat:'Медицина'},
+    {de:'die Operation',ru:'операция',ex:'Die Operation war erfolgreich.',cat:'Медицина'},
+    {de:'die Therapie',ru:'терапия',ex:'Die Therapie beginnt morgen.',cat:'Медицина'},
+    {de:'das Symptom',ru:'симптом',ex:'Welche Symptome haben Sie?',cat:'Медицина'},
+    {de:'die Behandlung',ru:'лечение',ex:'Die Behandlung dauert lange.',cat:'Медицина'},
+    {de:'die Impfung',ru:'прививка',ex:'Die Impfung schützt.',cat:'Медицина'},
+    {de:'der Notfall',ru:'экстренный случай',ex:'Das ist ein Notfall.',cat:'Медицина'},
+  ],
+  law: [
+    {de:'der Vertrag',ru:'договор',ex:'Der Vertrag ist ungültig.',cat:'Право'},
+    {de:'das Gericht',ru:'суд',ex:'Der Fall geht vor Gericht.',cat:'Право'},
+    {de:'die Klage',ru:'иск',ex:'Eine Klage wurde eingereicht.',cat:'Право'},
+    {de:'der Anwalt',ru:'адвокат',ex:'Mein Anwalt prüft den Vertrag.',cat:'Право'},
+    {de:'das Gesetz',ru:'закон',ex:'Das Gesetz ist eindeutig.',cat:'Право'},
+    {de:'die Haftung',ru:'ответственность',ex:'Die Haftung liegt beim Arbeitgeber.',cat:'Право'},
+    {de:'der Richter',ru:'судья',ex:'Der Richter entscheidet.',cat:'Право'},
+    {de:'die Strafe',ru:'наказание',ex:'Die Strafe ist hoch.',cat:'Право'},
+    {de:'das Urteil',ru:'приговор',ex:'Das Urteil ist gefallen.',cat:'Право'},
+    {de:'die Rechte',ru:'права',ex:'Ihre Rechte sind geschützt.',cat:'Право'},
+    {de:'die Pflicht',ru:'обязанность',ex:'Das ist Ihre Pflicht.',cat:'Право'},
+    {de:'der Zeuge',ru:'свидетель',ex:'Der Zeuge sagt aus.',cat:'Право'},
+    {de:'der Beweis',ru:'доказательство',ex:'Es gibt keine Beweise.',cat:'Право'},
+    {de:'die Verhandlung',ru:'переговоры / слушание',ex:'Die Verhandlung beginnt.',cat:'Право'},
+  ],
+  fin: [
+    {de:'die Rechnung',ru:'счёт / счёт-фактура',ex:'Bitte bezahlen Sie die Rechnung.',cat:'Финансы'},
+    {de:'der Kredit',ru:'кредит',ex:'Ich beantrage einen Kredit.',cat:'Финансы'},
+    {de:'die Investition',ru:'инвестиция',ex:'Eine riskante Investition.',cat:'Финансы'},
+    {de:'der Umsatz',ru:'оборот / выручка',ex:'Der Umsatz ist gestiegen.',cat:'Финансы'},
+    {de:'das Budget',ru:'бюджет',ex:'Das Budget wurde überschritten.',cat:'Финансы'},
+    {de:'die Steuer',ru:'налог',ex:'Die Steuer muss bezahlt werden.',cat:'Финансы'},
+    {de:'die Bank',ru:'банк',ex:'Ich gehe zur Bank.',cat:'Финансы'},
+    {de:'das Konto',ru:'счёт',ex:'Mein Konto ist leer.',cat:'Финансы'},
+    {de:'die Zinsen',ru:'проценты',ex:'Die Zinsen sind hoch.',cat:'Финансы'},
+    {de:'die Versicherung',ru:'страховка',ex:'Die Versicherung deckt alles.',cat:'Финансы'},
+    {de:'die Dividende',ru:'дивиденд',ex:'Die Dividende wird ausgezahlt.',cat:'Финансы'},
+    {de:'der Gewinn',ru:'прибыль',ex:'Der Gewinn ist hoch.',cat:'Финансы'},
+    {de:'der Verlust',ru:'убыток',ex:'Wir haben Verluste.',cat:'Финансы'},
+  ],
+  eng: [
+    {de:'die Maschine',ru:'машина / станок',ex:'Die Maschine ist defekt.',cat:'Инженерия'},
+    {de:'der Antrieb',ru:'привод / двигатель',ex:'Der Antrieb funktioniert nicht.',cat:'Инженерия'},
+    {de:'die Wartung',ru:'техническое обслуживание',ex:'Wartung ist fällig.',cat:'Инженерия'},
+    {de:'der Werkstoff',ru:'материал',ex:'Der richtige Werkstoff ist wichtig.',cat:'Инженерия'},
+    {de:'die Toleranz',ru:'допуск',ex:'Die Toleranz beträgt 0,1 mm.',cat:'Инженерия'},
+    {de:'der Plan',ru:'план / чертёж',ex:'Der Plan ist fertig.',cat:'Инженерия'},
+    {de:'die Konstruktion',ru:'конструкция',ex:'Die Konstruktion ist stabil.',cat:'Инженерия'},
+    {de:'der Test',ru:'тест',ex:'Der Test war erfolgreich.',cat:'Инженерия'},
+    {de:'die Sicherheit',ru:'безопасность',ex:'Sicherheit geht vor.',cat:'Инженерия'},
+    {de:'die Energie',ru:'энергия',ex:'Erneuerbare Energie.',cat:'Инженерия'},
+    {de:'der Prozess',ru:'процесс',ex:'Der Prozess läuft.',cat:'Инженерия'},
+  ],
+  biz: [
+    {de:'die Verhandlung',ru:'переговоры',ex:'Die Verhandlung war erfolgreich.',cat:'Бизнес'},
+    {de:'das Angebot',ru:'предложение / оффер',ex:'Wir schicken ein Angebot.',cat:'Бизнес'},
+    {de:'der Kunde',ru:'клиент',ex:'Der Kunde ist zufrieden.',cat:'Бизнес'},
+    {de:'die Präsentation',ru:'презентация',ex:'Die Präsentation beginnt um 10 Uhr.',cat:'Бизнес'},
+    {de:'der Gewinn',ru:'прибыль',ex:'Der Gewinn ist gestiegen.',cat:'Бизнес'},
+    {de:'die Besprechung',ru:'совещание',ex:'Die Besprechung dauert eine Stunde.',cat:'Бизнес'},
+    {de:'der Markt',ru:'рынок',ex:'Der Markt ist groß.',cat:'Бизнес'},
+    {de:'die Strategie',ru:'стратегия',ex:'Eine neue Strategie.',cat:'Бизнес'},
+    {de:'der Vertrag',ru:'контракт',ex:'Der Vertrag ist unterschrieben.',cat:'Бизнес'},
+    {de:'die Partnerschaft',ru:'партнёрство',ex:'Eine Partnerschaft eingehen.',cat:'Бизнес'},
+    {de:'das Ziel',ru:'цель',ex:'Das Ziel erreichen.',cat:'Бизнес'},
+    {de:'der Erfolg',ru:'успех',ex:'Das ist ein Erfolg.',cat:'Бизнес'},
+  ],
+};
+
+const SPEC_LESSONS = {
+  it: [
+    { id:'it1', title:'IT: Базовая терминология', de:'IT-Grundbegriffe', color:'c-blue', type:'IT A1',
+      words: SPEC_VOCAB.it.slice(0,6),
+      quiz:[
+        {q:'das Netzwerk',opts:['сервер','сеть','пароль','доступ'],a:1},
+        {q:'das Kennwort',opts:['доступ','шифрование','пароль','обновление'],a:2},
+      ]
+    },
+    { id:'it2', title:'IT: Безопасность и доступ', de:'Sicherheit & Zugriff', color:'c-purple', type:'IT A2',
+      words: SPEC_VOCAB.it.slice(6),
+      quiz:[
+        {q:'die Verschlüsselung',opts:['шифрование','брандмауэр','бэкап','доступ'],a:0},
+        {q:'der Zugriff',opts:['пользователь','доступ','обновление','соединение'],a:1},
+      ]
+    },
+  ],
+  med: [
+    { id:'med1', title:'Медицина: Базовые термины', de:'Medizinische Grundbegriffe', color:'c-teal', type:'Медицина A1',
+      words: SPEC_VOCAB.med,
+      quiz:[
+        {q:'die Diagnose',opts:['рецепт','диагноз','лекарство','больница'],a:1},
+        {q:'das Krankenhaus',opts:['аптека','больница','клиника','кабинет'],a:1},
+      ]
+    },
+  ],
+  fin: [
+    { id:'fin1', title:'Финансы: Основные понятия', de:'Finanzbegriffe', color:'c-gold', type:'Финансы A1',
+      words: SPEC_VOCAB.fin,
+      quiz:[
+        {q:'die Steuer',opts:['кредит','бюджет','налог','оборот'],a:2},
+        {q:'der Umsatz',opts:['прибыль','расход','оборот','налог'],a:2},
+      ]
+    },
+  ],
+  biz: [
+    { id:'biz1', title:'Бизнес: Деловой немецкий', de:'Geschäftsdeutsch', color:'c-orange', type:'Бизнес A1',
+      words: SPEC_VOCAB.biz,
+      quiz:[
+        {q:'die Verhandlung',opts:['презентация','переговоры','клиент','прибыль'],a:1},
+        {q:'der Gewinn',opts:['расход','прибыль','клиент','оффер'],a:1},
+      ]
+    },
+  ],
+  law: [
+    { id:'law1', title:'Право: Юридические термины', de:'Rechtsbegriffe', color:'c-purple', type:'Право A1',
+      words: SPEC_VOCAB.law,
+      quiz:[
+        {q:'der Vertrag',opts:['суд','иск','договор','закон'],a:2},
+        {q:'die Haftung',opts:['адвокат','закон','ответственность','иск'],a:2},
+      ]
+    },
+  ],
+  eng: [
+    { id:'eng1', title:'Инженерия: Техническая терминология', de:'Technische Begriffe', color:'c-green', type:'Инженерия A1',
+      words: SPEC_VOCAB.eng,
+      quiz:[
+        {q:'die Wartung',opts:['привод','допуск','обслуживание','материал'],a:2},
+        {q:'die Toleranz',opts:['инструмент','допуск','скорость','вес'],a:1},
+      ]
+    },
+  ],
+};
+
+const PHRASES = [
+  {de:'Guten Morgen!',ru:'Доброе утро!',cat:'Приветствие'},
+  {de:'Auf Wiedersehen!',ru:'До свидания!',cat:'Прощание'},
+  {de:'Danke schön!',ru:'Большое спасибо!',cat:'Вежливость'},
+  {de:'Entschuldigung!',ru:'Извините!',cat:'Вежливость'},
+  {de:'Ich verstehe nicht.',ru:'Я не понимаю.',cat:'Общение'},
+  {de:'Können Sie das wiederholen?',ru:'Можете повторить?',cat:'Общение'},
+  {de:'Wie viel kostet das?',ru:'Сколько стоит?',cat:'Магазин'},
+  {de:'Wo ist...?',ru:'Где находится...?',cat:'Навигация'},
+  {de:'Ich lerne Deutsch.',ru:'Я учу немецкий.',cat:'Учёба'},
+  {de:'Noch einmal, bitte.',ru:'Ещё раз, пожалуйста.',cat:'Учёба'},
+  {de:'Das ist richtig.',ru:'Это правильно.',cat:'Общение'},
+  {de:'Ich brauche Hilfe.',ru:'Мне нужна помощь.',cat:'Общение'},
+];
+
+</script>
+<script>
+// Source: js\config.js
+window.DEUTSCH_CONFIG = {
+  staticMode: true,
+  apiUrl: '',
+};
+
+</script>
+<script>
+// Source: js\state.js
+// ═══════════════════════════════════
+// STATE — localStorage
+// ═══════════════════════════════════
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const BACKEND_CONFIG = window.DEUTSCH_CONFIG || {};
+const CONFIG_API_URL = String(BACKEND_CONFIG.apiUrl || '').replace(/\/$/, '');
+
+const DEFAULT_STATE = {
+  name: 'Азамат',
+  specs: [],
+  level: 'A1',
+  levelScore: 0,
+  completedLessons: [],
+  hwDone: {},
+  hwAnswers: {},
+  onboardingDone: false,
+  points: 0,
+  xp: 0,
+  streakCount: 0,
+  lastStudyDate: '',
+  dailyStats: {},
+  achievements: [],
+  aiCleanStreak: 0,
+  theme: 'dark',
+  badges: [],
+  vocabProgress: {}, // {word: {level: 0, nextReview: '2024-01-01'}}
+  staticMode: !CONFIG_API_URL,
+  apiUrl: CONFIG_API_URL, // Optional backend API URL. Empty means static-only release.
+  token: null, // JWT token, only used when backend is connected.
+};
+
+function readJSONKey(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function readNumberKey(keys, fallback = 0) {
+  for (const key of keys) {
+    const raw = localStorage.getItem(key);
+    if (raw !== null && raw !== '') {
+      const value = Number(raw);
+      if (Number.isFinite(value)) return value;
+    }
+  }
+  return fallback;
+}
+
+function normalizeState(state) {
+  const next = { ...DEFAULT_STATE, ...(state || {}) };
+  next.specs = Array.isArray(next.specs) ? next.specs : [];
+  next.completedLessons = Array.isArray(next.completedLessons) ? next.completedLessons : [];
+  next.hwDone = next.hwDone && typeof next.hwDone === 'object' ? next.hwDone : {};
+  next.hwAnswers = next.hwAnswers && typeof next.hwAnswers === 'object' ? next.hwAnswers : {};
+  next.badges = Array.isArray(next.badges) ? next.badges : [];
+  next.achievements = Array.isArray(next.achievements) ? next.achievements : [];
+  next.dailyStats = next.dailyStats && typeof next.dailyStats === 'object' ? next.dailyStats : {};
+  next.vocabProgress = next.vocabProgress && typeof next.vocabProgress === 'object' ? next.vocabProgress : {};
+
+  const storedAchievements = readJSONKey('achievements', []);
+  next.achievements = [...new Set([
+    ...next.achievements,
+    ...next.badges,
+    ...(Array.isArray(storedAchievements) ? storedAchievements : []),
+  ])];
+  next.badges = [...next.achievements];
+
+  const storedXP = readNumberKey(['xp'], Number(next.xp || next.points || 0));
+  next.xp = Math.max(Number(next.xp || 0), Number(next.points || 0), storedXP);
+  next.points = next.xp;
+
+  const storedStreak = readNumberKey(['streakCount', 'streak'], Number(next.streakCount || 0));
+  next.streakCount = Math.max(0, storedStreak);
+  next.lastStudyDate = localStorage.getItem('lastStudyDate') || localStorage.getItem('lastDate') || next.lastStudyDate || '';
+  next.aiCleanStreak = Math.max(0, Number(next.aiCleanStreak || 0));
+  next.theme = localStorage.getItem('theme') || next.theme || 'dark';
+
+  if (CONFIG_API_URL && BACKEND_CONFIG.staticMode === false) {
+    next.staticMode = false;
+    next.apiUrl = CONFIG_API_URL;
+  } else {
+    next.staticMode = true;
+    next.apiUrl = '';
+    next.token = null;
+  }
+
+  return next;
+}
+
+function loadS() {
+  try {
+    return normalizeState(JSON.parse(localStorage.getItem('daz3') || 'null'));
+  } catch {
+    return normalizeState(null);
+  }
+}
+
+function syncContentStorage() {
+  if (typeof vocabularyData !== 'undefined') localStorage.setItem('vocabulary', JSON.stringify(vocabularyData));
+  if (typeof lessonsData !== 'undefined') localStorage.setItem('lessons', JSON.stringify(lessonsData));
+}
+
+function saveS(){
+  S.xp = Math.max(Number(S.xp || 0), Number(S.points || 0));
+  S.points = S.xp;
+  S.achievements = Array.isArray(S.achievements) ? S.achievements : [];
+  S.badges = [...S.achievements];
+  localStorage.setItem('daz3',JSON.stringify(S));
+  localStorage.setItem('xp', String(S.xp));
+  localStorage.setItem('streak', String(S.streakCount || 0));
+  localStorage.setItem('streakCount', String(S.streakCount || 0));
+  localStorage.setItem('lastDate', S.lastStudyDate || '');
+  localStorage.setItem('lastStudyDate', S.lastStudyDate || '');
+  localStorage.setItem('achievements', JSON.stringify(S.achievements));
+  localStorage.setItem('theme', S.theme || 'dark');
+  syncContentStorage();
+}
+
+let S = loadS();
+syncContentStorage();
+
+</script>
+<script>
+// Source: js\onboarding.js
+// ONBOARDING
+
+let ltIdx = 0;
+let ltScore = 0;
+let ltAnswered = false;
+let ltSession = [];
+
+function shuffleArray(items) {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function buildTestSession() {
+  return shuffleArray(LEVEL_TEST).map((question) => {
+    const opts = question.opts.map((text, idx) => ({
+      text,
+      isAnswer: idx === question.a,
+    }));
+    const shuffled = shuffleArray(opts);
+    return {
+      ...question,
+      opts: shuffled.map((item) => item.text),
+      a: shuffled.findIndex((item) => item.isAnswer),
+    };
+  });
+}
+
+function buildSpecGrid() {
+  const grid = document.getElementById('specGrid');
+  grid.innerHTML = '';
+  SPECIALIZATIONS.forEach((spec) => {
+    const card = document.createElement('div');
+    card.className = `spec-card${S.specs.includes(spec.id) ? ' sel' : ''}`;
+    card.id = `sc-${spec.id}`;
+    card.innerHTML = `
+      <div class="spec-icon">${spec.icon}</div>
+      <div class="spec-name">${spec.name}</div>
+      <div class="spec-desc">${spec.desc}</div>
+      <div class="spec-check">✓</div>
+    `;
+    card.onclick = () => {
+      if (S.specs.includes(spec.id)) S.specs = S.specs.filter((item) => item !== spec.id);
+      else S.specs.push(spec.id);
+      card.classList.toggle('sel', S.specs.includes(spec.id));
+    };
+    grid.appendChild(card);
+  });
+}
+
+function obNext(step) {
+  if (step === 2 && !document.getElementById('nameInput').value.trim()) {
+    toast('Введи своё имя!');
+    return;
+  }
+  if (step === 2) {
+    S.name = document.getElementById('nameInput').value.trim() || 'Азамат';
+    saveS();
+  }
+  if (step === 3 && S.specs.length === 0) {
+    toast('Выбери хотя бы одну специальность!');
+    return;
+  }
+  document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
+  document.getElementById(`ob${step}`).classList.add('on');
+  if (step === 2) buildSpecGrid();
+}
+
+function startLevelTest() {
+  ltIdx = 0;
+  ltScore = 0;
+  ltAnswered = false;
+  ltSession = buildTestSession();
+  document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
+  document.getElementById('ob3b').classList.add('on');
+  renderLTQ();
+}
+
+function renderLTQ() {
+  if (ltIdx >= ltSession.length) {
+    showLTResult();
+    return;
+  }
+  const question = ltSession[ltIdx];
+  document.getElementById('ltNum').textContent = `Вопрос ${ltIdx + 1} из ${ltSession.length}`;
+  document.getElementById('ltBar').style.width = `${(ltIdx / ltSession.length) * 100}%`;
+  document.getElementById('ltWord').textContent = question.q;
+  document.getElementById('ltNext').style.display = 'none';
+  ltAnswered = false;
+
+  const optsWrap = document.getElementById('ltOpts');
+  optsWrap.innerHTML = '';
+  question.opts.forEach((option, index) => {
+    const btn = document.createElement('button');
+    btn.className = 'lt-opt';
+    btn.textContent = option;
+    btn.onclick = () => answerLT(index);
+    optsWrap.appendChild(btn);
+  });
+}
+
+function answerLT(selected) {
+  if (ltAnswered) return;
+  ltAnswered = true;
+  const question = ltSession[ltIdx];
+  document.querySelectorAll('.lt-opt').forEach((button, index) => {
+    button.classList.add(index === question.a ? 'correct' : 'wrong');
+    button.disabled = true;
+  });
+  if (selected === question.a) ltScore += 1;
+  document.getElementById('ltNext').style.display = 'inline-flex';
+}
+
+function ltNextQ() {
+  ltIdx += 1;
+  renderLTQ();
+}
+
+function showLTResult() {
+  const score = ltScore;
+  let level = 'A1';
+  let desc = '';
+
+  if (score <= 3) {
+    level = 'A1';
+    desc = 'Ты в самом начале пути. Мы начнём с основ: приветствия, базовых слов и простых конструкций.';
+  } else if (score <= 5) {
+    level = 'A2';
+    desc = 'Базовый уровень уже есть. Дальше усилим бытовой немецкий, понимание речи и короткие диалоги.';
+  } else if (score <= 7) {
+    level = 'B1';
+    desc = 'Хорошая база. Теперь фокус на более длинных фразах, уверенном общении и профессиональной лексике.';
+  } else {
+    level = 'B2';
+    desc = 'Уровень уже крепкий. Можно больше работать над беглостью, нюансами и рабочими сценариями.';
+  }
+
+  S.level = level;
+  S.levelScore = score;
+  saveS();
+
+  document.getElementById('resultScore').textContent = score;
+  document.getElementById('resultLevel').textContent = `Уровень: ${level}`;
+  document.getElementById('resultDesc').textContent = desc;
+  const specNames = SPECIALIZATIONS
+    .filter((item) => S.specs.includes(item.id))
+    .map((item) => item.name)
+    .join(', ') || 'Общий';
+  const recommended = (typeof REQUIRED_LESSONS !== 'undefined' && REQUIRED_LESSONS[0]) || (typeof APP_LESSONS !== 'undefined' && APP_LESSONS[0]) || GENERAL_LESSONS[0];
+  document.getElementById('planPreview').innerHTML = `
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Твой план будет включать:</div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text);">
+      ✦ Общий немецкий с уровня <strong style="color:var(--gold);">${level}</strong><br>
+      ✦ Профессиональная лексика: <strong style="color:var(--gold);">${specNames}</strong><br>
+      ✦ Домашние задания под каждый урок<br>
+      ✦ Разговорник и словарь по специальности
+    </div>
+    <div style="margin-top:18px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Рекомендуем начать с:</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;">${recommended.title}</div>
+      <button class="btn btn-gold btn-sm" onclick="finishOnboarding('${recommended.id}')">Перейти к уроку →</button>
+    </div>
+  `;
+  document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
+  document.getElementById('ob4').classList.add('on');
+}
+
+function finishOnboarding(openLessonId) {
+  S.onboardingDone = true;
+  saveS();
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('appHdr').style.display = '';
+  document.getElementById('appNav').style.display = '';
+  document.getElementById('appMain').style.display = '';
+  initApp();
+  if (typeof checkAchievements === 'function') checkAchievements();
+  if (openLessonId) {
+    goPage('plan');
+    setTimeout(() => openLessonById(openLessonId), 50);
+  }
+}
+
+</script>
+<script>
+// Source: js\app.js
+// APP - navigation, dashboard, lessons, homework, vocab, sync
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) {
+    toast('Аудио не поддерживается в этом браузере');
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'de-DE';
+  speechSynthesis.speak(utterance);
+}
+
+function esc(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function avatarLetter(name) {
+  return (name || 'A').trim().slice(0, 1).toUpperCase() || 'A';
+}
+
+function hasBackend() {
+  return S.staticMode === false && !!S.apiUrl;
+}
+
+const XP_THRESHOLDS = [
+  { level: 'A1', xp: 0 },
+  { level: 'A2', xp: 200 },
+  { level: 'B1', xp: 500 },
+  { level: 'B2', xp: 1000 },
+  { level: 'C1', xp: 2000 },
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first_step', icon: '🌱', title: 'Первый шаг', desc: 'Пройти онбординг' },
+  { id: 'first_word', icon: '📖', title: 'Первое слово', desc: 'Выучить первое слово' },
+  { id: 'week_streak', icon: '🔥', title: 'Неделя подряд', desc: '7 дней стрика' },
+  { id: 'ten_lessons', icon: '🏆', title: '10 уроков', desc: 'Завершить 10 уроков' },
+  { id: 'polyglot', icon: '💬', title: 'Полиглот', desc: '10 реплик без ошибок' },
+  { id: 'expert', icon: '🧠', title: 'Знаток', desc: 'Выучить 50 слов' },
+];
+
+function normalizeWord(word) {
+  return {
+    de: word.de,
+    ru: word.ru,
+    ex: word.ex || word.example || '',
+    cat: word.cat || word.category || 'Everyday',
+    example: word.example || word.ex || '',
+    category: word.category || word.cat || 'Everyday',
+  };
+}
+
+function lessonWordsFor(lesson) {
+  if (Array.isArray(lesson.words) && lesson.words.length) return lesson.words.map(normalizeWord);
+  const all = (typeof vocabularyData !== 'undefined' ? vocabularyData : []).map(normalizeWord);
+  const categoryWords = all.filter((word) => word.cat === lesson.category);
+  if (lesson.id === 'lesson-greetings') return categoryWords.slice(0, 8);
+  if (lesson.id === 'lesson-numbers-time') return categoryWords.filter((word) => ['die Zeit', 'die Uhr', 'der Tag', 'die Woche', 'die Frage', 'die Antwort'].includes(word.de));
+  return categoryWords.slice(0, 8);
+}
+
+function normalizeLesson(lesson, index = 0) {
+  const quiz = (lesson.quiz || []).map((item) => ({
+    ...item,
+    q: item.q || item.question,
+    opts: item.opts || item.options || [],
+    a: Number.isInteger(item.a) ? item.a : item.correct,
+  }));
+  return {
+    ...lesson,
+    quiz,
+    words: lessonWordsFor(lesson),
+    de: lesson.de || (typeof lessonGermanTitles !== 'undefined' ? lessonGermanTitles[lesson.id] : '') || lesson.title,
+    color: lesson.color || (typeof lessonColors !== 'undefined' ? lessonColors[index % lessonColors.length] : 'c-gold'),
+    type: lesson.type || `${lesson.category || 'Everyday'} ${lesson.level || 'A1'}`,
+  };
+}
+
+const REQUIRED_LESSONS = typeof lessonsData !== 'undefined' ? lessonsData.map(normalizeLesson) : [];
+const APP_LESSONS = REQUIRED_LESSONS.length
+  ? [...REQUIRED_LESSONS, ...GENERAL_LESSONS.filter((lesson) => !['g1', 'g2'].includes(lesson.id))]
+  : GENERAL_LESSONS;
+
+function uniqueLessons(list) {
+  const seen = new Set();
+  return list.filter((lesson) => {
+    if (seen.has(lesson.id)) return false;
+    seen.add(lesson.id);
+    return true;
+  });
+}
+
+function getAllSpecLessons() {
+  return S.specs.flatMap((spec) => SPEC_LESSONS[spec] || []);
+}
+
+function getAllLessonsForProgress() {
+  return uniqueLessons([...APP_LESSONS, ...GENERAL_LESSONS, ...getAllSpecLessons()]);
+}
+
+function getCompletedWordCount() {
+  return getAllLessonsForProgress()
+    .filter((lesson) => S.completedLessons.includes(lesson.id))
+    .reduce((sum, lesson) => sum + lesson.words.length, 0);
+}
+
+function getLearnedWordSet() {
+  const learned = new Set();
+  getAllLessonsForProgress()
+    .filter((lesson) => S.completedLessons.includes(lesson.id))
+    .forEach((lesson) => lesson.words.forEach((word) => learned.add(word.de)));
+  Object.entries(S.vocabProgress || {}).forEach(([word, progress]) => {
+    if (progress && progress.level > 0) learned.add(word);
+  });
+  return learned;
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function dayDiff(fromDate, toDate) {
+  const from = new Date(`${fromDate}T00:00:00`);
+  const to = new Date(`${toDate}T00:00:00`);
+  return Math.round((to - from) / 86400000);
+}
+
+function getTodayStats() {
+  const key = todayKey();
+  S.dailyStats = S.dailyStats && typeof S.dailyStats === 'object' ? S.dailyStats : {};
+  S.dailyStats[key] = S.dailyStats[key] || { words: 0, lessons: 0, celebrated: false };
+  return S.dailyStats[key];
+}
+
+function refreshStreakForMissedDay() {
+  const today = todayKey();
+  if (S.lastStudyDate && dayDiff(S.lastStudyDate, today) > 1) {
+    S.streakCount = 0;
+    saveS();
+  }
+}
+
+function recordStudyActivity() {
+  const today = todayKey();
+  if (S.lastStudyDate === today) return;
+  if (S.lastStudyDate && dayDiff(S.lastStudyDate, today) === 1) S.streakCount = (S.streakCount || 0) + 1;
+  else S.streakCount = 1;
+  S.lastStudyDate = today;
+  saveS();
+}
+
+function addXP(amount, reason = '', anchor = null) {
+  S.xp = Number(S.xp || S.points || 0) + amount;
+  S.points = S.xp;
+  saveS();
+  if (anchor) showXPFloating(anchor, amount);
+  updateHeaderLevel();
+  checkAchievements();
+  return S.xp;
+}
+
+function getXPLevelInfo() {
+  const xp = Number(S.xp || S.points || 0);
+  let current = XP_THRESHOLDS[0];
+  let next = XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
+  for (let i = 0; i < XP_THRESHOLDS.length; i += 1) {
+    if (xp >= XP_THRESHOLDS[i].xp) {
+      current = XP_THRESHOLDS[i];
+      next = XP_THRESHOLDS[i + 1] || XP_THRESHOLDS[i];
+    }
+  }
+  const span = Math.max(next.xp - current.xp, 1);
+  const progress = current === next ? 100 : Math.max(0, Math.min(100, ((xp - current.xp) / span) * 100));
+  return { xp, current, next, progress };
+}
+
+function updateHeaderLevel() {
+  const levelInfo = getXPLevelInfo();
+  const level = levelInfo.current.level;
+  S.level = S.level || level;
+  const hdrLevel = document.getElementById('hdrLevel');
+  if (hdrLevel) hdrLevel.textContent = level;
+}
+
+function renderKPI(id, value, emptyText) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (value > 0) {
+    el.textContent = value;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = emptyText;
+    el.classList.add('empty');
+  }
+}
+
+function fireConfetti() {
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 90, spread: 70, origin: { y: 0.18 } });
+  }
+}
+
+function showAchievementPopup(item) {
+  const popup = document.createElement('div');
+  popup.className = 'achievement-popup';
+  popup.textContent = `Новое достижение! ${item.icon} ${item.title}`;
+  document.body.appendChild(popup);
+  requestAnimationFrame(() => popup.classList.add('on'));
+  fireConfetti();
+  setTimeout(() => popup.classList.remove('on'), 3000);
+  setTimeout(() => popup.remove(), 3400);
+}
+
+function checkAchievements() {
+  const owned = new Set(S.achievements || []);
+  const learnedWords = getLearnedWordSet().size;
+  const checks = {
+    first_step: !!S.onboardingDone,
+    first_word: learnedWords >= 1,
+    week_streak: (S.streakCount || 0) >= 7,
+    ten_lessons: S.completedLessons.length >= 10,
+    polyglot: (S.aiCleanStreak || 0) >= 10,
+    expert: learnedWords >= 50,
+  };
+  ACHIEVEMENTS.forEach((item) => {
+    if (checks[item.id] && !owned.has(item.id)) {
+      owned.add(item.id);
+      S.achievements = [...owned];
+      saveS();
+      showAchievementPopup(item);
+    }
+  });
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const grid = document.getElementById('achievementsGrid');
+  if (!grid) return;
+  const owned = new Set(S.achievements || []);
+  grid.innerHTML = ACHIEVEMENTS.map((item) => `
+    <div class="ach-badge${owned.has(item.id) ? ' got' : ''}">
+      <div class="ach-icon">${item.icon}</div>
+      <div class="ach-title">${item.title}</div>
+      <div class="ach-desc">${item.desc}</div>
+    </div>
+  `).join('');
+}
+
+function updateDailyGoal(type) {
+  const stats = getTodayStats();
+  if (type === 'word') stats.words = Math.min(10, (stats.words || 0) + 1);
+  if (type === 'lesson') stats.lessons = Math.min(1, (stats.lessons || 0) + 1);
+  const complete = stats.words >= 10 || stats.lessons >= 1;
+  if (complete && !stats.celebrated) {
+    stats.celebrated = true;
+    setTimeout(fireConfetti, 150);
+  }
+  saveS();
+}
+
+function renderDailyGoal() {
+  const el = document.getElementById('dailyGoal');
+  if (!el) return;
+  const stats = getTodayStats();
+  const wordProgress = Math.min(100, ((stats.words || 0) / 10) * 100);
+  const lessonProgress = Math.min(100, (stats.lessons || 0) * 100);
+  const progress = Math.max(wordProgress, lessonProgress);
+  const done = progress >= 100;
+  const wordsLabel = stats.words ? `${stats.words}/10 слов` : 'слова ждут';
+  const lessonLabel = stats.lessons ? '1/1 урок' : 'урок ждёт';
+  const valueText = (stats.words || stats.lessons)
+    ? `${wordsLabel} · ${lessonLabel}`
+    : 'Начни урок или карточки 👇';
+  el.classList.toggle('done', done);
+  el.innerHTML = `
+    <div class="daily-head">
+      <span>Цель на сегодня</span>
+      <span class="daily-value">${valueText}</span>
+    </div>
+    <div class="daily-bar"><div class="daily-fill" style="width:${progress}%"></div></div>
+    <div class="daily-copy" style="margin-top:10px;">${done ? 'Цель выполнена. Отличный темп!' : 'Выучи 10 слов или заверши 1 урок, чтобы закрыть день.'}</div>
+  `;
+}
+
+function showXPFloating(anchor, amount) {
+  const target = anchor.closest ? anchor.closest('.rep-card') || anchor : anchor;
+  if (!target) return;
+  const float = document.createElement('div');
+  float.className = 'xp-float';
+  float.textContent = `+${amount} XP`;
+  target.appendChild(float);
+  setTimeout(() => float.remove(), 1000);
+}
+
+function applyTheme(theme) {
+  S.theme = theme === 'light' ? 'light' : 'dark';
+  document.body.classList.toggle('dark', S.theme === 'dark');
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = S.theme === 'dark' ? '☀️' : '🌙';
+  saveS();
+}
+
+function toggleTheme() {
+  applyTheme(S.theme === 'dark' ? 'light' : 'dark');
+}
+
+function getProfileSummary() {
+  return {
+    lessons: S.completedLessons.length,
+    words: getCompletedWordCount(),
+    homework: Object.values(S.hwDone).filter(Boolean).length,
+    specs: SPECIALIZATIONS
+      .filter((item) => S.specs.includes(item.id))
+      .map((item) => item.name)
+      .join(', ') || 'Общий',
+  };
+}
+
+async function initApp() {
+  applyTheme(S.theme || 'dark');
+  refreshStreakForMissedDay();
+  document.getElementById('hdrAvatar').textContent = avatarLetter(S.name);
+  document.getElementById('hdrName').textContent = S.name || 'Azamat';
+  updateHeaderLevel();
+  document.getElementById('dName').textContent = S.name || 'Azamat';
+
+  const specLabel = SPECIALIZATIONS
+    .filter((item) => S.specs.includes(item.id))
+    .map((item) => `${item.icon} ${item.id.toUpperCase()}`)
+    .join(' · ') || 'Общий';
+  document.getElementById('dMeta').textContent = `уровень ${S.level} · ${specLabel}`;
+  document.getElementById('planSpecLabel').textContent = SPECIALIZATIONS
+    .filter((item) => S.specs.includes(item.id))
+    .map((item) => item.name)
+    .join(' · ') || 'Общий немецкий';
+
+  if (S.token && hasBackend()) {
+    await syncFromBackend();
+  } else if (!hasBackend() && S.token) {
+    S.token = null;
+    saveS();
+  }
+
+  updateDash();
+  renderPlan();
+  renderHW();
+  renderVocab();
+  renderPhrases();
+  renderLogin();
+  checkAchievements();
+}
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach((page) => page.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.remove('on'));
+  document.getElementById(`page-${name}`).classList.add('on');
+
+  const pages = ['dashboard', 'plan', 'homework', 'vocab', 'phrases', 'practice', 'repetition', 'login', 'settings'];
+  const idx = pages.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.nav-btn')[idx].classList.add('on');
+
+  if (name === 'practice') renderScenarios();
+  if (name === 'settings') renderSettings();
+  if (name === 'repetition') renderRepetition();
+  if (name === 'login') renderLogin();
+  window.scrollTo(0, 0);
+}
+
+function updateDash() {
+  refreshStreakForMissedDay();
+  const learnedWords = getLearnedWordSet().size;
+  const completedLessons = S.completedLessons.length;
+  const doneHW = Object.values(S.hwDone).filter(Boolean).length;
+  renderKPI('kpi-words', learnedWords, 'Начни первый урок, чтобы слова появились здесь 👇');
+  renderKPI('kpi-lessons', completedLessons, 'Открой урок ниже и заверши первый квиз 👇');
+  renderKPI('kpi-hw', doneHW, 'Сдай первое задание в разделе “Задания” 👇');
+  const streakEl = document.getElementById('kpi-streak');
+  streakEl.textContent = (S.streakCount || 0) > 0 ? `🔥 ${S.streakCount} дней подряд` : 'Заверши урок сегодня, чтобы зажечь серию 👇';
+  streakEl.classList.toggle('empty', !(S.streakCount > 0));
+
+  const levelInfo = getXPLevelInfo();
+  const xpPanel = document.getElementById('xpPanel');
+  if (xpPanel) {
+    xpPanel.innerHTML = `
+      <div class="xp-head">
+        <span>Прогресс уровня</span>
+        <span class="xp-value">${levelInfo.xp} XP</span>
+      </div>
+      <div class="xp-route">
+        <span>${levelInfo.current.level}</span>
+        <div class="xp-bar"><div class="xp-fill" style="width:${levelInfo.progress}%"></div></div>
+        <span>${levelInfo.next.level}</span>
+      </div>
+    `;
+  }
+  renderDailyGoal();
+  renderAchievements();
+
+  const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  const levelNames = {
+    A1: 'Начальный',
+    A2: 'Элементарный',
+    B1: 'Средний',
+    B2: 'Выше среднего',
+    C1: 'Продвинутый',
+    C2: 'Свободный',
+  };
+  const lt = document.getElementById('levelTrack');
+  lt.innerHTML = '';
+
+  levels.forEach((level) => {
+    const isCur = level === S.level;
+    const isDone = levels.indexOf(level) < levels.indexOf(S.level);
+    const item = document.createElement('div');
+    item.className = `lvl-item${isCur ? ' cur' : ''}${isDone ? ' done' : ''}`;
+    item.innerHTML = `
+      <div class="lvl-name">${level}</div>
+      <div class="lvl-sub">${levelNames[level]}</div>
+      <div class="lvl-prog">
+        <div class="lvl-prog-fill" style="width:${isDone ? 100 : isCur ? Math.round((S.completedLessons.length / Math.max(APP_LESSONS.length, 1)) * 100) : 0}%"></div>
+      </div>
+    `;
+    lt.appendChild(item);
+  });
+
+  const nextLesson = APP_LESSONS.find((lesson) => !S.completedLessons.includes(lesson.id));
+  const nextLessonEl = document.getElementById('nextLesson');
+  if (nextLesson) {
+    nextLessonEl.innerHTML = `
+      <div class="plan-card ${nextLesson.color}" style="max-width:420px;cursor:pointer;" onclick="openLessonById('${nextLesson.id}')">
+        <div class="plan-type">${nextLesson.type}</div>
+        <div class="plan-title">${nextLesson.title}</div>
+        <div class="plan-sub">${nextLesson.de} · ${nextLesson.words.length} слов</div>
+        <div class="plan-status cur">● Текущий</div>
+      </div>
+    `;
+  } else {
+    nextLessonEl.innerHTML = `<div style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:12px;">✓ Все общие уроки пройдены</div>`;
+  }
+
+  const pending = getHWList()
+    .filter((item) => !S.hwDone[item.id])
+    .sort((a, b) => new Date(a.due) - new Date(b.due));
+  const nextHW = document.getElementById('nextHW');
+  if (pending.length) {
+    const hw = pending[0];
+    nextHW.innerHTML = `
+      <div class="hw-card" style="max-width:520px;cursor:pointer;" onclick="goPage('homework')">
+        <div class="hw-meta">
+          <span class="hw-badge hw-b-${hw.type}">${HW_TYPE_LABELS[hw.type] || hw.type}</span>
+          <span class="hw-due">${fmtDue(hw.due)}</span>
+        </div>
+        <div class="hw-ttl">${hw.title}</div>
+        <div class="hw-dsc" style="margin-top:4px;">${hw.desc.slice(0, 120)}...</div>
+      </div>
+    `;
+  } else {
+    nextHW.innerHTML = `<div style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:12px;">✓ Все задания сданы</div>`;
+  }
+}
+
+function renderPlan() {
+  const generalGrid = document.getElementById('generalGrid');
+  generalGrid.innerHTML = '';
+
+  APP_LESSONS.forEach((lesson, index) => {
+    const done = S.completedLessons.includes(lesson.id);
+    const unlocked = done || index === 0 || S.completedLessons.includes(APP_LESSONS[index - 1]?.id);
+    const card = document.createElement('div');
+    card.className = `plan-card ${lesson.color}${unlocked ? '' : ' locked'}`;
+    card.innerHTML = `
+      <div class="plan-type">${lesson.type}</div>
+      <div class="plan-title">${lesson.title}</div>
+      <div class="plan-sub">${lesson.de}</div>
+      <div class="plan-chips">${lesson.words.slice(0, 3).map((word) => `<span class="chip">${word.de}</span>`).join('')}</div>
+      <div class="plan-status ${done ? 'done' : unlocked ? 'cur' : ''}">${done ? '✓ Готово' : unlocked ? '● Доступно' : 'Закрыто'}</div>
+    `;
+    if (unlocked) {
+      card.onclick = () => openLesson(lesson);
+    }
+    generalGrid.appendChild(card);
+  });
+
+  const specGrid = document.getElementById('specPlanGrid');
+  const specLabel = document.getElementById('specGridLabel');
+  const specLessons = getAllSpecLessons();
+  specGrid.innerHTML = '';
+
+  if (!specLessons.length) {
+    specLabel.style.display = 'none';
+    return;
+  }
+
+  specLabel.style.display = '';
+  specLabel.textContent = `Профессиональные темы: ${SPECIALIZATIONS.filter((item) => S.specs.includes(item.id)).map((item) => item.name).join(', ')}`;
+
+  specLessons.forEach((lesson) => {
+    const done = S.completedLessons.includes(lesson.id);
+    const card = document.createElement('div');
+    card.className = `plan-card ${lesson.color}`;
+    card.innerHTML = `
+      <div class="plan-type">${lesson.type}</div>
+      <div class="plan-title">${lesson.title}</div>
+      <div class="plan-sub">${lesson.de}</div>
+      <div class="plan-chips">${lesson.words.slice(0, 3).map((word) => `<span class="chip">${word.de}</span>`).join('')}</div>
+      <div class="plan-status ${done ? 'done' : 'cur'}">${done ? '✓ Готово' : '● Доступно'}</div>
+    `;
+    card.onclick = () => openLesson(lesson);
+    specGrid.appendChild(card);
+  });
+}
+
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
+
+function addD(days) {
+  const date = new Date(TODAY);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split('T')[0];
+}
+
+const HW_TYPE_LABELS = {
+  writing: 'Письмо',
+  translation: 'Перевод',
+  listening: 'Аудирование',
+  grammar: 'Грамматика',
+  reading: 'Чтение',
+};
+
+function fmtDue(dateString) {
+  const due = new Date(dateString);
+  due.setHours(0, 0, 0, 0);
+  const diff = Math.round((due - TODAY) / 86400000);
+  if (diff === 0) return 'Сегодня';
+  if (diff === 1) return 'Завтра';
+  if (diff === -1) return 'Вчера';
+  if (diff < 0) return `Просрочено (${Math.abs(diff)} дн.)`;
+  return `Через ${diff} дн.`;
+}
+
+function hwSt(hw) {
+  if (S.hwDone[hw.id]) return 'done';
+  const due = new Date(hw.due);
+  due.setHours(0, 0, 0, 0);
+  if (due < TODAY) return 'overdue';
+  if (due.getTime() === TODAY.getTime()) return 'today';
+  return 'pending';
+}
+
+function getHWList() {
+  const base = [
+    { id: 'hw1', type: 'writing', title: 'Напиши приветствие', due: addD(-2), desc: 'Напиши 5 предложений о себе по-немецки. Используй: Ich bin..., Mein Name ist..., Ich komme aus...' },
+    { id: 'hw2', type: 'translation', title: 'Переведи числа', due: addD(-1), desc: 'Переведи числа 1, 5, 10, 15 и 20 на немецкий язык.' },
+    { id: 'hw3', type: 'writing', title: 'Опиши предметы вокруг', due: addD(0), desc: 'Найди 5 предметов рядом и опиши их цвет по-немецки.' },
+    { id: 'hw4', type: 'grammar', title: 'Артикли der/die/das', due: addD(2), desc: 'Напиши 6 существительных с правильными артиклями.' },
+    { id: 'hw5', type: 'reading', title: 'Дневник на немецком', due: addD(4), desc: 'Напиши 3-5 предложений про сегодняшний день.' },
+    { id: 'hw6', type: 'listening', title: 'Немецкий алфавит', due: addD(3), desc: 'Прослушай немецкий алфавит и выпиши 5 слов на разные буквы.' },
+  ];
+
+  if (S.specs.includes('it')) {
+    base.push(
+      { id: 'hw_it1', type: 'translation', title: 'IT: Переведи термины', due: addD(5), desc: 'Переведи на немецкий: сеть, пароль, доступ, обновление, резервная копия, шифрование.' },
+      { id: 'hw_it2', type: 'writing', title: 'IT: Опиши инцидент', due: addD(7), desc: 'Напиши короткий отчёт об IT-инциденте на немецком языке.' }
+    );
+  }
+  if (S.specs.includes('med')) {
+    base.push({ id: 'hw_med1', type: 'translation', title: 'Медицина: Термины', due: addD(5), desc: 'Переведи: пациент, диагноз, рецепт, таблетка, больница.' });
+  }
+  if (S.specs.includes('fin')) {
+    base.push({ id: 'hw_fin1', type: 'writing', title: 'Финансы: Предложения', due: addD(6), desc: 'Составь 4 предложения с финансовыми терминами.' });
+  }
+  if (S.specs.includes('biz')) {
+    base.push({ id: 'hw_biz1', type: 'writing', title: 'Бизнес: Деловое письмо', due: addD(6), desc: 'Напиши короткое деловое письмо на немецком языке.' });
+  }
+  return base;
+}
+
+let curHWFilter = 'all';
+
+function renderHW(filter) {
+  if (filter) curHWFilter = filter;
+
+  let list = getHWList().sort((a, b) => new Date(a.due) - new Date(b.due));
+  const total = list.length;
+  const done = list.filter((item) => S.hwDone[item.id]).length;
+  const overdue = list.filter((item) => hwSt(item) === 'overdue').length;
+  const pending = list.filter((item) => !S.hwDone[item.id] && hwSt(item) !== 'overdue').length;
+
+  const filterWrap = document.getElementById('hwFilter');
+  if (!filterWrap.children.length) {
+    [
+      ['all', 'Все'],
+      ['pending', 'Активные'],
+      ['done', 'Сданные'],
+      ['overdue', 'Просроченные'],
+    ].forEach(([value, label]) => {
+      const btn = document.createElement('button');
+      btn.className = `hw-fb${value === curHWFilter ? ' on' : ''}`;
+      btn.textContent = label;
+      btn.onclick = () => {
+        document.querySelectorAll('.hw-fb').forEach((el) => el.classList.remove('on'));
+        btn.classList.add('on');
+        renderHW(value);
+      };
+      filterWrap.appendChild(btn);
+    });
+  }
+
+  document.getElementById('hwStats').innerHTML = `
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--gold)">${total}</div><div class="hw-sl">Всего</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--green)">${done || 'пока нет'}</div><div class="hw-sl">Сдано</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--muted)">${pending || 'всё чисто'}</div><div class="hw-sl">Активных</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--red)">${overdue || 'нет'}</div><div class="hw-sl">Просрочено</div></div>
+  `;
+
+  if (curHWFilter === 'done') list = list.filter((item) => S.hwDone[item.id]);
+  else if (curHWFilter === 'pending') list = list.filter((item) => !S.hwDone[item.id] && hwSt(item) !== 'overdue');
+  else if (curHWFilter === 'overdue') list = list.filter((item) => hwSt(item) === 'overdue');
+
+  const hwList = document.getElementById('hwList');
+  hwList.innerHTML = '';
+  if (!list.length) {
+    hwList.innerHTML = `<div style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:20px 0;">Нет заданий в этой категории.</div>`;
+    return;
+  }
+
+  list.forEach((hw) => {
+    const state = hwSt(hw);
+    const isDone = !!S.hwDone[hw.id];
+    const saved = S.hwAnswers[hw.id] || '';
+    const card = document.createElement('div');
+    card.className = `hw-card${isDone ? ' hw-ok' : state === 'overdue' ? ' hw-late' : state === 'today' ? ' hw-today' : ''}`;
+    card.innerHTML = `
+      <div class="hw-top">
+        <div class="hw-left" style="flex:1;">
+          <div class="hw-meta">
+            <span class="hw-badge hw-b-${hw.type}">${HW_TYPE_LABELS[hw.type] || hw.type}</span>
+            <span class="hw-due ${state === 'overdue' ? 'late' : state === 'today' ? 'today' : ''}">${fmtDue(hw.due)}</span>
+            ${isDone ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--green);letter-spacing:2px;text-transform:uppercase;">✓ Сдано</span>` : ''}
+          </div>
+          <div class="hw-ttl">${hw.title}</div>
+          <div class="hw-dsc">${hw.desc}</div>
+        </div>
+        <div class="hw-acts">
+          <button class="hw-chk ${isDone ? 'chk' : ''}" onclick="toggleHWDone('${hw.id}')">${isDone ? '✓' : '○'}</button>
+          <button class="hw-ans-btn" onclick="toggleHWAns('${hw.id}')">${saved ? 'Ответ ▾' : 'Ответить ▾'}</button>
+        </div>
+      </div>
+      <div class="hw-ans-area" id="hwa-${hw.id}">
+        ${saved ? `<div class="hw-saved"><div class="hw-saved-lbl">✓ Сохранённый ответ</div><div class="hw-saved-txt">${esc(saved)}</div></div>` : ''}
+        <textarea class="hw-textarea" id="hwtxt-${hw.id}" placeholder="Напиши ответ здесь..." style="margin-top:${saved ? '10px' : '0'}">${esc(saved)}</textarea>
+        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="saveHWAns('${hw.id}')">Сохранить</button>
+          ${!isDone ? `<button class="btn btn-green btn-sm" onclick="submitHW('${hw.id}')">Сдать ✓</button>` : ''}
+        </div>
+      </div>
+    `;
+    hwList.appendChild(card);
+  });
+}
+
+function toggleHWAns(id) {
+  const area = document.getElementById(`hwa-${id}`);
+  area.classList.toggle('on');
+  if (area.classList.contains('on')) {
+    const input = document.getElementById(`hwtxt-${id}`);
+    if (input) input.focus();
+  }
+}
+
+function saveHWAns(id) {
+  const input = document.getElementById(`hwtxt-${id}`);
+  if (!input) return;
+  const value = input.value.trim();
+  if (!value) {
+    toast('Напиши что-нибудь!');
+    return;
+  }
+  S.hwAnswers[id] = value;
+  saveS();
+  toast('✓ Ответ сохранён');
+  renderHW(curHWFilter);
+  updateDash();
+}
+
+async function submitHW(id) {
+  const input = document.getElementById(`hwtxt-${id}`);
+  if (input && input.value.trim()) S.hwAnswers[id] = input.value.trim();
+  S.hwDone[id] = true;
+  addXP(5, 'homework');
+  saveS();
+  syncProfile();
+  toast('🏆 Задание сдано! Sehr gut!');
+  renderHW(curHWFilter);
+  updateDash();
+
+  const hw = getHWList().find((item) => item.id === id);
+  if (hw && S.hwAnswers[id]) {
+    await checkHWWithAI(S.hwAnswers[id], hw, S.level);
+  }
+}
+
+async function checkHWWithAI(answer, hw, level) {
+  if (!hasBackend()) {
+    toast('AI-проверка доступна только с подключённым backend');
+    return;
+  }
+
+  const result = await apiRequest(
+    '/ai/homework-feedback',
+    { answer, level, homework: { id: hw.id, title: hw.title, desc: hw.desc, type: hw.type } },
+    'POST'
+  );
+  if (result && result.text) {
+    setTimeout(() => alert(`AI Фидбек:\n${result.text}`), 300);
+  } else if (result && result.error) {
+    toast(`AI недоступен: ${result.error}`);
+  }
+}
+
+function toggleHWDone(id) {
+  S.hwDone[id] = !S.hwDone[id];
+  saveS();
+  toast(S.hwDone[id] ? '✓ Отмечено выполненным' : 'Отметка снята');
+  renderHW(curHWFilter);
+  updateDash();
+}
+
+let curVocabFilter = 'all';
+
+function getAllVocab() {
+  const primary = typeof vocabularyData !== 'undefined' ? vocabularyData.map(normalizeWord) : APP_LESSONS.flatMap((lesson) => lesson.words);
+  const spec = S.specs.flatMap((specId) => SPEC_VOCAB[specId] || []).map(normalizeWord);
+  const seen = new Set();
+  return [...primary, ...spec].filter((word) => {
+    const key = `${word.de}|${word.cat}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function renderVocab(filter) {
+  if (filter !== undefined) curVocabFilter = filter;
+
+  const filterWrap = document.getElementById('vocabFilter');
+  const cats = ['all', ...new Set(getAllVocab().map((word) => word.cat))];
+  if (!cats.includes(curVocabFilter)) curVocabFilter = 'all';
+  filterWrap.innerHTML = '';
+  cats.forEach((cat) => {
+    const btn = document.createElement('button');
+    btn.className = `vf-btn${cat === curVocabFilter ? ' on' : ''}`;
+    btn.textContent = cat === 'all' ? 'Все' : cat;
+    btn.onclick = () => renderVocab(cat);
+    filterWrap.appendChild(btn);
+  });
+
+  let words = getAllVocab();
+  if (curVocabFilter !== 'all') words = words.filter((word) => word.cat === curVocabFilter);
+
+  const body = document.getElementById('vocabBody');
+  body.innerHTML = '';
+  words.forEach((word) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><span class="vt-de">${word.de}</span> <button onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
+      <td class="vt-ru">${word.ru}</td>
+      <td class="vt-ex">${word.ex}</td>
+      <td><span class="vt-tag">${word.cat}</span></td>
+    `;
+    body.appendChild(row);
+  });
+}
+
+function renderPhrases() {
+  const grid = document.getElementById('phrasesGrid');
+  grid.innerHTML = '';
+  PHRASES.forEach((phrase) => {
+    const card = document.createElement('div');
+    card.className = 'ph-card';
+    card.innerHTML = `
+      <div class="ph-de">${phrase.de} <button onclick="speak('${phrase.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></div>
+      <div class="ph-ru">${phrase.ru}</div>
+      <div class="ph-cat">${phrase.cat}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderSettings() {
+  document.getElementById('settingsName').value = S.name || '';
+  document.getElementById('settingsLevel').textContent = S.level || 'A1';
+  const grid = document.getElementById('settingsSpecGrid');
+  grid.innerHTML = '';
+
+  SPECIALIZATIONS.forEach((spec) => {
+    const checked = S.specs.includes(spec.id);
+    const card = document.createElement('div');
+    card.className = `spec-card${checked ? ' sel' : ''}`;
+    card.innerHTML = `
+      <div class="spec-icon">${spec.icon}</div>
+      <div class="spec-name">${spec.name}</div>
+      <div class="spec-desc">${spec.desc}</div>
+      <input type="checkbox" class="spec-check" id="spec-${spec.id}" ${checked ? 'checked' : ''}>
+    `;
+    card.onclick = () => {
+      const checkbox = document.getElementById(`spec-${spec.id}`);
+      checkbox.checked = !checkbox.checked;
+      card.classList.toggle('sel', checkbox.checked);
+    };
+    grid.appendChild(card);
+  });
+}
+
+function saveSettings() {
+  const newName = document.getElementById('settingsName').value.trim();
+  if (newName) S.name = newName;
+  S.specs = SPECIALIZATIONS
+    .filter((spec) => document.getElementById(`spec-${spec.id}`).checked)
+    .map((spec) => spec.id);
+  saveS();
+  syncProfile();
+  initApp();
+  toast('✓ Настройки сохранены');
+  goPage('dashboard');
+}
+
+function retakeTest() {
+  if (!confirm('Перепройти тест уровня? Прогресс уроков сохранится, но уровень будет пересчитан.')) return;
+  S.level = 'A1';
+  S.levelScore = 0;
+  S.onboardingDone = false;
+  saveS();
+  location.reload();
+}
+
+let QS = { lesson: null, phase: 'vocab', idx: 0, score: 0, answered: false };
+
+function openLessonById(id) {
+  const lesson = [...APP_LESSONS, ...GENERAL_LESSONS, ...getAllSpecLessons()].find((item) => item.id === id);
+  if (lesson) openLesson(lesson);
+}
+
+function openLesson(lesson) {
+  QS = { lesson: normalizeLesson(lesson), phase: lesson.theory ? 'theory' : 'vocab', idx: 0, score: 0, answered: false };
+  document.getElementById('modalTtl').textContent = lesson.title;
+  renderModal();
+  document.getElementById('lessonModal').classList.add('on');
+}
+
+function closeModal() {
+  document.getElementById('lessonModal').classList.remove('on');
+}
+
+document.getElementById('lessonModal').addEventListener('click', function modalBgClick(event) {
+  if (event.target === this) closeModal();
+});
+
+function renderModal() {
+  const lesson = QS.lesson;
+  const body = document.getElementById('modalBody');
+
+  if (QS.phase === 'theory') {
+    body.innerHTML = `
+      <div class="lesson-theory">${esc(lesson.theory)}</div>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="QS.phase='examples';renderModal()">Примеры →</button>
+      </div>
+    `;
+    return;
+  }
+
+  if (QS.phase === 'examples') {
+    body.innerHTML = `
+      <div class="lesson-example-grid">
+        ${(lesson.examples || []).map((item) => `
+          <div class="lesson-example">
+            <div class="lesson-example-de">${esc(item.de)}</div>
+            <div class="lesson-example-ru">${esc(item.ru)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="QS.phase='theory';renderModal()">← Теория</button>
+        <button class="btn btn-gold" onclick="QS.phase='quiz';QS.idx=0;QS.score=0;QS.answered=false;renderModal()">Квиз →</button>
+      </div>
+    `;
+    return;
+  }
+
+  if (QS.phase === 'vocab') {
+    body.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">${lesson.words.length} слов · ${lesson.de}</div>
+      <table class="vocab-table" style="margin-bottom:24px;">
+        <thead><tr><th>Немецкий</th><th>Русский</th><th>Пример</th></tr></thead>
+        <tbody>
+          ${lesson.words.map((word) => `
+            <tr>
+              <td><span class="vt-de">${word.de}</span> <button onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
+              <td>${word.ru}</td>
+              <td class="vt-ex">${word.ex}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <div class="btn-row">
+        <button class="btn btn-gold" onclick="QS.phase='quiz';renderModal()">Перейти к тесту →</button>
+      </div>
+    `;
+    return;
+  }
+
+  const quiz = lesson.quiz || [];
+  if (QS.idx >= quiz.length) {
+    const passed = QS.score >= Math.ceil(quiz.length / 2);
+    if (passed && !S.completedLessons.includes(lesson.id)) {
+      S.completedLessons.push(lesson.id);
+      recordStudyActivity();
+      addXP(10, 'lesson');
+      updateDailyGoal('lesson');
+      saveS();
+      syncProgress(lesson.id, true, QS.score);
+      syncProfile();
+    }
+    body.innerHTML = `
+      <div style="text-align:center;padding:20px 0;">
+        <span class="qz-score">${QS.score}/${quiz.length}</span>
+        <div class="qz-msg">${passed ? 'УРОК ЗАВЕРШЁН · +10 XP' : 'ПОПРОБУЙ ЕЩЁ РАЗ'}</div>
+        <div class="btn-row" style="justify-content:center;">
+          ${!passed ? `<button class="btn btn-ghost" onclick="QS.idx=0;QS.score=0;QS.answered=false;renderModal()">Повторить</button>` : ''}
+          <button class="btn btn-gold" onclick="closeModal();renderPlan();updateDash()">Готово</button>
+        </div>
+      </div>
+    `;
+    if (passed) toast(`🏆 Урок завершён: ${lesson.title}`);
+    checkAchievements();
+    return;
+  }
+
+  const question = quiz[QS.idx];
+  body.innerHTML = `
+    <div class="qz-prog"><div class="qz-bar" style="width:${(QS.idx / quiz.length) * 100}%"></div></div>
+    <div class="qz-num">Вопрос ${QS.idx + 1} из ${quiz.length}</div>
+    <div class="qz-word">${question.q}</div>
+    <div class="qz-opts">${question.opts.map((option, index) => `<button class="qz-opt" id="qo${index}" onclick="answerQ(${index})">${option}</button>`).join('')}</div>
+    <button class="btn btn-gold qz-next" id="qnxt" onclick="nextQ()" style="display:none;margin-top:16px;">Следующий →</button>
+  `;
+}
+
+function answerQ(selected) {
+  if (QS.answered) return;
+  QS.answered = true;
+  const question = QS.lesson.quiz[QS.idx];
+  question.opts.forEach((_, index) => {
+    const button = document.getElementById(`qo${index}`);
+    button.classList.add(index === question.a ? 'ok' : 'no');
+    button.disabled = true;
+  });
+  if (selected === question.a) {
+    QS.score += 1;
+    addXP(5, 'quiz');
+  }
+  document.getElementById('qnxt').style.display = 'inline-flex';
+}
+
+function nextQ() {
+  QS.idx += 1;
+  QS.answered = false;
+  renderModal();
+}
+
+let REP = { words: [], idx: 0 };
+
+function getTodayWords(today) {
+  const allWords = getAllVocab().map(normalizeWord);
+  return allWords.filter((word) => {
+    const progress = S.vocabProgress[word.de];
+    if (!progress) return true;
+    return progress.nextReview <= today;
+  });
+}
+
+function renderRepetition() {
+  const today = new Date().toISOString().split('T')[0];
+  REP = { words: getTodayWords(today), idx: 0 };
+
+  const status = document.getElementById('repStatus');
+  const card = document.getElementById('repCard');
+  const done = document.getElementById('repDone');
+
+  if (!REP.words.length) {
+    status.innerHTML = `<div style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:14px;">Сегодня нет слов для повторения. Изучи новые уроки, и они появятся здесь.</div>`;
+    card.style.display = 'none';
+    done.style.display = 'none';
+    return;
+  }
+
+  status.innerHTML = `<div style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:14px;">${REP.words.length} слов для повторения сегодня</div>`;
+  card.style.display = 'block';
+  done.style.display = 'none';
+  showCard();
+}
+
+function showCard() {
+  const word = REP.words[REP.idx];
+  document.getElementById('repFront').innerHTML = `
+    <div style="font-size:28px;font-weight:600;margin-bottom:8px;">${word.de}</div>
+    <div style="color:var(--muted);font-size:14px;">${word.ex}</div>
+    <button class="btn btn-teal" onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="margin-top:12px;">🔊 Произнести</button>
+  `;
+  document.getElementById('repBack').innerHTML = `
+    <div style="font-size:24px;color:var(--green);margin-bottom:8px;">${word.ru}</div>
+    <div style="color:var(--muted);font-size:14px;">${word.ex}</div>
+  `;
+  document.getElementById('repBack').style.display = 'none';
+  document.getElementById('repActions').style.display = 'none';
+  document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = false; });
+  document.querySelector('.rep-card').classList.remove('flipped', 'flash-correct', 'shake');
+}
+
+function flipCard() {
+  document.getElementById('repBack').style.display = 'block';
+  document.getElementById('repActions').style.display = 'flex';
+  document.querySelector('.rep-card').classList.add('flipped');
+}
+
+function repAnswer(correct) {
+  const word = REP.words[REP.idx];
+  const card = document.querySelector('.rep-card');
+  document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = true; });
+  const progress = S.vocabProgress[word.de] || { level: 0, nextReview: new Date().toISOString().split('T')[0] };
+  progress.level = correct ? Math.min(progress.level + 1, 5) : Math.max(progress.level - 1, 0);
+
+  const intervals = [1, 2, 4, 7, 14, 30];
+  const next = new Date();
+  next.setDate(next.getDate() + (intervals[progress.level] || 30));
+  progress.nextReview = next.toISOString().split('T')[0];
+
+  S.vocabProgress[word.de] = progress;
+  recordStudyActivity();
+  if (correct) {
+    addXP(2, 'word', card);
+    updateDailyGoal('word');
+    if (card) {
+      card.classList.remove('flash-correct');
+      void card.offsetWidth;
+      card.classList.add('flash-correct');
+    }
+  } else if (card) {
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+  }
+  saveS();
+  syncVocabProgress(word.de, progress.level, progress.nextReview);
+
+  setTimeout(() => {
+    REP.idx += 1;
+    if (REP.idx >= REP.words.length) {
+      document.getElementById('repCard').style.display = 'none';
+      document.getElementById('repDone').style.display = 'block';
+    } else {
+      showCard();
+    }
+    updateDash();
+    checkAchievements();
+  }, correct ? 650 : 380);
+}
+
+async function apiRequest(endpoint, data = null, method = 'GET') {
+  if (!hasBackend()) {
+    return { error: 'Backend is not connected in static-only mode.' };
+  }
+
+  const url = `${S.apiUrl}${endpoint}`;
+  const headers = { 'Content-Type': 'application/json' };
+  if (S.token) headers.Authorization = `Bearer ${S.token}`;
+
+  const config = { method, headers };
+  if (data) config.body = JSON.stringify(data);
+
+  try {
+    const response = await fetch(url, config);
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      return payload || { error: `HTTP ${response.status}` };
+    }
+    return payload;
+  } catch (error) {
+    console.warn('API request failed:', error);
+    return { error: error.message };
+  }
+}
+
+async function syncProfile() {
+  if (!S.token || !hasBackend()) return null;
+  return apiRequest('/profile', { username: S.name, level: S.level, points: S.points }, 'PATCH');
+}
+
+async function syncLocalDataToBackend() {
+  if (!S.token || !hasBackend()) return;
+  await syncProfile();
+  for (const lessonId of S.completedLessons) {
+    await syncProgress(lessonId, true, 1);
+  }
+  for (const [word, progress] of Object.entries(S.vocabProgress)) {
+    await syncVocabProgress(word, progress.level, progress.nextReview);
+  }
+}
+
+async function syncProgress(lessonId, completed, score) {
+  if (!S.token || !hasBackend()) return;
+  await apiRequest('/progress', { lesson_id: lessonId, completed, score }, 'POST');
+}
+
+async function syncVocabProgress(word, level, nextReview) {
+  if (!S.token || !hasBackend()) return;
+  await apiRequest('/vocab_progress', { word, level, next_review: nextReview }, 'POST');
+}
+
+async function logAnalytics(action, data = null) {
+  if (!S.token || !hasBackend()) return;
+  await apiRequest('/analytics', { action, data }, 'POST');
+}
+
+function renderLogin() {
+  const form = document.getElementById('loginForm');
+  const profile = document.getElementById('loginProfile');
+  if (!hasBackend()) {
+    form.style.display = 'none';
+    profile.style.display = 'block';
+    const summary = getProfileSummary();
+    profile.innerHTML = `
+      <div class="profile-panel">
+        <div class="profile-hero">
+          <div class="profile-avatar">${esc(avatarLetter(S.name))}</div>
+          <div class="profile-copy">
+            <div class="profile-title">${esc(S.name || 'Пользователь')}</div>
+            <div class="profile-sub">Статическая версия: прогресс хранится в этом браузере. Для переноса на другое устройство используй экспорт и импорт.</div>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-metric">
+            <div class="profile-metric-value">${esc(S.level || 'A1')}</div>
+            <div class="profile-metric-label">Уровень</div>
+          </div>
+          <div class="profile-metric">
+            <div class="profile-metric-value">${S.points || 0}</div>
+            <div class="profile-metric-label">Очки</div>
+          </div>
+          <div class="profile-metric">
+            <div class="profile-metric-value">${summary.lessons}</div>
+            <div class="profile-metric-label">Уроков</div>
+          </div>
+          <div class="profile-metric">
+            <div class="profile-metric-value">${summary.words}</div>
+            <div class="profile-metric-label">Слов</div>
+          </div>
+        </div>
+        <div class="profile-summary">
+          <div class="profile-summary-row">
+            <span class="profile-summary-label">Специализации</span>
+            <span class="profile-summary-value">${esc(summary.specs)}</span>
+          </div>
+          <div class="profile-summary-row">
+            <span class="profile-summary-label">Сдано домашек</span>
+            <span class="profile-summary-value">${summary.homework}</span>
+          </div>
+          <div class="profile-summary-row">
+            <span class="profile-summary-label">Синхронизация</span>
+            <span class="profile-summary-value">Локально</span>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn btn-gold" onclick="exportProgress()">Экспорт JSON</button>
+          <label class="btn btn-ghost" for="progressImport">Импорт JSON</label>
+          <input id="progressImport" type="file" accept="application/json,.json" onchange="importProgressFile(this)" style="display:none;">
+          <button class="btn btn-ghost" onclick="goPage('settings')">Настройки</button>
+        </div>
+      </div>
+    `;
+  } else if (S.token) {
+    form.style.display = 'none';
+    profile.style.display = 'block';
+    const summary = getProfileSummary();
+    profile.innerHTML = `
+      <div class="profile-panel">
+        <div class="profile-hero">
+          <div class="profile-avatar">${esc(avatarLetter(S.name))}</div>
+          <div class="profile-copy">
+            <div class="profile-title">Привет, ${esc(S.name || 'Пользователь')}!</div>
+            <div class="profile-sub">Профиль подключён. Здесь можно быстро проверить прогресс и перейти в настройки.</div>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-metric">
+            <div class="profile-metric-value">${esc(S.level || 'A1')}</div>
+            <div class="profile-metric-label">Уровень</div>
+          </div>
+          <div class="profile-metric">
+            <div class="profile-metric-value">${S.points || 0}</div>
+            <div class="profile-metric-label">Очки</div>
+          </div>
+          <div class="profile-metric">
+            <div class="profile-metric-value">${summary.lessons}</div>
+            <div class="profile-metric-label">Уроков</div>
+          </div>
+          <div class="profile-metric">
+            <div class="profile-metric-value">${summary.words}</div>
+            <div class="profile-metric-label">Слов</div>
+          </div>
+        </div>
+        <div class="profile-summary">
+          <div class="profile-summary-row">
+            <span class="profile-summary-label">Специализации</span>
+            <span class="profile-summary-value">${esc(summary.specs)}</span>
+          </div>
+          <div class="profile-summary-row">
+            <span class="profile-summary-label">Сдано домашек</span>
+            <span class="profile-summary-value">${summary.homework}</span>
+          </div>
+          <div class="profile-summary-row">
+            <span class="profile-summary-label">Статус</span>
+            <span class="profile-summary-value">Аккаунт подключён</span>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn btn-ghost" onclick="goPage('settings')">Открыть настройки</button>
+          <button class="btn btn-gold" onclick="goPage('dashboard')">На главную</button>
+          <button class="btn btn-red" onclick="logoutUser()">Выйти</button>
+        </div>
+      </div>
+    `;
+  } else {
+    form.style.display = 'block';
+    profile.style.display = 'none';
+    profile.innerHTML = '';
+  }
+}
+
+function exportProgress() {
+  const payload = {
+    ...S,
+    token: null,
+    apiUrl: '',
+    staticMode: true,
+    exportedAt: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `deutsch-progress-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  toast('✓ Прогресс экспортирован');
+}
+
+function importProgressFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = normalizeState(JSON.parse(reader.result));
+      imported.staticMode = true;
+      imported.apiUrl = '';
+      imported.token = null;
+      S = imported;
+      saveS();
+      toast('✓ Прогресс импортирован');
+      initApp();
+      goPage('dashboard');
+    } catch {
+      toast('Не удалось импортировать JSON');
+    } finally {
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function loginUser() {
+  if (!hasBackend()) return toast('В статической версии вход отключён');
+
+  const localSnapshot = {
+    name: S.name,
+    level: S.level,
+    points: S.points,
+    completedLessons: [...S.completedLessons],
+    vocabProgress: { ...S.vocabProgress },
+    specs: [...S.specs],
+    hwDone: { ...S.hwDone },
+    hwAnswers: { ...S.hwAnswers },
+  };
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  if (!email || !password) return toast('Заполните все поля');
+
+  const status = document.getElementById('loginStatus');
+  status.textContent = 'Вход...';
+  const res = await apiRequest('/login', { email, password }, 'POST');
+
+  if (res && res.token) {
+    S.token = res.token;
+    S.name = localSnapshot.name || res.user.username;
+    S.level = localSnapshot.level || res.user.level;
+    S.points = Math.max(localSnapshot.points || 0, res.user.points || 0);
+    S.completedLessons = [...new Set([...localSnapshot.completedLessons])];
+    S.vocabProgress = { ...localSnapshot.vocabProgress };
+    S.specs = [...localSnapshot.specs];
+    S.hwDone = { ...localSnapshot.hwDone };
+    S.hwAnswers = { ...localSnapshot.hwAnswers };
+    saveS();
+    await syncLocalDataToBackend();
+    toast('✅ Вход выполнен');
+    await initApp();
+    return;
+  }
+
+  status.textContent = res?.error || 'Ошибка входа';
+}
+
+async function registerUser() {
+  if (!hasBackend()) return toast('В статической версии регистрация отключена');
+
+  const localSnapshot = {
+    name: S.name,
+    level: S.level,
+    points: S.points,
+    completedLessons: [...S.completedLessons],
+    vocabProgress: { ...S.vocabProgress },
+    specs: [...S.specs],
+    hwDone: { ...S.hwDone },
+    hwAnswers: { ...S.hwAnswers },
+  };
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  if (!email || !password) return toast('Заполните все поля');
+
+  const status = document.getElementById('loginStatus');
+  status.textContent = 'Регистрация...';
+  const res = await apiRequest('/register', { username: email.split('@')[0], email, password }, 'POST');
+
+  if (res && res.token) {
+    S.token = res.token;
+    S.name = localSnapshot.name || res.user.username;
+    S.level = localSnapshot.level || res.user.level;
+    S.points = Math.max(localSnapshot.points || 0, res.user.points || 0);
+    S.completedLessons = [...new Set([...localSnapshot.completedLessons])];
+    S.vocabProgress = { ...localSnapshot.vocabProgress };
+    S.specs = [...localSnapshot.specs];
+    S.hwDone = { ...localSnapshot.hwDone };
+    S.hwAnswers = { ...localSnapshot.hwAnswers };
+    saveS();
+    await syncLocalDataToBackend();
+    toast('✅ Регистрация успешна');
+    await initApp();
+    return;
+  }
+
+  status.textContent = res?.error || 'Ошибка регистрации';
+}
+
+function logoutUser() {
+  if (!hasBackend()) return;
+
+  S.token = null;
+  saveS();
+  toast('Выход выполнен');
+  renderLogin();
+  initApp();
+}
+
+async function syncFromBackend() {
+  if (!hasBackend()) return;
+
+  const profile = await apiRequest('/profile');
+  if (profile && !profile.error) {
+    S.name = profile.username || S.name;
+    S.level = profile.level || S.level;
+    S.points = typeof profile.points === 'number' ? profile.points : S.points;
+  }
+
+  const progress = await apiRequest('/progress');
+  if (Array.isArray(progress)) {
+    progress.forEach((item) => {
+      if (item.completed && !S.completedLessons.includes(item.lesson_id)) {
+        S.completedLessons.push(item.lesson_id);
+      }
+    });
+  }
+
+  const vocab = await apiRequest('/vocab_progress');
+  if (Array.isArray(vocab)) {
+    vocab.forEach((item) => {
+      S.vocabProgress[item.word] = { level: item.level, nextReview: item.next_review };
+    });
+  }
+
+  saveS();
+}
+
+</script>
+<script>
+// Source: js\practice.js
+// AI PRACTICE - conversational trainer
+
+const SCENARIOS = [
+  {
+    id: 's_greet',
+    spec: 'general',
+    icon: '👋',
+    title: 'Знакомство',
+    diff: 'easy',
+    desc: 'Познакомься с немецким коллегой и коротко расскажи о себе.',
+    tip: 'Используй: Hallo, ich bin... · Ich komme aus... · Ich arbeite als...',
+    system: `Du bist ein freundlicher deutscher Kollege namens Klaus. Du sprichst nur Deutsch.
+Der Lernende heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Führe ein natürliches Vorstellungsgespräch und stelle einfache Fragen zu Name, Herkunft und Beruf.
+Wenn der Lernende Fehler macht, korrigiere freundlich im Format:
+❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
+Antworte knapp, maximal 3 Sätze.`,
+  },
+  {
+    id: 's_cafe',
+    spec: 'general',
+    icon: '☕',
+    title: 'В кафе',
+    diff: 'easy',
+    desc: 'Закажи еду и напитки в немецком кафе.',
+    tip: 'Используй: Ich möchte... · Wie viel kostet...? · Danke schön!',
+    system: `Du bist ein Kellner in einem deutschen Café. Du sprichst nur Deutsch.
+Der Gast heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Begrüße den Gast, stelle Rückfragen und nenne einfache Preise.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
+Antworte kurz, maximal 3 Sätze.`,
+  },
+  {
+    id: 's_direction',
+    spec: 'general',
+    icon: '🗺️',
+    title: 'Спросить дорогу',
+    diff: 'med',
+    desc: 'Попроси прохожего подсказать дорогу в немецком городе.',
+    tip: 'Используй: Entschuldigung... · Wo ist...? · Wie komme ich zu...?',
+    system: `Du bist ein hilfsbereiter Passant in einer deutschen Stadt. Du sprichst nur Deutsch.
+Der Tourist heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Erkläre den Weg mit links, rechts, geradeaus, neben und gegenüber.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
+Antworte klar und kurz.`,
+  },
+  {
+    id: 's_it_incident',
+    spec: 'it',
+    icon: '🖥️',
+    title: 'IT: Отчёт об инциденте',
+    diff: 'med',
+    desc: 'Объясни руководителю, что случилось с сервером.',
+    tip: 'Используй: Der Server ist ausgefallen · Die Verbindung ist unterbrochen · Wir haben eine Störung',
+    system: `Du bist ein deutscher IT-Manager. Du sprichst nur Deutsch.
+Der Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Frage nach Ursache, Zeitpunkt, betroffenen Systemen und nächsten Schritten.
+Verwende IT-Wörter wie Netzwerk, Server, Firewall, Zugriff, Sicherung.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+  },
+  {
+    id: 's_it_support',
+    spec: 'it',
+    icon: '📞',
+    title: 'IT: Техподдержка',
+    diff: 'easy',
+    desc: 'Помоги пользователю решить простую IT-проблему.',
+    tip: 'Используй: Haben Sie...? · Bitte starten Sie... · Das Kennwort ist...',
+    system: `Du bist ein deutschsprachiger Benutzer mit einem IT-Problem. Du sprichst nur Deutsch.
+Der Support-Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Beschreibe ein einfaches Problem mit Drucker oder Zugang und antworte auf Rückfragen.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+  },
+  {
+    id: 's_it_interview',
+    spec: 'it',
+    icon: '💼',
+    title: 'IT: Собеседование',
+    diff: 'hard',
+    desc: 'Собеседование на позицию сисадмина в немецкой компании.',
+    tip: 'Используй: Ich habe Erfahrung mit... · Ich kann... · In meiner bisherigen Stelle...',
+    system: `Du bist ein HR-Manager einer deutschen IT-Firma. Du sprichst nur Deutsch.
+Der Bewerber heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Frage nach Erfahrung, Linux, Windows Server, Netzwerk, Motivation und Arbeitsweise.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+  },
+  {
+    id: 's_bank',
+    spec: 'fin',
+    icon: '🏦',
+    title: 'Финансы: В банке',
+    diff: 'med',
+    desc: 'Открой счёт в немецком банке.',
+    tip: 'Используй: Ich möchte ein Konto eröffnen · die Rechnung · der Kredit',
+    system: `Du bist ein Bankangestellter in Deutschland. Du sprichst nur Deutsch.
+Der Kunde heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Hilf beim Eröffnen eines Kontos und frage nach Name, Adresse und Beschäftigung.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+  },
+  {
+    id: 's_meeting',
+    spec: 'biz',
+    icon: '📊',
+    title: 'Бизнес: Переговоры',
+    diff: 'hard',
+    desc: 'Обсуди условия контракта с немецким партнёром.',
+    tip: 'Используй: Unser Angebot ist... · Wir schlagen vor... · Das Budget beträgt...',
+    system: `Du bist ein deutscher Geschäftspartner in Vertragsverhandlungen. Du sprichst nur Deutsch.
+Der Verhandlungspartner heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Diskutiere Preis, Lieferzeit und Zahlungsbedingungen in professionellem Ton.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+  },
+  {
+    id: 's_doctor',
+    spec: 'med',
+    icon: '🏥',
+    title: 'Медицина: У врача',
+    diff: 'med',
+    desc: 'Поговори с врачом о симптомах на немецком.',
+    tip: 'Используй: Ich habe Schmerzen · Mir ist nicht gut · Seit wann...?',
+    system: `Du bist ein Arzt in Deutschland. Du sprichst nur Deutsch.
+Der Patient heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Frage nach Symptomen, Dauer und möglichen Begleiterscheinungen.
+Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+  },
+];
+
+let activeScenario = null;
+let chatHistory = [];
+let isTyping = false;
+
+function renderCleanCounter() {
+  const el = document.getElementById('cleanCounter');
+  if (el) el.textContent = `Реплик без ошибок: ${S.aiCleanStreak || 0} 🎯`;
+}
+
+function hasErrorMarkers(text) {
+  return /❌|Fehler|ошиб|неправильно|falsch|incorrect/i.test(text || '');
+}
+
+function updateCleanStreak(aiReply) {
+  if (hasErrorMarkers(aiReply)) S.aiCleanStreak = 0;
+  else S.aiCleanStreak = (S.aiCleanStreak || 0) + 1;
+  saveS();
+  renderCleanCounter();
+  addMessage('system', `Реплик без ошибок: ${S.aiCleanStreak} 🎯`);
+  if (typeof checkAchievements === 'function') checkAchievements();
+}
+
+function getRelevantScenarios() {
+  return SCENARIOS.filter((scenario) => scenario.spec === 'general' || S.specs.includes(scenario.spec));
+}
+
+function renderScenarios() {
+  const grid = document.getElementById('scenarioGrid');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+  if (typeof hasBackend === 'function' && !hasBackend()) {
+    grid.innerHTML = `
+      <div class="profile-panel" style="grid-column:1/-1;">
+        <div class="profile-title">AI-практика отключена</div>
+        <div class="profile-sub">Статическая версия работает без личного сервера: уроки, словарь, задания и повторение доступны офлайн, а AI можно вернуть позже через backend или serverless API.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const relevant = getRelevantScenarios();
+  const diffLabel = {
+    easy: 'A1 · Лёгкий',
+    med: 'A2 · Средний',
+    hard: 'B1 · Сложный',
+  };
+
+  relevant.forEach((scenario) => {
+    const card = document.createElement('div');
+    card.className = 'pr-card';
+    card.innerHTML = `
+      <div class="pr-card-diff ${scenario.diff}">${diffLabel[scenario.diff]}</div>
+      <div class="pr-card-icon">${scenario.icon}</div>
+      <div class="pr-card-spec">${scenario.spec === 'general' ? 'Общий' : scenario.spec.toUpperCase()}</div>
+      <div class="pr-card-title">${scenario.title}</div>
+      <div class="pr-card-desc">${scenario.desc}</div>
+    `;
+    card.onclick = () => startScenario(scenario);
+    grid.appendChild(card);
+  });
+
+  if (!relevant.length) {
+    grid.innerHTML = `<div style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;">Нет сценариев. Обнови специальности в настройках.</div>`;
+  }
+}
+
+function startScenario(scenario) {
+  if (typeof hasBackend === 'function' && !hasBackend()) {
+    toast('AI-практика доступна только с подключённым backend');
+    return;
+  }
+
+  activeScenario = scenario;
+  chatHistory = [];
+  document.getElementById('practiceScenarios').style.display = 'none';
+  document.getElementById('practiceChat').style.display = 'block';
+  document.getElementById('activeSName').textContent = `${scenario.icon}  ${scenario.title}`;
+  document.getElementById('activeSDesc').textContent = scenario.desc;
+  document.getElementById('prTip').textContent = `💡 ${scenario.tip}`;
+  document.getElementById('chatMessages').innerHTML = '';
+  document.getElementById('prHint').style.display = 'none';
+  document.getElementById('chatInput').value = '';
+  renderCleanCounter();
+  aiOpen(scenario);
+}
+
+function endChat() {
+  document.getElementById('practiceScenarios').style.display = 'block';
+  document.getElementById('practiceChat').style.display = 'none';
+  activeScenario = null;
+  chatHistory = [];
+}
+
+function clearChat() {
+  if (!activeScenario) return;
+  chatHistory = [];
+  document.getElementById('chatMessages').innerHTML = '';
+  document.getElementById('prHint').style.display = 'none';
+  aiOpen(activeScenario);
+}
+
+async function aiOpen(scenario) {
+  showTyping();
+  const openingPrompt = `Eröffne das Gespräch auf Deutsch. Begrüße ${S.name || 'Azamat'} und starte das Szenario "${scenario.title}". Maximal 2 Sätze.`;
+  const reply = await callClaude(scenario.system, openingPrompt, []);
+  hideTyping();
+  addMessage('ai', reply);
+  chatHistory.push({ role: 'assistant', content: reply });
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isTyping || !activeScenario) return;
+
+  input.value = '';
+  autoResize(input);
+  document.getElementById('prHint').style.display = 'none';
+  addMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  showTyping();
+  const reply = await callClaude(activeScenario.system, text, chatHistory.slice(-10));
+  hideTyping();
+  addMessage('ai', reply);
+  chatHistory.push({ role: 'assistant', content: reply });
+  updateCleanStreak(reply);
+}
+
+async function requestHint() {
+  if (isTyping || !activeScenario) return;
+  const lastAI = chatHistory.filter((message) => message.role === 'assistant').slice(-1)[0];
+  if (!lastAI) return;
+
+  showTyping();
+  const prompt = `Gib dem Lernenden einen Hinweis auf Russisch: Wie könnte er auf diese Frage antworten: "${lastAI.content}"? Maximal 2 kurze Sätze und 1-2 deutsche Beispielphrasen.`;
+  const hint = await callClaude(
+    'Du bist ein Sprachlehrer. Antworte auf Russisch mit kurzen deutschen Beispielen.',
+    prompt,
+    []
+  );
+  hideTyping();
+  const hintEl = document.getElementById('prHint');
+  hintEl.textContent = `💡 ${hint}`;
+  hintEl.style.display = 'block';
+}
+
+async function requestTranslation() {
+  if (isTyping || !activeScenario) return;
+  const lastAI = chatHistory.filter((message) => message.role === 'assistant').slice(-1)[0];
+  if (!lastAI) return;
+
+  showTyping();
+  const prompt = `Переведи на русский эту немецкую фразу и объясни ключевые слова: "${lastAI.content}". Формат: Перевод: [...] | Ключевые слова: [слово - значение, ...]`;
+  const translation = await callClaude(
+    'Ты переводчик. Отвечай только на русском языке.',
+    prompt,
+    []
+  );
+  hideTyping();
+  addMessage('system', `🔄 ${translation}`);
+}
+
+async function requestFeedback() {
+  if (isTyping || !activeScenario) return;
+  const userMessages = chatHistory.filter((message) => message.role === 'user');
+  if (!userMessages.length) {
+    toast('Сначала напиши что-нибудь!');
+    return;
+  }
+
+  const lastUser = userMessages.slice(-1)[0].content;
+  showTyping();
+  const prompt = `Проанализируй этот немецкий ответ ученика на русском языке: "${lastUser}".
+Проверь грамматику, порядок слов, артикли и падежи.
+Формат ответа:
+✅ Что хорошо: [...]
+❌ Ошибки: [если есть: неправильно → правильно]
+💡 Совет: [краткий совет]`;
+  const feedback = await callClaude(
+    'Du bist ein Deutschlehrer. Gib Feedback auf Russisch.',
+    prompt,
+    []
+  );
+  hideTyping();
+  addMessage('system', feedback);
+}
+
+async function callClaude(systemPrompt, userMessage, history) {
+  isTyping = true;
+  const sendBtn = document.getElementById('sendBtn');
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    const response = await apiRequest(
+      '/ai/chat',
+      {
+        system: systemPrompt,
+        message: userMessage,
+        history: history || [],
+        max_tokens: 400,
+      },
+      'POST'
+    );
+    if (response && response.text) return response.text;
+    if (response && response.error) return `⚠️ Ошибка AI: ${response.error}`;
+    return '⚠️ Не удалось получить ответ от AI.';
+  } catch (error) {
+    return `⚠️ Ошибка соединения: ${error.message}`;
+  } finally {
+    isTyping = false;
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+function formatInlineCorrections(html) {
+  return html.replace(/([^<\n:;]+?)\s*(?:→|-&gt;)\s*([^<\n;]+)/g, (_, wrong, right) => {
+    const cleanWrong = wrong.trim();
+    const cleanRight = right.trim();
+    if (!cleanWrong || !cleanRight) return _;
+    return `<span class="pr-wrong-inline">${cleanWrong}</span><span class="pr-right-inline">${cleanRight}</span>`;
+  });
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `pr-msg ${role}`;
+
+  let formattedText = esc(text)
+    .replace(/❌ Fehler:(.*?)→ ✅ Richtig:(.*?)(?=<br>|[\r\n]|$)/g, (_, wrong, right) => {
+      return `<div class="pr-correction"><b>❌ Ошибка:</b>${wrong}<br><b>✅ Правильно:</b>${right}</div>`;
+    })
+    .replace(/\r?\n/g, '<br>');
+  formattedText = formatInlineCorrections(formattedText);
+
+  if (role === 'system') {
+    div.innerHTML = `<div class="pr-bubble" style="max-width:100%;">${formattedText}</div>`;
+  } else {
+    const avatar = role === 'ai' ? '🤖' : esc(avatarLetter(S.name));
+    div.innerHTML = `
+      <div class="pr-avatar">${avatar}</div>
+      <div class="pr-bubble">${formattedText}</div>
+    `;
+  }
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'pr-msg ai';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="pr-avatar">🤖</div>
+    <div class="pr-bubble">
+      <div class="pr-typing">
+        <div class="pr-dot"></div><div class="pr-dot"></div><div class="pr-dot"></div>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+}
+
+</script>
+<script>
+// Source: js\boot.js
+// ═══════════════════════════════════
+// BOOT — инициализация
+// ═══════════════════════════════════
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+if(S.onboardingDone){
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('appHdr').style.display='';
+  document.getElementById('appNav').style.display='';
+  document.getElementById('appMain').style.display='';
+  initApp();
+} else {
+  // prefill name if saved
+  if(S.name && S.name!=='Азамат') document.getElementById('nameInput').value=S.name;
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => console.log('SW registered'))
+    .catch(err => console.log('SW registration failed'));
+}
+
+</script>
 
 </body>
 </html>

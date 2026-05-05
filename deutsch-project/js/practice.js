@@ -129,6 +129,24 @@ let activeScenario = null;
 let chatHistory = [];
 let isTyping = false;
 
+function renderCleanCounter() {
+  const el = document.getElementById('cleanCounter');
+  if (el) el.textContent = `Реплик без ошибок: ${S.aiCleanStreak || 0} 🎯`;
+}
+
+function hasErrorMarkers(text) {
+  return /❌|Fehler|ошиб|неправильно|falsch|incorrect/i.test(text || '');
+}
+
+function updateCleanStreak(aiReply) {
+  if (hasErrorMarkers(aiReply)) S.aiCleanStreak = 0;
+  else S.aiCleanStreak = (S.aiCleanStreak || 0) + 1;
+  saveS();
+  renderCleanCounter();
+  addMessage('system', `Реплик без ошибок: ${S.aiCleanStreak} 🎯`);
+  if (typeof checkAchievements === 'function') checkAchievements();
+}
+
 function getRelevantScenarios() {
   return SCENARIOS.filter((scenario) => scenario.spec === 'general' || S.specs.includes(scenario.spec));
 }
@@ -190,6 +208,7 @@ function startScenario(scenario) {
   document.getElementById('chatMessages').innerHTML = '';
   document.getElementById('prHint').style.display = 'none';
   document.getElementById('chatInput').value = '';
+  renderCleanCounter();
   aiOpen(scenario);
 }
 
@@ -233,6 +252,7 @@ async function sendMsg() {
   hideTyping();
   addMessage('ai', reply);
   chatHistory.push({ role: 'assistant', content: reply });
+  updateCleanStreak(reply);
 }
 
 async function requestHint() {
@@ -321,16 +341,26 @@ async function callClaude(systemPrompt, userMessage, history) {
   }
 }
 
+function formatInlineCorrections(html) {
+  return html.replace(/([^<\n:;]+?)\s*(?:→|-&gt;)\s*([^<\n;]+)/g, (_, wrong, right) => {
+    const cleanWrong = wrong.trim();
+    const cleanRight = right.trim();
+    if (!cleanWrong || !cleanRight) return _;
+    return `<span class="pr-wrong-inline">${cleanWrong}</span><span class="pr-right-inline">${cleanRight}</span>`;
+  });
+}
+
 function addMessage(role, text) {
   const container = document.getElementById('chatMessages');
   const div = document.createElement('div');
   div.className = `pr-msg ${role}`;
 
-  const formattedText = esc(text)
+  let formattedText = esc(text)
     .replace(/❌ Fehler:(.*?)→ ✅ Richtig:(.*?)(?=<br>|[\r\n]|$)/g, (_, wrong, right) => {
       return `<div class="pr-correction"><b>❌ Ошибка:</b>${wrong}<br><b>✅ Правильно:</b>${right}</div>`;
     })
     .replace(/\r?\n/g, '<br>');
+  formattedText = formatInlineCorrections(formattedText);
 
   if (role === 'system') {
     div.innerHTML = `<div class="pr-bubble" style="max-width:100%;">${formattedText}</div>`;

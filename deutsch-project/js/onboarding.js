@@ -149,6 +149,7 @@ function showLTResult() {
     .filter((item) => S.specs.includes(item.id))
     .map((item) => item.name)
     .join(', ') || 'Общий';
+  const recommended = (typeof REQUIRED_LESSONS !== 'undefined' && REQUIRED_LESSONS[0]) || (typeof APP_LESSONS !== 'undefined' && APP_LESSONS[0]) || GENERAL_LESSONS[0];
   document.getElementById('planPreview').innerHTML = `
     <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Твой план будет включать:</div>
     <div style="font-size:13px;line-height:1.8;color:var(--text);">
@@ -157,12 +158,17 @@ function showLTResult() {
       ✦ Домашние задания под каждый урок<br>
       ✦ Разговорник и словарь по специальности
     </div>
+    <div style="margin-top:18px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Рекомендуем начать с:</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;">${recommended.title}</div>
+      <button class="btn btn-gold btn-sm" onclick="finishOnboarding('${recommended.id}')">Перейти к уроку →</button>
+    </div>
   `;
   document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
   document.getElementById('ob4').classList.add('on');
 }
 
-function finishOnboarding() {
+function finishOnboarding(openLessonId) {
   S.onboardingDone = true;
   saveS();
   document.getElementById('onboarding').classList.add('hidden');
@@ -170,4 +176,9 @@ function finishOnboarding() {
   document.getElementById('appNav').style.display = '';
   document.getElementById('appMain').style.display = '';
   initApp();
+  if (typeof checkAchievements === 'function') checkAchievements();
+  if (openLessonId) {
+    goPage('plan');
+    setTimeout(() => openLessonById(openLessonId), 50);
+  }
 }

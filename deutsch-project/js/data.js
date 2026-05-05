@@ -28,6 +28,160 @@ const LEVEL_TEST = [
   {q:"ungeachtet",opts:["несмотря на","согласно","вместо","благодаря"],a:0,lvl:'B2'},
 ];
 
+const vocabularyData = [
+  { de: 'das Haus', ru: 'дом', example: 'Das Haus ist groß und hell.', category: 'Everyday' },
+  { de: 'das Wasser', ru: 'вода', example: 'Ich trinke jeden Morgen Wasser.', category: 'Everyday' },
+  { de: 'die Arbeit', ru: 'работа', example: 'Die Arbeit beginnt um neun Uhr.', category: 'Everyday' },
+  { de: 'der Morgen', ru: 'утро', example: 'Der Morgen ist ruhig.', category: 'Everyday' },
+  { de: 'der Abend', ru: 'вечер', example: 'Am Abend lerne ich Deutsch.', category: 'Everyday' },
+  { de: 'die Zeit', ru: 'время', example: 'Ich habe heute wenig Zeit.', category: 'Everyday' },
+  { de: 'die Familie', ru: 'семья', example: 'Meine Familie wohnt in der Stadt.', category: 'Everyday' },
+  { de: 'der Freund', ru: 'друг', example: 'Mein Freund kommt aus Berlin.', category: 'Everyday' },
+  { de: 'die Straße', ru: 'улица', example: 'Die Straße ist sehr lang.', category: 'Everyday' },
+  { de: 'der Bahnhof', ru: 'вокзал', example: 'Der Bahnhof ist links.', category: 'Everyday' },
+  { de: 'das Essen', ru: 'еда', example: 'Das Essen schmeckt gut.', category: 'Everyday' },
+  { de: 'der Kaffee', ru: 'кофе', example: 'Der Kaffee ist heiß.', category: 'Everyday' },
+  { de: 'das Brot', ru: 'хлеб', example: 'Das Brot ist frisch.', category: 'Everyday' },
+  { de: 'die Uhr', ru: 'часы', example: 'Die Uhr zeigt acht Uhr.', category: 'Everyday' },
+  { de: 'der Tag', ru: 'день', example: 'Der Tag ist schön.', category: 'Everyday' },
+  { de: 'die Woche', ru: 'неделя', example: 'Die Woche hat sieben Tage.', category: 'Everyday' },
+  { de: 'das Geld', ru: 'деньги', example: 'Ich brauche Geld für die Fahrkarte.', category: 'Everyday' },
+  { de: 'die Frage', ru: 'вопрос', example: 'Ich habe eine Frage.', category: 'Everyday' },
+  { de: 'die Antwort', ru: 'ответ', example: 'Die Antwort ist richtig.', category: 'Everyday' },
+  { de: 'lernen', ru: 'учиться', example: 'Wir lernen jeden Tag Deutsch.', category: 'Everyday' },
+  { de: 'der Computer', ru: 'компьютер', example: 'Der Computer startet schnell.', category: 'IT' },
+  { de: 'die Software', ru: 'программное обеспечение', example: 'Die Software läuft stabil.', category: 'IT' },
+  { de: 'das Netzwerk', ru: 'сеть', example: 'Das Netzwerk ist heute langsam.', category: 'IT' },
+  { de: 'der Fehler', ru: 'ошибка', example: 'Der Fehler steht im Log.', category: 'IT' },
+  { de: 'die Daten', ru: 'данные', example: 'Die Daten werden gespeichert.', category: 'IT' },
+  { de: 'entwickeln', ru: 'разрабатывать', example: 'Wir entwickeln eine neue App.', category: 'IT' },
+  { de: 'speichern', ru: 'сохранять', example: 'Bitte speichern Sie die Datei.', category: 'IT' },
+  { de: 'der Server', ru: 'сервер', example: 'Der Server ist erreichbar.', category: 'IT' },
+  { de: 'die Datenbank', ru: 'база данных', example: 'Die Datenbank enthält Kundendaten.', category: 'IT' },
+  { de: 'das Passwort', ru: 'пароль', example: 'Das Passwort ist zu kurz.', category: 'IT' },
+  { de: 'die Datei', ru: 'файл', example: 'Die Datei liegt im Ordner.', category: 'IT' },
+  { de: 'der Ordner', ru: 'папка', example: 'Der Ordner ist leer.', category: 'IT' },
+  { de: 'die Anwendung', ru: 'приложение', example: 'Die Anwendung reagiert nicht.', category: 'IT' },
+  { de: 'der Bildschirm', ru: 'экран', example: 'Der Bildschirm bleibt schwarz.', category: 'IT' },
+  { de: 'die Tastatur', ru: 'клавиатура', example: 'Die Tastatur funktioniert gut.', category: 'IT' },
+  { de: 'die Cloud', ru: 'облако', example: 'Wir speichern Backups in der Cloud.', category: 'IT' },
+  { de: 'das Backup', ru: 'резервная копия', example: 'Das Backup läuft nachts.', category: 'IT' },
+  { de: 'die Verbindung', ru: 'соединение', example: 'Die Verbindung ist unterbrochen.', category: 'IT' },
+  { de: 'aktualisieren', ru: 'обновлять', example: 'Wir aktualisieren das System.', category: 'IT' },
+  { de: 'testen', ru: 'тестировать', example: 'Die Entwickler testen den Code.', category: 'IT' },
+  { de: 'der Arzt', ru: 'врач', example: 'Der Arzt untersucht den Patienten.', category: 'Медицина' },
+  { de: 'die Ärztin', ru: 'врач-женщина', example: 'Die Ärztin spricht mit der Patientin.', category: 'Медицина' },
+  { de: 'das Krankenhaus', ru: 'больница', example: 'Das Krankenhaus ist in der Nähe.', category: 'Медицина' },
+  { de: 'die Diagnose', ru: 'диагноз', example: 'Die Diagnose ist noch nicht klar.', category: 'Медицина' },
+  { de: 'das Rezept', ru: 'рецепт', example: 'Der Arzt schreibt ein Rezept.', category: 'Медицина' },
+  { de: 'die Symptome', ru: 'симптомы', example: 'Welche Symptome haben Sie?', category: 'Медицина' },
+  { de: 'der Patient', ru: 'пациент', example: 'Der Patient hat Fieber.', category: 'Медицина' },
+  { de: 'die Patientin', ru: 'пациентка', example: 'Die Patientin braucht Ruhe.', category: 'Медицина' },
+  { de: 'die Untersuchung', ru: 'обследование', example: 'Die Untersuchung dauert zehn Minuten.', category: 'Медицина' },
+  { de: 'die Schmerzen', ru: 'боли', example: 'Ich habe starke Schmerzen.', category: 'Медицина' },
+  { de: 'das Fieber', ru: 'температура', example: 'Das Fieber ist hoch.', category: 'Медицина' },
+  { de: 'die Tablette', ru: 'таблетка', example: 'Nehmen Sie eine Tablette nach dem Essen.', category: 'Медицина' },
+  { de: 'die Apotheke', ru: 'аптека', example: 'Die Apotheke ist neben dem Krankenhaus.', category: 'Медицина' },
+  { de: 'die Behandlung', ru: 'лечение', example: 'Die Behandlung beginnt heute.', category: 'Медицина' },
+  { de: 'die Therapie', ru: 'терапия', example: 'Die Therapie hilft gut.', category: 'Медицина' },
+  { de: 'der Termin', ru: 'приём', example: 'Ich habe einen Termin beim Arzt.', category: 'Медицина' },
+  { de: 'die Versicherung', ru: 'страховка', example: 'Die Versicherung bezahlt die Behandlung.', category: 'Медицина' },
+  { de: 'der Blutdruck', ru: 'кровяное давление', example: 'Der Blutdruck ist normal.', category: 'Медицина' },
+  { de: 'der Notfall', ru: 'экстренный случай', example: 'Das ist ein medizinischer Notfall.', category: 'Медицина' },
+  { de: 'husten', ru: 'кашлять', example: 'Ich huste seit drei Tagen.', category: 'Медицина' },
+];
+
+const lessonsData = [
+  {
+    id: 'lesson-greetings',
+    title: 'Приветствия и знакомство',
+    level: 'A1',
+    category: 'Everyday',
+    theory: `В немецком знакомстве важны короткие устойчивые формулы: Hallo, Guten Tag, Ich heiße... и Freut mich. Для нейтральной и вежливой речи используй Sie: Wie heißen Sie? Woher kommen Sie?
+
+Если говоришь с коллегой или новым знакомым в неформальной ситуации, можно использовать du: Wie heißt du? Ich bin Azamat. В A1 достаточно назвать имя, страну и профессию одной-двумя простыми фразами.`,
+    examples: [
+      { de: 'Hallo, ich heiße Azamat.', ru: 'Привет, меня зовут Азамат.' },
+      { de: 'Guten Tag, wie heißen Sie?', ru: 'Добрый день, как вас зовут?' },
+      { de: 'Ich komme aus Pakistan.', ru: 'Я из Пакистана.' },
+      { de: 'Freut mich, Sie kennenzulernen.', ru: 'Приятно с вами познакомиться.' },
+    ],
+    quiz: [
+      { question: 'Как перевести “Guten Tag”?', options: ['Добрый день', 'Доброй ночи', 'До свидания', 'Спасибо'], correct: 0 },
+      { question: 'Выбери фразу “Меня зовут Азамат”.', options: ['Ich heiße Azamat.', 'Ich habe Azamat.', 'Ich komme Azamat.', 'Ich bin aus Azamat.'], correct: 0 },
+      { question: 'Что означает “Freut mich”?', options: ['Я устал', 'Приятно познакомиться', 'Где вокзал?', 'До завтра'], correct: 1 },
+    ],
+  },
+  {
+    id: 'lesson-numbers-time',
+    title: 'Числа и время',
+    level: 'A1',
+    category: 'Everyday',
+    theory: `Числа нужны для времени, цен, адресов и встреч. На старте выучи eins, zwei, drei, zehn, zwanzig и вопрос Wie spät ist es? — “Который час?”.
+
+Для полного часа немецкий использует простую схему: Es ist acht Uhr. Для расписания и встреч добавляй um: Der Termin ist um neun Uhr. Это значит “в девять часов”.`,
+    examples: [
+      { de: 'Es ist acht Uhr.', ru: 'Сейчас восемь часов.' },
+      { de: 'Der Termin ist um neun Uhr.', ru: 'Приём в девять часов.' },
+      { de: 'Ich arbeite von acht bis fünf.', ru: 'Я работаю с восьми до пяти.' },
+      { de: 'Wie spät ist es?', ru: 'Который час?' },
+    ],
+    quiz: [
+      { question: 'Что значит “Wie spät ist es?”', options: ['Сколько это стоит?', 'Который час?', 'Как вас зовут?', 'Где работа?'], correct: 1 },
+      { question: 'Как сказать “в девять часов”?', options: ['um neun Uhr', 'am neun Uhr', 'in neun Uhr', 'von neun Uhr'], correct: 0 },
+      { question: 'Как переводится “zehn”?', options: ['три', 'пять', 'десять', 'двадцать'], correct: 2 },
+    ],
+  },
+  {
+    id: 'lesson-it-workday',
+    title: 'IT: рабочий день программиста',
+    level: 'A1',
+    category: 'IT',
+    theory: `В IT-немецком на A1 полезны слова der Computer, die Software, der Fehler, die Daten и глаголы entwickeln, testen, speichern. С ними можно описать рабочий день очень простыми предложениями.
+
+Порядок слов в обычном предложении: подлежащее + глагол + остальная информация. Например: Ich entwickle eine App. Wir testen den Code. Если говоришь о проблеме, используй Es gibt einen Fehler — “есть ошибка”.`,
+    examples: [
+      { de: 'Ich entwickle eine App.', ru: 'Я разрабатываю приложение.' },
+      { de: 'Wir testen den Code.', ru: 'Мы тестируем код.' },
+      { de: 'Ich speichere die Daten.', ru: 'Я сохраняю данные.' },
+      { de: 'Es gibt einen Fehler im Programm.', ru: 'В программе есть ошибка.' },
+    ],
+    quiz: [
+      { question: 'Как переводится “der Fehler”?', options: ['сервер', 'ошибка', 'экран', 'папка'], correct: 1 },
+      { question: 'Выбери “Мы тестируем код”.', options: ['Wir testen den Code.', 'Wir speichern den Kaffee.', 'Der Code testet uns.', 'Ich teste die Uhr.'], correct: 0 },
+      { question: 'Что значит “speichern”?', options: ['сохранять', 'лечить', 'знакомиться', 'покупать'], correct: 0 },
+    ],
+  },
+  {
+    id: 'lesson-doctor',
+    title: 'Медицина: у врача',
+    level: 'A1',
+    category: 'Медицина',
+    theory: `На приёме у врача важно коротко описать состояние: Ich habe Schmerzen, Ich habe Fieber, Mir ist nicht gut. Врач часто спрашивает Seit wann? — “С каких пор?”.
+
+Для базового диалога хватит слов der Arzt, der Patient, die Symptome, die Untersuchung и das Rezept. После осмотра можно услышать: Ich schreibe ein Rezept — “Я выпишу рецепт”.`,
+    examples: [
+      { de: 'Ich habe Schmerzen.', ru: 'У меня боли.' },
+      { de: 'Seit wann haben Sie Fieber?', ru: 'С каких пор у вас температура?' },
+      { de: 'Der Arzt untersucht den Patienten.', ru: 'Врач осматривает пациента.' },
+      { de: 'Ich brauche ein Rezept.', ru: 'Мне нужен рецепт.' },
+    ],
+    quiz: [
+      { question: 'Что значит “die Symptome”?', options: ['страховка', 'симптомы', 'сеть', 'ответ'], correct: 1 },
+      { question: 'Как сказать “У меня температура”?', options: ['Ich habe Fieber.', 'Ich bin Rezept.', 'Ich mache Arzt.', 'Ich speichere Fieber.'], correct: 0 },
+      { question: 'Как переводится “das Krankenhaus”?', options: ['аптека', 'больница', 'приём', 'таблетка'], correct: 1 },
+    ],
+  },
+];
+
+const lessonColors = ['c-gold', 'c-green', 'c-blue', 'c-teal'];
+const lessonGermanTitles = {
+  'lesson-greetings': 'Begrüßung und Vorstellung',
+  'lesson-numbers-time': 'Zahlen und Uhrzeit',
+  'lesson-it-workday': 'IT-Arbeitstag',
+  'lesson-doctor': 'Beim Arzt',
+};
+
 const GENERAL_LESSONS = [
   { id:'g1', title:'Знакомство', de:'Vorstellung', color:'c-gold', type:'Базовый A1',
     words:[

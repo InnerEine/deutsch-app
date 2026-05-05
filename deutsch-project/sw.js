@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deutsch-app-v3';
+const CACHE_NAME = 'deutsch-app-v4-gamification';
 const urlsToCache = [
   './',
   './index.html',
