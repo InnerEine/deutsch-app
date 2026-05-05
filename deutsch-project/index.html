@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deutsch · Azamat</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ═══════════════ ONBOARDING ═══════════════ -->
+<div id="onboarding">
+<div class="ob-wrap">
+
+  <!-- STEP 1: Welcome -->
+  <div class="ob-step on" id="ob1">
+    <div style="margin-bottom:48px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--gold);letter-spacing:-1px;margin-bottom:48px;">DEUTSCH<span style="color:var(--muted);">.app</span></div>
+      <div class="ob-eyebrow">Добро пожаловать</div>
+      <div class="ob-title">Учи немецкий<br>под <em>себя</em></div>
+      <div class="ob-sub">Пройди 2-минутный онбординг — и получишь персональный план, подобранный под твою специальность и уровень.</div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Как тебя зовут?</label>
+      <input class="ob-input" id="nameInput" placeholder="Например: Азамат" maxlength="30">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="obNext(2)">Начать →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Specialization -->
+  <div class="ob-step" id="ob2">
+    <div class="ob-eyebrow">Шаг 1 из 3 — Специализация</div>
+    <div class="ob-title">Выбери свою<br><em>сферу</em></div>
+    <div class="ob-sub">Немецкий будет адаптирован под твои профессиональные термины и сценарии. Можно выбрать несколько.</div>
+    <div class="spec-grid" id="specGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="obNext(1)">← Назад</button>
+      <button class="btn btn-gold" onclick="obNext(3)">Далее →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Level test intro -->
+  <div class="ob-step" id="ob3">
+    <div class="ob-eyebrow">Шаг 2 из 3 — Тест уровня</div>
+    <div class="ob-title">Проверим<br>твой <em>уровень</em></div>
+    <div class="ob-sub">10 быстрых вопросов. Не гугли — результат нужен честный, чтобы подобрать правильный старт.</div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="obNext(2)">← Назад</button>
+      <button class="btn btn-gold" onclick="startLevelTest()">Начать тест →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3b: Test in progress -->
+  <div class="ob-step" id="ob3b">
+    <div class="ob-eyebrow">Тест уровня</div>
+    <div class="lt-progress"><div class="lt-bar" id="ltBar" style="width:0%"></div></div>
+    <div class="lt-q-num" id="ltNum">Вопрос 1 из 10</div>
+    <div class="lt-word" id="ltWord"></div>
+    <div class="lt-opts" id="ltOpts"></div>
+    <button class="btn btn-gold qz-next" id="ltNext" onclick="ltNextQ()" style="display:none;">Следующий →</button>
+  </div>
+
+  <!-- STEP 4: Result -->
+  <div class="ob-step" id="ob4">
+    <div class="ob-eyebrow">Шаг 3 из 3 — Результат</div>
+    <div class="ob-title">Твой уровень:</div>
+    <div style="margin:32px 0;">
+      <div class="result-ring" id="resultRing">
+        <div class="result-score" id="resultScore">0</div>
+        <div class="result-of">из 10</div>
+      </div>
+      <div class="result-level" id="resultLevel">A1</div>
+      <div class="result-desc" id="resultDesc"></div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:12px;margin-bottom:28px;" id="planPreview"></div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-gold" onclick="finishOnboarding()" style="font-size:16px;padding:16px 32px;">Начать обучение →</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<header class="hdr" id="appHdr" style="display:none;">
+  <div class="hdr-logo">DEUTSCH<span>.app</span></div>
+  <div class="hdr-user">
+    <div class="hdr-avatar" id="hdrAvatar">A</div>
+    <div class="hdr-name" id="hdrName">Азамат</div>
+    <div class="hdr-level" id="hdrLevel">A1</div>
+  </div>
+</header>
+
+<nav class="nav" id="appNav" style="display:none;">
+  <button class="nav-btn on" onclick="goPage('dashboard')">📊 Главная</button>
+  <button class="nav-btn" onclick="goPage('plan')">🗺 Мой план</button>
+  <button class="nav-btn" onclick="goPage('homework')">✏️ Задания</button>
+  <button class="nav-btn" onclick="goPage('vocab')">📚 Словарь</button>
+  <button class="nav-btn" onclick="goPage('phrases')">💬 Фразы</button>
+  <button class="nav-btn" onclick="goPage('practice')" style="color:var(--teal);">🤖 AI Практика</button>
+  <button class="nav-btn" onclick="goPage('repetition')">🔄 Повторение</button>
+  <button class="nav-btn" onclick="goPage('login')">🔑 Аккаунт</button>
+  <button class="nav-btn" onclick="goPage('settings')">⚙️ Настройки</button>
+</nav>
+
+<div id="appMain" style="display:none;">
+
+  <!-- DASHBOARD -->
+  <div class="page on" id="page-dashboard">
+    <div class="container">
+      <div class="dash-greeting">Привет, <em id="dName">Азамат</em>!</div>
+      <div class="dash-meta" id="dMeta">уровень A1 · немецкий с нуля</div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-val" id="kpi-words">0</div><div class="kpi-label">Слов выучено</div></div>
+        <div class="kpi"><div class="kpi-val" id="kpi-lessons">0</div><div class="kpi-label">Уроков</div></div>
+        <div class="kpi"><div class="kpi-val" id="kpi-hw">0</div><div class="kpi-label">Заданий сдано</div></div>
+        <div class="kpi"><div class="kpi-val" id="kpi-streak">0</div><div class="kpi-label">Очки</div></div>
+      </div>
+      <div class="section-label">Уровни</div>
+      <div class="level-track" id="levelTrack"></div>
+      <div class="section-label">Следующий урок</div>
+      <div id="nextLesson"></div>
+      <div style="margin-top:28px;" class="section-label">Ближайшее задание</div>
+      <div id="nextHW"></div>
+    </div>
+  </div>
+
+  <!-- PLAN -->
+  <div class="page" id="page-plan">
+    <div class="container">
+      <div style="margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;">Мой план обучения</div>
+        <div class="spec-pill" id="planSpecLabel">IT · Медицина</div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:32px;">Уроки подобраны под твою специальность и уровень.</div>
+      <div class="section-label">Общий немецкий</div>
+      <div class="plan-grid" id="generalGrid"></div>
+      <div class="section-label" style="margin-top:32px;" id="specGridLabel">Профессиональные темы</div>
+      <div class="plan-grid" id="specPlanGrid"></div>
+    </div>
+  </div>
+
+  <!-- HOMEWORK -->
+  <div class="page" id="page-homework">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Домашние задания</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Hausaufgaben · Ответы сохраняются в браузере</div>
+      <div class="hw-filter" id="hwFilter"></div>
+      <div class="hw-stats" id="hwStats"></div>
+      <div class="hw-list" id="hwList"></div>
+    </div>
+  </div>
+
+  <!-- VOCAB -->
+  <div class="page" id="page-vocab">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Словарь</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px;">Все слова по темам, включая профессиональные термины</div>
+      <div class="vocab-filter" id="vocabFilter"></div>
+      <div class="vocab-wrap"><table class="vocab-table"><thead><tr><th>Немецкий</th><th>Русский</th><th>Пример</th><th>Раздел</th></tr></thead><tbody id="vocabBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- PHRASES -->
+  <div class="page" id="page-phrases">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Разговорник</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Готовые фразы для общения</div>
+      <div class="phrases-grid" id="phrasesGrid"></div>
+    </div>
+  </div>
+
+  <!-- AI PRACTICE -->
+  <div class="page" id="page-practice">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:4px;">AI Практика</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Живые диалоги с AI на немецком · Разбор ошибок · Подсказки</div>
+
+      <div id="practiceScenarios">
+        <div class="section-label">Выбери сценарий</div>
+        <div class="pr-scenarios" id="scenarioGrid"></div>
+      </div>
+
+      <div id="practiceChat" style="display:none;">
+        <div class="pr-chat-hdr">
+          <div>
+            <div class="pr-scenario-name" id="activeSName"></div>
+            <div class="pr-scenario-sub" id="activeSDesc"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-ghost btn-sm" onclick="endChat()">← Сценарии</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearChat()" style="color:var(--red);border-color:var(--red);">Сбросить</button>
+          </div>
+        </div>
+        <div class="pr-tip" id="prTip"></div>
+        <div class="pr-messages" id="chatMessages"></div>
+        <div class="pr-input-wrap">
+          <div class="pr-hint" id="prHint" style="display:none;"></div>
+          <div style="display:flex;gap:10px;align-items:flex-end;">
+            <textarea class="pr-input" id="chatInput"
+              placeholder="Напиши по-немецки… или по-русски если не знаешь как"
+              rows="1"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
+              oninput="autoResize(this)"></textarea>
+            <button class="pr-send" onclick="sendMsg()" id="sendBtn">→</button>
+          </div>
+          <div class="pr-actions">
+            <button class="pr-action-btn" onclick="requestHint()">💡 Подсказка</button>
+            <button class="pr-action-btn" onclick="requestTranslation()">🔄 Переведи за меня</button>
+            <button class="pr-action-btn" onclick="requestFeedback()">✏️ Разбор ошибок</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Настройки профиля</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Изменить специальности или перепройти тест уровня</div>
+      <div class="section-label">Твои данные</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:12px;margin-bottom:28px;">
+        <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Имя</label>
+        <input class="ob-input" id="settingsName" value="">
+        <div style="margin-top:16px;">
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Уровень</label>
+          <div style="font-size:16px;color:var(--gold);font-weight:500;" id="settingsLevel">A1</div>
+        </div>
+      </div>
+      <div class="section-label">Специальности</div>
+      <div class="spec-grid" id="settingsSpecGrid"></div>
+      <div class="btn-row" style="margin-top:28px;">
+        <button class="btn btn-gold" onclick="saveSettings()">Сохранить изменения</button>
+        <button class="btn btn-ghost" onclick="retakeTest()">Перепройти тест уровня</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPETITION -->
+  <div class="page" id="page-repetition">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Интервальное повторение</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Флеш-карточки для закрепления слов · Алгоритм Leitner</div>
+      <div id="repStatus"></div>
+      <div id="repCard" style="display:none;">
+        <div class="rep-card">
+          <div class="rep-front" id="repFront"></div>
+          <div class="rep-back" id="repBack" style="display:none;"></div>
+          <div class="rep-actions" style="display:none;" id="repActions">
+            <button class="btn btn-red" onclick="repAnswer(false)">❌ Забыл</button>
+            <button class="btn btn-green" onclick="repAnswer(true)">✅ Помню</button>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:20px;">
+          <button class="btn btn-gold" onclick="flipCard()">Показать перевод</button>
+        </div>
+      </div>
+      <div id="repDone" style="display:none;text-align:center;color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:14px;margin-top:40px;">
+        🎉 Все слова на сегодня повторены! Приходите завтра.
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="page" id="page-login">
+    <div class="container">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Аккаунт</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Регистрация и вход для синхронизации прогресса</div>
+      <div id="loginForm">
+        <div style="margin-bottom:20px;">
+          <label style="display:block;margin-bottom:8px;font-weight:500;">Email</label>
+          <input type="email" id="loginEmail" placeholder="your@email.com" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--text);">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block;margin-bottom:8px;font-weight:500;">Пароль</label>
+          <input type="password" id="loginPassword" placeholder="Пароль" style="width:100%;padding:12px;border:1px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--text);">
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+          <button class="btn btn-green" onclick="loginUser()">Войти</button>
+          <button class="btn btn-blue" onclick="registerUser()">Регистрация</button>
+        </div>
+        <div id="loginStatus" style="color:var(--muted);font-size:12px;"></div>
+      </div>
+      <div id="loginProfile" style="display:none;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:18px;font-weight:600;margin-bottom:8px;">Привет, <span id="profileName"></span>!</div>
+          <div style="color:var(--muted);">Уровень: <span id="profileLevel"></span> | Очки: <span id="profilePoints"></span></div>
+        </div>
+        <button class="btn btn-red" onclick="logoutUser()">Выйти</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /appMain -->
+
+<!-- LESSON MODAL -->
+<div class="modal-bg" id="lessonModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-ttl" id="modalTtl">Урок</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- JS — подключаем по порядку -->
+<script src="js/data.js"></script>
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/onboarding.js"></script>
+<script src="js/app.js"></script>
+<script src="js/practice.js"></script>
+<script src="js/boot.js"></script>
+
+</body>
+</html>

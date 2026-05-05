@@ -1,0 +1,17 @@
+backend/venv/
+backend/__pycache__/
+backend/instance/*.db
+backend/instance/*.sqlite
+*.pyc
+
+.env
+.env.*
+*.log
+
+node_modules/
+dist/
+build/
+.cache/
+
+.DS_Store
+Thumbs.db
