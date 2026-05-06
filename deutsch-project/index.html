@@ -300,6 +300,16 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .vf-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:8px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;border-radius:8px;transition:all .2s;}
 .vf-btn:hover,.vf-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,96,.05);}
 .vocab-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+.vocab-filter-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;}
+.vocab-filter-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);min-width:86px;}
+.vocab-detail{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:18px 20px;margin-bottom:18px;}
+.vocab-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px;}
+.vocab-detail-word{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:var(--gold);}
+.vocab-detail-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.vocab-context{border-top:1px solid var(--border);padding-top:12px;margin-top:12px;font-size:13px;line-height:1.7;color:var(--muted);}
+.ctx-word{background:rgba(240,192,96,.34);color:var(--text);border-radius:4px;padding:.02em .18em;font-style:normal;}
+.vocab-row{cursor:pointer;}
+.vocab-row.active td{background:rgba(240,192,96,.06);}
 
 /* PHRASES */
 .phrases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px;}
@@ -492,15 +502,41 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .pr-hint{background:rgba(240,192,96,.07);border:1px solid rgba(240,192,96,.2);border-radius:8px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold);margin-bottom:10px;line-height:1.6;}
 
 /* ── REPETITION ── */
-.rep-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:32px;text-align:center;min-height:300px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
+.rep-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:32px;text-align:center;min-height:340px;max-width:540px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;transform-style:preserve-3d;transition:transform .28s ease,box-shadow .28s ease;cursor:grab;user-select:none;touch-action:none;}
+.rep-card:active{cursor:grabbing;}
 .rep-card.flash-correct{animation:green-flash .45s ease;}
 .rep-card.shake{animation:shake .35s ease;}
-.rep-front, .rep-back{position:absolute;inset:0;padding:32px;display:flex;flex-direction:column;justify-content:center;text-align:center;}
+.rep-front, .rep-back{position:absolute;inset:0;padding:32px;display:flex;flex-direction:column;justify-content:center;text-align:center;backface-visibility:hidden;transition:transform .45s ease;}
 .rep-back{background:var(--bg2);transform:rotateY(180deg);}
 .rep-card.flipped .rep-front{transform:rotateY(180deg);}
-.rep-card.flipped .rep-back{transform:rotateY(0deg);}
+.rep-card.flipped .rep-back{transform:rotateY(360deg);}
 .rep-actions{display:flex;gap:12px;justify-content:center;margin-top:20px;}
-.rep-actions button{flex:1;max-width:120px;}
+.rep-actions button{flex:1;max-width:150px;}
+.rep-word{font-family:'Syne',sans-serif;font-weight:800;font-size:42px;line-height:1.05;color:var(--gold);margin-bottom:10px;}
+.rep-pron{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:14px;}
+.rep-context{font-size:13px;line-height:1.7;color:var(--muted);margin-top:12px;}
+.rep-swipe-overlay{position:absolute;top:22px;z-index:3;font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:2px;padding:8px 12px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .12s;}
+.rep-know{right:22px;color:var(--green);border:1px solid rgba(61,214,140,.5);background:rgba(61,214,140,.08);}
+.rep-unknown{left:22px;color:var(--red);border:1px solid rgba(240,85,85,.5);background:rgba(240,85,85,.08);}
+.rep-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px;}
+.rep-stat{border:1px solid var(--border);background:var(--bg2);border-radius:10px;padding:12px 14px;}
+.rep-stat-value{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;color:var(--gold);line-height:1;}
+.rep-stat-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+.rep-card.done{cursor:default;}
+
+.weak-banner{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.08);border-radius:12px;padding:14px 16px;margin:0 0 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.weak-banner-copy{font-size:13px;line-height:1.6;color:var(--text);}
+.profile-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 14px;}
+.profile-tab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:8px;padding:8px 12px;cursor:pointer;}
+.profile-tab.on{border-color:var(--gold);color:var(--gold);background:rgba(240,192,96,.06);}
+.error-bars{display:grid;gap:10px;margin-bottom:16px;}
+.error-bar-row{display:grid;grid-template-columns:minmax(100px,170px) 1fr 34px;gap:10px;align-items:center;font-size:12px;}
+.error-bar-label{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.error-bar-track{height:9px;border-radius:999px;background:var(--border);overflow:hidden;}
+.error-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:999px;}
+.error-list{display:grid;gap:8px;margin-top:14px;}
+.error-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;}
+.error-item-topic{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
 .xp-float{position:absolute;left:50%;top:24px;transform:translateX(-50%);font-family:'Syne',sans-serif;font-weight:800;color:var(--green);pointer-events:none;animation:xp-pop 1s ease forwards;text-shadow:0 2px 12px rgba(0,0,0,.25);z-index:4;}
 @keyframes green-flash{0%{box-shadow:0 0 0 rgba(61,214,140,0);}35%{box-shadow:0 0 38px rgba(61,214,140,.35);border-color:var(--green);}100%{box-shadow:0 0 0 rgba(61,214,140,0);}}
 @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
@@ -696,6 +732,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
         <div class="kpi"><div class="kpi-val" id="kpi-streak">🔥 0 дней подряд</div><div class="kpi-label">Серия</div></div>
       </div>
       <div class="daily-goal" id="dailyGoal"></div>
+      <div id="weakBanner"></div>
       <div class="section-label">Достижения</div>
       <div class="achievements-panel"><div class="ach-grid" id="achievementsGrid"></div></div>
       <div class="section-label">Уровни</div>
@@ -744,9 +781,10 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   <div class="page" id="page-vocab">
     <div class="container">
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Словарь</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:24px;">Все слова по темам, включая профессиональные термины</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px;">Все слова по темам, включая контекст из статей и интервальное повторение</div>
       <div class="vocab-filter" id="vocabFilter"></div>
-      <div class="vocab-wrap"><table class="vocab-table"><thead><tr><th>Немецкий</th><th>Русский</th><th>Пример</th><th>Раздел</th></tr></thead><tbody id="vocabBody"></tbody></table></div>
+      <div id="vocabDetail"></div>
+      <div class="vocab-wrap"><table class="vocab-table"><thead><tr><th>Немецкий</th><th>Уровень</th><th>Перевод / определение</th><th>Контекст</th><th>Теги</th></tr></thead><tbody id="vocabBody"></tbody></table></div>
     </div>
   </div>
 
@@ -832,18 +870,22 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
     <div class="container">
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Интервальное повторение</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Флеш-карточки для закрепления слов · Алгоритм Leitner</div>
+      <div class="vocab-filter" id="repFilter"></div>
+      <div id="repStatsBar"></div>
       <div id="repStatus"></div>
       <div id="repCard" style="display:none;">
-        <div class="rep-card">
+        <div class="rep-card" id="repSwipeCard">
+          <div class="rep-swipe-overlay rep-know">ЗНАЮ ✓</div>
+          <div class="rep-swipe-overlay rep-unknown">НЕ ЗНАЮ ✗</div>
           <div class="rep-front" id="repFront"></div>
-          <div class="rep-back" id="repBack" style="display:none;"></div>
-          <div class="rep-actions" style="display:none;" id="repActions">
-            <button class="btn btn-red" onclick="repAnswer(false)">❌ Забыл</button>
-            <button class="btn btn-green" onclick="repAnswer(true)">✅ Помню</button>
-          </div>
+          <div class="rep-back" id="repBack"></div>
         </div>
-        <div style="text-align:center;margin-top:20px;">
-          <button class="btn btn-gold" onclick="flipCard()">Показать перевод</button>
+        <div class="rep-actions" id="repActions">
+          <button class="btn btn-red" onclick="repAnswer(false)">❌ Не знаю</button>
+          <button class="btn btn-green" onclick="repAnswer(true)">✅ Знаю</button>
+        </div>
+        <div style="text-align:center;margin-top:14px;">
+          <button class="btn btn-gold" onclick="flipCard()">Перевернуть карточку</button>
         </div>
       </div>
       <div id="repDone" style="display:none;text-align:center;color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:14px;margin-top:40px;">
@@ -2250,6 +2292,9 @@ const DEFAULT_STATE = {
   completedReadingSections: [],
   savedReadingWords: [],
   readingDiary: {},
+  cardProgress: {},
+  cardSessionCount: 0,
+  errorHistory: [],
   aiCleanStreak: 0,
   theme: 'dark',
   badges: [],
@@ -2279,6 +2324,37 @@ function readNumberKey(keys, fallback = 0) {
   return fallback;
 }
 
+function normalizeStoredReadingWord(item) {
+  if (!item) return null;
+  const word = item.word || item.de || item.term;
+  if (!word) return null;
+  const articleId = item.context?.articleId || item.articleId || '';
+  const articleTitle = item.context?.articleTitle || item.articleTitle || 'Личный словарь';
+  const slug = String(word).toLowerCase().replace(/[^\p{L}\d]+/gu, '-').replace(/^-+|-+$/g, '') || 'word';
+  return {
+    id: item.id || `reading_${articleId || 'manual'}_${slug}`,
+    word,
+    de: word,
+    wordClass: item.wordClass || (item.phrase ? 'Phrase' : 'Wort'),
+    translation: item.translation || item.ru || '',
+    ru: item.ru || item.translation || '',
+    definition: item.definition || '',
+    pronunciation: item.pronunciation || '',
+    level: item.level || 'A1',
+    context: {
+      articleId,
+      articleTitle,
+      sentence: item.context?.sentence || item.example || '',
+    },
+    tags: Array.isArray(item.tags) && item.tags.length ? item.tags : [articleTitle],
+    examples: Array.isArray(item.examples) ? item.examples : [],
+    addedDate: Number(item.addedDate || Date.now()),
+    leitnerLevel: Math.max(1, Math.min(3, Number(item.leitnerLevel || 1))),
+    phrase: !!item.phrase,
+    cat: item.cat || (item.phrase ? 'Reading phrases' : 'Reading'),
+  };
+}
+
 function normalizeState(state) {
   const next = { ...DEFAULT_STATE, ...(state || {}) };
   next.specs = Array.isArray(next.specs) ? next.specs : [];
@@ -2290,13 +2366,36 @@ function normalizeState(state) {
   next.favorites = Array.isArray(next.favorites) ? next.favorites : [];
   next.completedArticles = Array.isArray(next.completedArticles) ? next.completedArticles : [];
   next.completedReadingSections = Array.isArray(next.completedReadingSections) ? next.completedReadingSections : [];
-  next.savedReadingWords = Array.isArray(next.savedReadingWords) ? next.savedReadingWords : [];
+  next.savedReadingWords = Array.isArray(next.savedReadingWords) ? next.savedReadingWords.map(normalizeStoredReadingWord).filter(Boolean) : [];
   next.readingDiary = next.readingDiary && typeof next.readingDiary === 'object' ? next.readingDiary : {};
+  next.cardProgress = next.cardProgress && typeof next.cardProgress === 'object' ? next.cardProgress : {};
+  next.cardSessionCount = Number.isFinite(Number(next.cardSessionCount)) ? Number(next.cardSessionCount) : 0;
+  next.errorHistory = Array.isArray(next.errorHistory) ? next.errorHistory : [];
   next.dailyStats = next.dailyStats && typeof next.dailyStats === 'object' ? next.dailyStats : {};
   next.vocabProgress = next.vocabProgress && typeof next.vocabProgress === 'object' ? next.vocabProgress : {};
 
   const storedAchievements = readJSONKey('achievements', []);
   const storedFavorites = readJSONKey('favorites', []);
+  const storedReadingWords = readJSONKey('readingWords', []);
+  const storedErrors = readJSONKey('errorHistory', []);
+  const storedCardProgress = readJSONKey('cardProgress', {});
+  if (storedCardProgress && typeof storedCardProgress === 'object') {
+    next.cardProgress = { ...storedCardProgress, ...next.cardProgress };
+  }
+  const mergedWords = [
+    ...next.savedReadingWords,
+    ...(Array.isArray(storedReadingWords) ? storedReadingWords.map(normalizeStoredReadingWord).filter(Boolean) : []),
+  ];
+  const wordMap = new Map();
+  mergedWords.forEach((item) => wordMap.set(item.id || `${item.word}|${item.context?.articleId || ''}`, item));
+  next.savedReadingWords = [...wordMap.values()];
+  if (Array.isArray(storedErrors) && storedErrors.length) {
+    const seenErrors = new Set(next.errorHistory.map((item) => `${item.date}|${item.question}`));
+    storedErrors.forEach((item) => {
+      const key = `${item.date}|${item.question}`;
+      if (!seenErrors.has(key)) next.errorHistory.push(item);
+    });
+  }
   next.favorites = [...new Set([
     ...next.favorites,
     ...(Array.isArray(storedFavorites) ? storedFavorites : []),
@@ -2358,6 +2457,9 @@ function saveS(){
   localStorage.setItem('achievements', JSON.stringify(S.achievements));
   localStorage.setItem('favorites', JSON.stringify(S.favorites || []));
   localStorage.setItem('readingWords', JSON.stringify(S.savedReadingWords || []));
+  localStorage.setItem('cardProgress', JSON.stringify(S.cardProgress || {}));
+  localStorage.setItem('cardSessionCount', String(S.cardSessionCount || 0));
+  localStorage.setItem('errorHistory', JSON.stringify(S.errorHistory || []));
   localStorage.setItem('theme', S.theme || 'dark');
   localStorage.setItem('userLevel', S.level || 'A1');
   syncContentStorage();
@@ -2575,6 +2677,15 @@ function answerLT(selected) {
   if (correct) {
     ltScore += 1;
     ltPlacement.grammarCorrect += 1;
+  } else {
+    recordError({
+      type: /^Перевод/.test(question.q) ? 'translation' : 'grammar',
+      topic: detectErrorTopic(question.q, `Грамматика ${question.difficulty}`),
+      question: question.q,
+      userAnswer: question.opts[selected],
+      correctAnswer: question.opts[question.a],
+      options: question.opts,
+    });
   }
   ltPlacement.difficulties.push(question.difficulty);
   ltDifficulty = Math.max(1, Math.min(5, ltDifficulty + (correct ? 1 : -1)));
@@ -2674,6 +2785,16 @@ function submitReadingStage() {
       else if (optIndex === ltPlacement.readingAnswers[qIndex]) button.classList.add('wrong');
       button.disabled = true;
     });
+    if (ltPlacement.readingAnswers[qIndex] !== question.a) {
+      recordError({
+        type: 'translation',
+        topic: detectErrorTopic(question.q, `Чтение ${grammarLevelFromAverage(ltPlacement.score)}`),
+        question: question.q,
+        userAnswer: question.opts[ltPlacement.readingAnswers[qIndex]],
+        correctAnswer: question.opts[question.a],
+        options: question.opts,
+      });
+    }
   });
 
   ltStage = 'reading-reviewed';
@@ -2963,7 +3084,7 @@ function articleVocabMap(article) {
 function savedReadingTermSet() {
   const set = new Set();
   (S.savedReadingWords || []).forEach((item) => {
-    const term = cleanTerm(item.term || item.de || item.word);
+    const term = cleanTerm(item.word || item.term || item.de);
     if (term) {
       set.add(term);
       term.split(' ').forEach((part) => set.add(part));
@@ -2991,6 +3112,112 @@ function estimatePronunciation(word) {
     .replace(/\u00f6/g, 'ё')
     .replace(/\u00fc/g, 'ю')
     .replace(/\u00df/g, 'с');
+}
+
+function slugTerm(term) {
+  return cleanTerm(term).replace(/[^\p{L}\d]+/gu, '-').replace(/^-+|-+$/g, '') || 'word';
+}
+
+function jsString(value) {
+  return JSON.stringify(String(value ?? '')).replace(/</g, '\\u003c');
+}
+
+function highestLevelForText(text) {
+  const levels = (String(text || '').match(/[A-Za-zÄÖÜäöüß]+/g) || []).map((token) => getWordLevel(token));
+  return levels.length
+    ? levels.sort((a, b) => levelRank(b) - levelRank(a))[0]
+    : 'A1';
+}
+
+function readingSectionTitle(article) {
+  return getReadingSection(article?.sectionId)?.title || 'Чтение';
+}
+
+function articleSentenceForTerm(article, term) {
+  const clean = cleanTerm(term).split(' ').filter((part) => !['der', 'die', 'das', 'ein', 'eine'].includes(part));
+  const needle = clean[clean.length - 1] || cleanTerm(term);
+  return splitSentences(article?.text || '').find((sentence) => cleanTerm(sentence).includes(needle)) || splitSentences(article?.text || '')[0] || '';
+}
+
+function normalizeStoredReadingWord(item) {
+  if (!item) return null;
+  const articleId = item.context?.articleId || item.articleId || '';
+  const article = articleId ? getReadingArticle(articleId) : null;
+  const rawWord = item.word || item.de || item.term;
+  if (!rawWord) return null;
+  const vocabItem = article ? articleVocabMap(article).get(cleanTerm(rawWord)) : null;
+  const word = vocabItem?.word || rawWord;
+  const sentence = item.context?.sentence || item.example || articleSentenceForTerm(article, word);
+  const articleTitle = item.context?.articleTitle || article?.title || item.articleTitle || 'Личный словарь';
+  const level = normalizeLevelName(item.level || article?.level || highestLevelForText(word));
+  const tags = Array.isArray(item.tags) && item.tags.length
+    ? item.tags
+    : [readingSectionTitle(article), articleTitle].filter(Boolean);
+  return {
+    id: item.id || `reading_${articleId || 'manual'}_${slugTerm(word)}`,
+    word,
+    de: word,
+    wordClass: item.wordClass || vocabItem?.wordClass || (item.phrase ? 'Phrase' : 'Wort'),
+    translation: item.translation || item.ru || vocabItem?.translation || '',
+    ru: item.ru || item.translation || vocabItem?.translation || '',
+    definition: item.definition || vocabItem?.definition || '',
+    pronunciation: item.pronunciation || vocabItem?.pronunciation || estimatePronunciation(word),
+    level,
+    context: {
+      articleId,
+      articleTitle,
+      sentence,
+    },
+    tags,
+    examples: Array.isArray(item.examples) ? item.examples : (vocabItem?.examples || []),
+    addedDate: Number(item.addedDate || Date.now()),
+    leitnerLevel: Math.max(1, Math.min(3, Number(item.leitnerLevel || 1))),
+    phrase: !!item.phrase,
+    cat: item.cat || (item.phrase ? 'Reading phrases' : 'Reading'),
+  };
+}
+
+function makeReadingWordRecord(term, articleId, isPhrase = false) {
+  const article = getReadingArticle(articleId);
+  const item = article ? articleVocabMap(article).get(cleanTerm(term)) : null;
+  const word = item?.word || term;
+  const sentence = articleSentenceForTerm(article, word);
+  const articleTitle = article?.title || 'Личный словарь';
+  const level = normalizeLevelName(article?.level || highestLevelForText(word));
+  return {
+    id: `reading_${articleId || 'manual'}_${slugTerm(word)}`,
+    word,
+    de: word,
+    wordClass: item?.wordClass || (isPhrase ? 'Phrase' : 'Wort'),
+    translation: isPhrase ? phraseTranslation(term) : (item?.translation || ''),
+    ru: isPhrase ? phraseTranslation(term) : (item?.translation || item?.definition || ''),
+    definition: item?.definition || '',
+    pronunciation: item?.pronunciation || estimatePronunciation(word),
+    level,
+    context: {
+      articleId,
+      articleTitle,
+      sentence,
+    },
+    tags: [readingSectionTitle(article), articleTitle].filter(Boolean),
+    examples: item?.examples || [],
+    addedDate: Date.now(),
+    leitnerLevel: 1,
+    phrase: !!isPhrase,
+    cat: isPhrase ? 'Reading phrases' : 'Reading',
+  };
+}
+
+function highlightContextSentence(sentence, term) {
+  const pieces = cleanTerm(term).split(' ').filter((part) => !['der', 'die', 'das', 'ein', 'eine'].includes(part));
+  const targets = new Set(pieces.length ? pieces : [cleanTerm(term)]);
+  return String(sentence || '')
+    .split(/([A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?)/g)
+    .map((token) => {
+      if (!/^[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?$/.test(token)) return esc(token);
+      return targets.has(cleanTerm(token)) ? `<mark class="ctx-word">${esc(token)}</mark>` : esc(token);
+    })
+    .join('');
 }
 
 function renderReading() {
@@ -3261,18 +3488,9 @@ function hideReadingPopupOnOutside(event) {
 }
 
 function addReadingTerm(term, articleId, isPhrase = false) {
-  const article = getReadingArticle(articleId);
-  const item = article ? articleVocabMap(article).get(cleanTerm(term)) : null;
-  const payload = {
-    term,
-    de: term,
-    ru: isPhrase ? phraseTranslation(term) : (item?.translation || item?.definition || ''),
-    example: article ? splitSentences(article.text).find((sentence) => cleanTerm(sentence).includes(cleanTerm(term).split(' ')[0])) || '' : '',
-    articleId,
-    phrase: !!isPhrase,
-  };
+  const payload = makeReadingWordRecord(term, articleId, isPhrase);
   S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
-  if (!S.savedReadingWords.some((saved) => cleanTerm(saved.term || saved.de) === cleanTerm(term))) {
+  if (!S.savedReadingWords.some((saved) => saved.id === payload.id || cleanTerm(saved.word || saved.term || saved.de) === cleanTerm(payload.word))) {
     S.savedReadingWords.push(payload);
     saveS();
     toast('✓ Добавлено в словарь');
@@ -3314,6 +3532,18 @@ function answerReadingExercise(optionIndex) {
   readingExercise.answered = true;
   const correct = optionIndex === correctIndex;
   if (correct) readingExercise.score += 1;
+  else {
+    const section = getReadingSection(article.sectionId);
+    const optionLabels = options.map((option) => option.label);
+    recordError({
+      type: exercise.type === 'translation' ? 'translation' : (exercise.type === 'gap' ? 'vocabulary' : 'grammar'),
+      topic: section?.grammar || detectErrorTopic(exercise.statement || exercise.sentence, 'Чтение'),
+      question: exercise.statement || exercise.sentence,
+      userAnswer: optionLabels[optionIndex],
+      correctAnswer: optionLabels[correctIndex],
+      options: optionLabels,
+    });
+  }
   readingExercise.answers.push({ idx: readingExercise.idx, correct });
   document.querySelectorAll('.exercise-option').forEach((button, index) => {
     button.classList.add(index === correctIndex ? 'correct' : (index === optionIndex ? 'wrong' : ''));
@@ -3358,11 +3588,38 @@ function renderReadingExerciseResult(article) {
       <div class="qz-msg">СТАТЬЯ ЗАВЕРШЕНА · +${xp} XP</div>
       <div class="btn-row" style="justify-content:center;">
         <button class="btn btn-ghost" onclick="readingExercise={articleId:'${article.id}',idx:0,score:0,answered:false,answers:[]};renderReadingExercise()">Повторить упражнения</button>
+        <button class="btn btn-teal" onclick="startArticleCards('${article.id}')">🃏 Закрепить слова</button>
         <button class="btn btn-gold" onclick="closeReadingArticle()">К разделам</button>
       </div>
     </div>
   `;
   checkAchievements();
+}
+
+function ensureArticleWordsInVocab(articleId) {
+  const article = getReadingArticle(articleId);
+  if (!article) return [];
+  S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
+  const added = [];
+  article.vocabulary.forEach((item) => {
+    const payload = makeReadingWordRecord(item.word, articleId, false);
+    const exists = S.savedReadingWords.some((saved) => saved.id === payload.id);
+    if (!exists) {
+      S.savedReadingWords.push(payload);
+      added.push(payload);
+    }
+  });
+  if (added.length) saveS();
+  return added;
+}
+
+function startArticleCards(articleId) {
+  const article = getReadingArticle(articleId);
+  if (!article) return toast('Статья не найдена');
+  ensureArticleWordsInVocab(articleId);
+  repTagFilter = article.title;
+  toast('🃏 Карточки статьи готовы');
+  goPage('repetition');
 }
 
 function clearReadingSpeaking() {
@@ -3436,13 +3693,30 @@ const ACHIEVEMENTS = [
 ];
 
 function normalizeWord(word) {
+  const de = word.de || word.word || word.term || '';
+  const ru = word.ru || word.translation || '';
+  const ex = word.ex || word.example || word.context?.sentence || '';
+  const cat = word.cat || word.category || (Array.isArray(word.tags) ? word.tags[0] : '') || 'Everyday';
+  const level = normalizeLevelName(word.level || highestLevelForText(de));
   return {
-    de: word.de,
-    ru: word.ru,
-    ex: word.ex || word.example || '',
-    cat: word.cat || word.category || 'Everyday',
-    example: word.example || word.ex || '',
-    category: word.category || word.cat || 'Everyday',
+    ...word,
+    id: word.id || `base_${cat}_${slugTerm(de)}`,
+    de,
+    word: word.word || de,
+    wordClass: word.wordClass || 'Wort',
+    ru,
+    translation: word.translation || ru,
+    definition: word.definition || '',
+    pronunciation: word.pronunciation || estimatePronunciation(de),
+    level,
+    ex,
+    cat,
+    example: word.example || word.ex || ex,
+    category: word.category || word.cat || cat,
+    context: word.context || { articleId: '', articleTitle: cat, sentence: ex },
+    tags: Array.isArray(word.tags) && word.tags.length ? word.tags : [cat],
+    addedDate: Number(word.addedDate || 0),
+    leitnerLevel: Math.max(1, Math.min(3, Number(word.leitnerLevel || 1))),
   };
 }
 
@@ -3554,6 +3828,144 @@ function addXP(amount, reason = '', anchor = null) {
   updateHeaderLevel();
   checkAchievements();
   return S.xp;
+}
+
+function detectErrorTopic(text, fallback = 'Общее') {
+  const value = String(text || '');
+  if (/Konjunktiv|würde|könnte|sollte|hätte|wäre/i.test(value)) return 'Konjunktiv II';
+  if (/Passiv|wird|wurde|werden|worden/i.test(value)) return 'Passiv Präsens';
+  if (/Akkusativ| den | einen |essen|trinken|mögen|kochen/i.test(` ${value} `)) return 'Akkusativ';
+  if (/Relativ| dessen| der Mann| das Bild| die .*?, die| das .*?, das/i.test(value)) return 'Relativsätze';
+  if (/Modal|muss|soll|darf|kann|sollte/i.test(value)) return 'Modalverben';
+  if (/Перевод|translation|übersetz/i.test(value)) return 'Перевод';
+  return fallback;
+}
+
+function recordError(payload) {
+  if (!payload) return;
+  const entry = {
+    date: payload.date || Date.now(),
+    type: payload.type || 'vocabulary',
+    topic: payload.topic || detectErrorTopic(payload.question),
+    question: String(payload.question || ''),
+    userAnswer: String(payload.userAnswer ?? ''),
+    correctAnswer: String(payload.correctAnswer ?? ''),
+    options: Array.isArray(payload.options) ? payload.options.map(String) : undefined,
+  };
+  S.errorHistory = Array.isArray(S.errorHistory) ? S.errorHistory : [];
+  S.errorHistory.unshift(entry);
+  S.errorHistory = S.errorHistory.slice(0, 200);
+  saveS();
+}
+
+function getErrorTopicStats() {
+  const counts = new Map();
+  (S.errorHistory || []).forEach((item) => {
+    const topic = item.topic || 'Общее';
+    counts.set(topic, (counts.get(topic) || 0) + 1);
+  });
+  return [...counts.entries()]
+    .map(([topic, count]) => ({ topic, count }))
+    .sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic));
+}
+
+function renderWeakBanner() {
+  const el = document.getElementById('weakBanner');
+  if (!el) return;
+  const weak = getErrorTopicStats().find((item) => item.count >= 3);
+  if (!weak) {
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = `
+    <div class="weak-banner">
+      <div class="weak-banner-copy">💡 Ты часто ошибаешься с ${esc(weak.topic)} — пройди короткую тренировку по этой теме.</div>
+      <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Потренировать слабые места</button>
+    </div>
+  `;
+}
+
+let weakPractice = { items: [], idx: 0, score: 0, answered: false };
+
+function buildWeakPracticeItems() {
+  const topTopics = getErrorTopicStats().slice(0, 5).map((item) => item.topic);
+  const source = (S.errorHistory || []).filter((item) => topTopics.includes(item.topic)).slice(0, 12);
+  return source.map((item) => {
+    const opts = Array.isArray(item.options) && item.options.length
+      ? [...item.options]
+      : [item.correctAnswer, item.userAnswer, 'Не знаю'].filter(Boolean);
+    if (!opts.includes(item.correctAnswer)) opts.unshift(item.correctAnswer);
+    const unique = [...new Set(opts)].slice(0, 4);
+    return {
+      topic: item.topic,
+      type: item.type,
+      q: item.question,
+      opts: unique,
+      a: unique.indexOf(item.correctAnswer),
+    };
+  }).filter((item) => item.q && item.a >= 0);
+}
+
+function startWeakPractice() {
+  const items = buildWeakPracticeItems();
+  if (!items.length) return toast('Пока нет ошибок для тренировки');
+  weakPractice = { items, idx: 0, score: 0, answered: false };
+  document.getElementById('modalTtl').textContent = 'Тренировка слабых мест';
+  renderWeakPractice();
+  document.getElementById('lessonModal').classList.add('on');
+}
+
+function renderWeakPractice() {
+  const body = document.getElementById('modalBody');
+  const item = weakPractice.items[weakPractice.idx];
+  if (!item) {
+    const xp = weakPractice.score * 2;
+    if (xp > 0) addXP(xp, 'weak-practice');
+    body.innerHTML = `
+      <div style="text-align:center;padding:20px 0;">
+        <span class="qz-score">${weakPractice.score}/${weakPractice.items.length}</span>
+        <div class="qz-msg">СЛАБЫЕ МЕСТА ПРОРАБОТАНЫ · +${xp} XP</div>
+        <button class="btn btn-gold" onclick="closeModal();updateDash();renderLogin()">Готово</button>
+      </div>
+    `;
+    return;
+  }
+  body.innerHTML = `
+    <div class="qz-prog"><div class="qz-bar" style="width:${(weakPractice.idx / weakPractice.items.length) * 100}%"></div></div>
+    <div class="qz-num">Тема: ${esc(item.topic)} · вопрос ${weakPractice.idx + 1} из ${weakPractice.items.length}</div>
+    <div class="qz-word" style="font-size:28px;">${esc(item.q)}</div>
+    <div class="qz-opts">${item.opts.map((option, index) => `<button class="qz-opt" id="wpo${index}" onclick="answerWeakPractice(${index})">${esc(option)}</button>`).join('')}</div>
+    <button class="btn btn-gold qz-next" id="wpNext" onclick="nextWeakPractice()" style="display:none;margin-top:16px;">Следующий →</button>
+  `;
+}
+
+function answerWeakPractice(selected) {
+  if (weakPractice.answered) return;
+  weakPractice.answered = true;
+  const item = weakPractice.items[weakPractice.idx];
+  item.opts.forEach((_, index) => {
+    const button = document.getElementById(`wpo${index}`);
+    button.classList.add(index === item.a ? 'ok' : (index === selected ? 'no' : ''));
+    button.disabled = true;
+  });
+  if (selected === item.a) weakPractice.score += 1;
+  else {
+    recordError({
+      type: item.type,
+      topic: item.topic,
+      question: item.q,
+      userAnswer: item.opts[selected],
+      correctAnswer: item.opts[item.a],
+      options: item.opts,
+    });
+  }
+  document.getElementById('wpNext').style.display = 'inline-flex';
+}
+
+function nextWeakPractice() {
+  weakPractice.idx += 1;
+  weakPractice.answered = false;
+  renderWeakPractice();
 }
 
 function getXPLevelInfo() {
@@ -3758,6 +4170,7 @@ function goPage(name) {
   if (idx >= 0) document.querySelectorAll('.nav-btn')[idx].classList.add('on');
 
   if (name === 'reading') renderReading();
+  if (name === 'vocab') renderVocab();
   if (name === 'practice') renderScenarios();
   if (name === 'settings') renderSettings();
   if (name === 'repetition') renderRepetition();
@@ -3793,6 +4206,7 @@ function updateDash() {
     `;
   }
   renderDailyGoal();
+  renderWeakBanner();
   renderAchievements();
 
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -4129,60 +4543,159 @@ function toggleHWDone(id) {
 }
 
 let curVocabFilter = 'all';
+let curVocabLevelFilter = 'all';
+let curVocabDateFilter = 'all';
+let selectedVocabId = null;
 
 function getAllVocab() {
   const primary = typeof vocabularyData !== 'undefined' ? vocabularyData.map(normalizeWord) : APP_LESSONS.flatMap((lesson) => lesson.words);
   const spec = S.specs.flatMap((specId) => SPEC_VOCAB[specId] || []).map(normalizeWord);
-  const savedReading = (S.savedReadingWords || []).map((item) => normalizeWord({
-    de: item.de || item.term,
-    ru: item.ru || 'из статьи',
-    ex: item.example || '',
-    cat: item.phrase ? 'Reading phrases' : 'Reading',
-  }));
+  const savedReading = (S.savedReadingWords || []).map(normalizeStoredReadingWord).filter(Boolean).map(normalizeWord);
   const seen = new Set();
   const words = [...primary, ...spec, ...savedReading].filter((word) => {
-    const key = `${word.de}|${word.cat}`;
+    const key = word.id || `${word.de}|${word.cat}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
   const userRank = levelRank(getUserLevel());
   return words.sort((a, b) => {
-    const rankA = Math.max(...(a.de.match(/[A-Za-zÄÖÜäöüß]+/g) || []).map((token) => levelRank(getWordLevel(token))), 0);
-    const rankB = Math.max(...(b.de.match(/[A-Za-zÄÖÜäöüß]+/g) || []).map((token) => levelRank(getWordLevel(token))), 0);
+    const rankA = levelRank(a.level || highestLevelForText(a.de));
+    const rankB = levelRank(b.level || highestLevelForText(b.de));
     const bucketA = rankA >= userRank ? 0 : 1;
     const bucketB = rankB >= userRank ? 0 : 1;
-    return bucketA - bucketB || rankA - rankB || a.de.localeCompare(b.de);
+    return (Number(b.addedDate || 0) - Number(a.addedDate || 0)) || bucketA - bucketB || rankA - rankB || a.de.localeCompare(b.de);
   });
+}
+
+function vocabDateMatches(word) {
+  if (curVocabDateFilter === 'all') return true;
+  if (!word.addedDate) return false;
+  const diffDays = (Date.now() - Number(word.addedDate)) / 86400000;
+  if (curVocabDateFilter === 'today') return diffDays < 1;
+  if (curVocabDateFilter === 'week') return diffDays <= 7;
+  if (curVocabDateFilter === 'month') return diffDays <= 30;
+  return true;
+}
+
+function vocabMatchesFilters(word) {
+  const tags = Array.isArray(word.tags) && word.tags.length ? word.tags : [word.cat];
+  const tagOk = curVocabFilter === 'all' || tags.includes(curVocabFilter) || word.cat === curVocabFilter;
+  const levelOk = curVocabLevelFilter === 'all' || normalizeLevelName(word.level) === curVocabLevelFilter;
+  return tagOk && levelOk && vocabDateMatches(word);
+}
+
+function renderVocabFilterGroup(label, values, active, onClickName) {
+  return `
+    <div class="vocab-filter-group">
+      <span class="vocab-filter-label">${esc(label)}</span>
+      ${values.map((item) => `
+        <button class="vf-btn ${item.value === active ? 'on' : ''}" onclick="${onClickName}(${jsString(item.value)})">${esc(item.label)}</button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function setVocabTagFilter(value) {
+  curVocabFilter = value;
+  renderVocab();
+}
+
+function setVocabLevelFilter(value) {
+  curVocabLevelFilter = value;
+  renderVocab();
+}
+
+function setVocabDateFilter(value) {
+  curVocabDateFilter = value;
+  renderVocab();
+}
+
+function openVocabDetail(id) {
+  selectedVocabId = id;
+  renderVocab();
+}
+
+function renderVocabDetail(words) {
+  const wrap = document.getElementById('vocabDetail');
+  if (!wrap) return;
+  const word = words.find((item) => item.id === selectedVocabId);
+  if (!word) {
+    wrap.innerHTML = '';
+    return;
+  }
+  const context = word.context || {};
+  const articleTitle = context.articleTitle || word.cat || 'Словарь';
+  const sentence = context.sentence || word.ex || '';
+  const meaning = levelRank(word.level) <= levelRank('A2')
+    ? (word.translation || word.ru || word.definition)
+    : (word.definition || word.translation || word.ru);
+  wrap.innerHTML = `
+    <div class="vocab-detail">
+      <div class="vocab-detail-head">
+        <div>
+          <div class="vocab-detail-word">${esc(word.word || word.de)}</div>
+          <div class="vocab-detail-meta">
+            <span class="reading-badge">${esc(word.level || 'A1')}</span>
+            <span class="reading-badge">${esc(word.wordClass || 'Wort')}</span>
+            ${(word.tags || []).slice(0, 3).map((tag) => `<span class="reading-badge">${esc(tag)}</span>`).join('')}
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="selectedVocabId=null;renderVocab()">Закрыть</button>
+      </div>
+      <div style="font-size:14px;line-height:1.7;">${esc(meaning || 'Нет значения')}</div>
+      <div class="vocab-context">
+        <div><strong>Из статьи:</strong> ${esc(articleTitle)}</div>
+        <div><strong>В предложении:</strong> ${highlightContextSentence(sentence, word.word || word.de)}</div>
+      </div>
+    </div>
+  `;
 }
 
 function renderVocab(filter) {
   if (filter !== undefined) curVocabFilter = filter;
 
   const filterWrap = document.getElementById('vocabFilter');
-  const cats = ['all', ...new Set(getAllVocab().map((word) => word.cat))];
-  if (!cats.includes(curVocabFilter)) curVocabFilter = 'all';
-  filterWrap.innerHTML = '';
-  cats.forEach((cat) => {
-    const btn = document.createElement('button');
-    btn.className = `vf-btn${cat === curVocabFilter ? ' on' : ''}`;
-    btn.textContent = cat === 'all' ? 'Все' : cat;
-    btn.onclick = () => renderVocab(cat);
-    filterWrap.appendChild(btn);
-  });
+  const allWords = getAllVocab();
+  const tagValues = ['all', ...new Set(allWords.flatMap((word) => (Array.isArray(word.tags) && word.tags.length ? word.tags : [word.cat])).filter(Boolean))];
+  const levelValues = ['all', ...CEFR_LEVELS.filter((level) => level !== 'A0' && allWords.some((word) => normalizeLevelName(word.level) === level))];
+  if (!tagValues.includes(curVocabFilter)) curVocabFilter = 'all';
+  if (!levelValues.includes(curVocabLevelFilter)) curVocabLevelFilter = 'all';
+  filterWrap.innerHTML = `
+    ${renderVocabFilterGroup('Тег статьи', tagValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabFilter, 'setVocabTagFilter')}
+    ${renderVocabFilterGroup('Уровень', levelValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabLevelFilter, 'setVocabLevelFilter')}
+    ${renderVocabFilterGroup('Дата', [
+      { value: 'all', label: 'Все даты' },
+      { value: 'today', label: 'Сегодня' },
+      { value: 'week', label: '7 дней' },
+      { value: 'month', label: '30 дней' },
+    ], curVocabDateFilter, 'setVocabDateFilter')}
+  `;
 
-  let words = getAllVocab();
-  if (curVocabFilter !== 'all') words = words.filter((word) => word.cat === curVocabFilter);
+  const words = allWords.filter(vocabMatchesFilters);
+  renderVocabDetail(allWords);
 
   const body = document.getElementById('vocabBody');
   body.innerHTML = '';
+  if (!words.length) {
+    body.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">Нет слов под выбранные фильтры.</td></tr>`;
+    return;
+  }
   words.forEach((word) => {
     const row = document.createElement('tr');
+    row.className = `vocab-row${word.id === selectedVocabId ? ' active' : ''}`;
+    row.onclick = () => openVocabDetail(word.id);
+    const meaning = levelRank(word.level) <= levelRank('A2')
+      ? (word.translation || word.ru || word.definition)
+      : (word.definition || word.translation || word.ru);
+    const contextTitle = word.context?.articleTitle || word.cat;
+    const tags = (word.tags || [word.cat]).slice(0, 3);
     row.innerHTML = `
-      <td><span class="vt-de">${word.de}</span> <button onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
-      <td class="vt-ru">${word.ru}</td>
-      <td class="vt-ex">${highlightText(word.ex)}</td>
-      <td><span class="vt-tag">${word.cat}</span></td>
+      <td><span class="vt-de">${esc(word.de)}</span> <button onclick="event.stopPropagation();speak(${jsString(word.de)})" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
+      <td><span class="reading-badge">${esc(word.level || 'A1')}</span></td>
+      <td class="vt-ru">${esc(meaning || '')}</td>
+      <td class="vt-ex">${esc(contextTitle || '')}<br>${highlightContextSentence(word.context?.sentence || word.ex || '', word.word || word.de)}</td>
+      <td>${tags.map((tag) => `<span class="vt-tag">${esc(tag)}</span>`).join(' ')}</td>
     `;
     body.appendChild(row);
   });
@@ -4377,6 +4890,15 @@ function answerQ(selected) {
   if (selected === question.a) {
     QS.score += 1;
     addXP(5, 'quiz');
+  } else {
+    recordError({
+      type: /^Перевод/.test(question.q) ? 'translation' : 'vocabulary',
+      topic: detectErrorTopic(question.q, QS.lesson.title || QS.lesson.type || 'Урок'),
+      question: question.q,
+      userAnswer: question.opts[selected],
+      correctAnswer: question.opts[question.a],
+      options: question.opts,
+    });
   }
   document.getElementById('qnxt').style.display = 'inline-flex';
 }
@@ -4387,102 +4909,249 @@ function nextQ() {
   renderModal();
 }
 
-let REP = { words: [], idx: 0 };
+let repTagFilter = 'all';
+let REP = { words: [], idx: 0, stats: { known: 0, unknown: 0, new: 0 }, sessionId: 0, answering: false, wasDragging: false };
 
-function getTodayWords(today) {
-  const allWords = getAllVocab().map(normalizeWord);
-  return allWords.filter((word) => {
-    const progress = S.vocabProgress[word.de];
-    if (!progress) return true;
-    return progress.nextReview <= today;
-  });
+function getCardId(word) {
+  return word.id || `card_${slugTerm(word.de || word.word)}`;
+}
+
+function getAllCardWords() {
+  return getAllVocab().map(normalizeWord).filter((word) => word.de);
+}
+
+function cardDueInSession(word, sessionId) {
+  const progress = S.cardProgress?.[getCardId(word)];
+  if (!progress) return true;
+  const level = Math.max(1, Math.min(3, Number(progress.leitnerLevel || 1)));
+  if (level === 1) return true;
+  const gap = level === 2 ? 2 : 3;
+  return (sessionId - Number(progress.lastSeenSession || 0)) >= gap;
+}
+
+function getTodayWords() {
+  const sessionId = Number(S.cardSessionCount || 0) + 1;
+  return getAllCardWords().filter((word) => cardDueInSession(word, sessionId));
+}
+
+function setRepTagFilter(value) {
+  repTagFilter = value || 'all';
+  renderRepetition();
+}
+
+function renderRepFilter(allWords) {
+  const wrap = document.getElementById('repFilter');
+  if (!wrap) return;
+  const tags = ['all', ...new Set(allWords.flatMap((word) => (word.tags?.length ? word.tags : [word.cat])).filter(Boolean))];
+  if (!tags.includes(repTagFilter)) repTagFilter = 'all';
+  wrap.innerHTML = renderVocabFilterGroup('Тег', tags.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), repTagFilter, 'setRepTagFilter');
+}
+
+function renderRepStats() {
+  const el = document.getElementById('repStatsBar');
+  if (!el) return;
+  const total = REP.words.length || 0;
+  el.innerHTML = `
+    <div class="rep-stat-grid">
+      <div class="rep-stat"><div class="rep-stat-value">${REP.stats.known}</div><div class="rep-stat-label">Знаю</div></div>
+      <div class="rep-stat"><div class="rep-stat-value">${REP.stats.unknown}</div><div class="rep-stat-label">Не знаю</div></div>
+      <div class="rep-stat"><div class="rep-stat-value">${REP.stats.new}</div><div class="rep-stat-label">Новые</div></div>
+      <div class="rep-stat"><div class="rep-stat-value">${Math.min(REP.idx + 1, total)}/${total}</div><div class="rep-stat-label">Прогресс</div></div>
+    </div>
+  `;
 }
 
 function renderRepetition() {
-  const today = new Date().toISOString().split('T')[0];
-  REP = { words: getTodayWords(today), idx: 0 };
+  const allWords = getAllCardWords();
+  renderRepFilter(allWords);
+  S.cardSessionCount = Number(S.cardSessionCount || 0) + 1;
+  const sessionId = S.cardSessionCount;
+  saveS();
+
+  const tagged = repTagFilter === 'all'
+    ? allWords
+    : allWords.filter((word) => (word.tags || [word.cat]).includes(repTagFilter) || word.cat === repTagFilter);
+  const words = tagged.filter((word) => cardDueInSession(word, sessionId));
+  REP = {
+    words,
+    idx: 0,
+    stats: { known: 0, unknown: 0, new: words.filter((word) => !S.cardProgress?.[getCardId(word)]).length },
+    sessionId,
+    answering: false,
+    wasDragging: false,
+  };
 
   const status = document.getElementById('repStatus');
   const card = document.getElementById('repCard');
   const done = document.getElementById('repDone');
+  renderRepStats();
 
   if (!REP.words.length) {
-    status.innerHTML = `<div style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:14px;">Сегодня нет слов для повторения. Изучи новые уроки, и они появятся здесь.</div>`;
+    status.innerHTML = `<div style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:14px;">Сегодня нет слов для выбранного фильтра. Добавь слова из статей или вернись в следующей сессии.</div>`;
     card.style.display = 'none';
     done.style.display = 'none';
     return;
   }
 
-  status.innerHTML = `<div style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:14px;">${REP.words.length} слов для повторения сегодня</div>`;
+  status.innerHTML = `<div style="text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:14px;">${REP.words.length} карточек в этой сессии</div>`;
   card.style.display = 'block';
   done.style.display = 'none';
   showCard();
 }
 
+function cardBackHtml(word) {
+  const isEasy = levelRank(word.level) <= levelRank('A2');
+  const sentence = word.context?.sentence || word.ex || '';
+  if (isEasy) {
+    return `
+      <div class="rep-word" style="color:var(--green);font-size:34px;">${esc(word.translation || word.ru || word.definition || '')}</div>
+      <div class="rep-context">${highlightContextSentence(sentence, word.word || word.de)}</div>
+    `;
+  }
+  const examples = (word.examples?.length ? word.examples : [sentence]).slice(0, 2);
+  return `
+    <div style="font-size:15px;line-height:1.7;color:var(--text);">${esc(word.definition || word.translation || word.ru || '')}</div>
+    <div class="rep-context">${examples.map((item) => `<div>${highlightText(item)}</div>`).join('')}</div>
+  `;
+}
+
 function showCard() {
   const word = REP.words[REP.idx];
-  document.getElementById('repFront').innerHTML = `
-    <div style="font-size:28px;font-weight:600;margin-bottom:8px;">${word.de}</div>
-    <div style="color:var(--muted);font-size:14px;">${word.ex}</div>
-    <button class="btn btn-teal" onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="margin-top:12px;">🔊 Произнести</button>
-  `;
-  document.getElementById('repBack').innerHTML = `
-    <div style="font-size:24px;color:var(--green);margin-bottom:8px;">${word.ru}</div>
-    <div style="color:var(--muted);font-size:14px;">${word.ex}</div>
-  `;
-  document.getElementById('repBack').style.display = 'none';
-  document.getElementById('repActions').style.display = 'none';
+  if (!word) return;
+  const card = document.getElementById('repSwipeCard');
+  card.classList.remove('flipped', 'flash-correct', 'shake', 'done');
+  card.style.transition = 'transform .28s ease,box-shadow .28s ease';
+  card.style.transform = '';
+  card.querySelector('.rep-know').style.opacity = 0;
+  card.querySelector('.rep-unknown').style.opacity = 0;
   document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = false; });
-  document.querySelector('.rep-card').classList.remove('flipped', 'flash-correct', 'shake');
+  document.getElementById('repFront').innerHTML = `
+    <div class="rep-word">${esc(word.word || word.de)}</div>
+    <div class="rep-pron">${esc(word.pronunciation || estimatePronunciation(word.de))}</div>
+    <div><span class="reading-badge">${esc(word.level || 'A1')}</span> <span class="reading-badge">Leitner ${S.cardProgress?.[getCardId(word)]?.leitnerLevel || 1}/3</span></div>
+    <button class="btn btn-teal btn-sm" onclick="event.stopPropagation();speak(${jsString(word.de)})" style="margin:16px auto 0;">🔊 Произнести</button>
+  `;
+  document.getElementById('repBack').innerHTML = cardBackHtml(word);
+  REP.answering = false;
+  bindSwipeCard();
+  renderRepStats();
 }
 
 function flipCard() {
-  document.getElementById('repBack').style.display = 'block';
-  document.getElementById('repActions').style.display = 'flex';
-  document.querySelector('.rep-card').classList.add('flipped');
+  const card = document.getElementById('repSwipeCard');
+  if (!card || REP.answering) return;
+  card.classList.toggle('flipped');
 }
 
-function repAnswer(correct) {
-  const word = REP.words[REP.idx];
-  const card = document.querySelector('.rep-card');
-  document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = true; });
-  const progress = S.vocabProgress[word.de] || { level: 0, nextReview: new Date().toISOString().split('T')[0] };
-  progress.level = correct ? Math.min(progress.level + 1, 5) : Math.max(progress.level - 1, 0);
+function updateSwipeOverlay(dx) {
+  const card = document.getElementById('repSwipeCard');
+  if (!card) return;
+  card.querySelector('.rep-know').style.opacity = Math.max(0, Math.min(1, dx / 110));
+  card.querySelector('.rep-unknown').style.opacity = Math.max(0, Math.min(1, -dx / 110));
+}
 
-  const intervals = [1, 2, 4, 7, 14, 30];
-  const next = new Date();
-  next.setDate(next.getDate() + (intervals[progress.level] || 30));
-  progress.nextReview = next.toISOString().split('T')[0];
-
-  S.vocabProgress[word.de] = progress;
-  recordStudyActivity();
-  if (correct) {
-    addXP(2, 'word', card);
-    updateDailyGoal('word');
-    if (card) {
-      card.classList.remove('flash-correct');
-      void card.offsetWidth;
-      card.classList.add('flash-correct');
+function bindSwipeCard() {
+  const card = document.getElementById('repSwipeCard');
+  if (!card) return;
+  let drag = null;
+  card.onclick = () => {
+    if (!REP.wasDragging && !REP.answering) flipCard();
+  };
+  card.onpointerdown = (event) => {
+    if (REP.answering || event.button > 0) return;
+    drag = { startX: event.clientX, dx: 0 };
+    REP.wasDragging = false;
+    card.style.transition = 'none';
+    card.setPointerCapture?.(event.pointerId);
+  };
+  card.onpointermove = (event) => {
+    if (!drag || REP.answering) return;
+    drag.dx = event.clientX - drag.startX;
+    if (Math.abs(drag.dx) > 4) REP.wasDragging = true;
+    card.style.transform = `translateX(${drag.dx}px) rotate(${drag.dx / 14}deg)`;
+    updateSwipeOverlay(drag.dx);
+  };
+  card.onpointerup = () => {
+    if (!drag || REP.answering) return;
+    const dx = drag.dx;
+    drag = null;
+    card.style.transition = 'transform .32s ease,box-shadow .28s ease';
+    if (Math.abs(dx) > 100) {
+      const known = dx > 0;
+      card.style.transform = `translateX(${known ? window.innerWidth : -window.innerWidth}px) rotate(${known ? 28 : -28}deg)`;
+      repAnswer(known, 'swipe');
+    } else {
+      card.style.transform = '';
+      updateSwipeOverlay(0);
     }
-  } else if (card) {
-    card.classList.remove('shake');
-    void card.offsetWidth;
+    setTimeout(() => { REP.wasDragging = false; }, 80);
+  };
+  card.onpointercancel = () => {
+    drag = null;
+    card.style.transition = 'transform .32s ease';
+    card.style.transform = '';
+    updateSwipeOverlay(0);
+  };
+}
+
+function finishRepSession() {
+  const xp = REP.stats.known * 2;
+  if (xp > 0) addXP(xp, 'cards');
+  recordStudyActivity();
+  document.getElementById('repCard').style.display = 'none';
+  document.getElementById('repDone').style.display = 'block';
+  document.getElementById('repDone').innerHTML = `
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--gold);margin-bottom:10px;">Сессия завершена</div>
+    <div>Знаю: ${REP.stats.known} / Не знаю: ${REP.stats.unknown} / Новые: ${REP.stats.new}</div>
+    <div style="margin-top:8px;color:var(--muted);">+${xp} XP</div>
+  `;
+  renderRepStats();
+  updateDash();
+  checkAchievements();
+}
+
+function repAnswer(correct, source = 'button') {
+  if (REP.answering) return;
+  const word = REP.words[REP.idx];
+  if (!word) return;
+  REP.answering = true;
+  const card = document.getElementById('repSwipeCard');
+  document.querySelectorAll('#repActions button').forEach((button) => { button.disabled = true; });
+  const id = getCardId(word);
+  const previous = S.cardProgress?.[id];
+  const prevLevel = Math.max(1, Math.min(3, Number(previous?.leitnerLevel || word.leitnerLevel || 1)));
+  const nextLevel = correct ? Math.min(3, prevLevel + 1) : 1;
+  S.cardProgress = S.cardProgress && typeof S.cardProgress === 'object' ? S.cardProgress : {};
+  S.cardProgress[id] = {
+    leitnerLevel: nextLevel,
+    lastSeenSession: REP.sessionId,
+    knownCount: Number(previous?.knownCount || 0) + (correct ? 1 : 0),
+    unknownCount: Number(previous?.unknownCount || 0) + (correct ? 0 : 1),
+    updatedAt: Date.now(),
+  };
+  const savedWord = (S.savedReadingWords || []).find((item) => item.id === id);
+  if (savedWord) savedWord.leitnerLevel = nextLevel;
+  S.vocabProgress[word.de] = { level: nextLevel, nextReview: todayKey() };
+  if (correct) {
+    REP.stats.known += 1;
+    updateDailyGoal('word');
+    card.classList.add('flash-correct');
+  } else {
+    REP.stats.unknown += 1;
     card.classList.add('shake');
   }
   saveS();
-  syncVocabProgress(word.de, progress.level, progress.nextReview);
-
+  syncVocabProgress(word.de, nextLevel, todayKey());
+  if (source !== 'swipe') {
+    card.style.transition = 'transform .32s ease,box-shadow .28s ease';
+    card.style.transform = `translateX(${correct ? window.innerWidth : -window.innerWidth}px) rotate(${correct ? 28 : -28}deg)`;
+    updateSwipeOverlay(correct ? 120 : -120);
+  }
   setTimeout(() => {
     REP.idx += 1;
-    if (REP.idx >= REP.words.length) {
-      document.getElementById('repCard').style.display = 'none';
-      document.getElementById('repDone').style.display = 'block';
-    } else {
-      showCard();
-    }
-    updateDash();
-    checkAchievements();
-  }, correct ? 650 : 380);
+    if (REP.idx >= REP.words.length) finishRepSession();
+    else showCard();
+  }, 420);
 }
 
 async function apiRequest(endpoint, data = null, method = 'GET') {
@@ -4541,6 +5210,74 @@ async function logAnalytics(action, data = null) {
   await apiRequest('/analytics', { action, data }, 'POST');
 }
 
+let profileTab = 'summary';
+
+function setProfileTab(tab) {
+  profileTab = tab === 'errors' ? 'errors' : 'summary';
+  renderLogin();
+}
+
+function profileSummaryHtml(summary, statusLabel, statusValue) {
+  return `
+    <div class="profile-summary">
+      <div class="profile-summary-row">
+        <span class="profile-summary-label">Специализации</span>
+        <span class="profile-summary-value">${esc(summary.specs)}</span>
+      </div>
+      <div class="profile-summary-row">
+        <span class="profile-summary-label">Сдано домашек</span>
+        <span class="profile-summary-value">${summary.homework}</span>
+      </div>
+      <div class="profile-summary-row">
+        <span class="profile-summary-label">${esc(statusLabel)}</span>
+        <span class="profile-summary-value">${esc(statusValue)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function profileErrorsHtml() {
+  const stats = getErrorTopicStats().slice(0, 5);
+  const max = Math.max(1, ...stats.map((item) => item.count));
+  const errors = (S.errorHistory || []).slice(0, 20);
+  return `
+    <div class="profile-summary">
+      ${stats.length ? `
+        <div class="error-bars">
+          ${stats.map((item) => `
+            <div class="error-bar-row">
+              <div class="error-bar-label">${esc(item.topic)}</div>
+              <div class="error-bar-track"><div class="error-bar-fill" style="width:${Math.max(8, Math.round((item.count / max) * 100))}%"></div></div>
+              <div class="profile-summary-value">${item.count}</div>
+            </div>
+          `).join('')}
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Потренировать слабые места</button>
+      ` : '<div class="profile-sub">Ошибок пока нет. Какой приятный пустой график.</div>'}
+      <div class="error-list">
+        ${errors.map((item) => `
+          <div class="error-item">
+            <div class="error-item-topic">${esc(item.topic)} · ${new Date(item.date).toLocaleDateString('ru-RU')}</div>
+            <div>${esc(item.question)}</div>
+            <div style="color:var(--red);">Твой ответ: ${esc(item.userAnswer || '—')}</div>
+            <div style="color:var(--green);">Правильно: ${esc(item.correctAnswer || '—')}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function profileTabsHtml(summary, statusLabel, statusValue) {
+  return `
+    <div class="profile-tabs">
+      <button class="profile-tab ${profileTab === 'summary' ? 'on' : ''}" onclick="setProfileTab('summary')">Профиль</button>
+      <button class="profile-tab ${profileTab === 'errors' ? 'on' : ''}" onclick="setProfileTab('errors')">📊 Мои ошибки</button>
+    </div>
+    ${profileTab === 'errors' ? profileErrorsHtml() : profileSummaryHtml(summary, statusLabel, statusValue)}
+  `;
+}
+
 function renderLogin() {
   const form = document.getElementById('loginForm');
   const profile = document.getElementById('loginProfile');
@@ -4575,20 +5312,7 @@ function renderLogin() {
             <div class="profile-metric-label">Слов</div>
           </div>
         </div>
-        <div class="profile-summary">
-          <div class="profile-summary-row">
-            <span class="profile-summary-label">Специализации</span>
-            <span class="profile-summary-value">${esc(summary.specs)}</span>
-          </div>
-          <div class="profile-summary-row">
-            <span class="profile-summary-label">Сдано домашек</span>
-            <span class="profile-summary-value">${summary.homework}</span>
-          </div>
-          <div class="profile-summary-row">
-            <span class="profile-summary-label">Синхронизация</span>
-            <span class="profile-summary-value">Локально</span>
-          </div>
-        </div>
+        ${profileTabsHtml(summary, 'Синхронизация', 'Локально')}
         <div class="btn-row" style="margin-top:20px;">
           <button class="btn btn-gold" onclick="exportProgress()">Экспорт JSON</button>
           <label class="btn btn-ghost" for="progressImport">Импорт JSON</label>
@@ -4628,20 +5352,7 @@ function renderLogin() {
             <div class="profile-metric-label">Слов</div>
           </div>
         </div>
-        <div class="profile-summary">
-          <div class="profile-summary-row">
-            <span class="profile-summary-label">Специализации</span>
-            <span class="profile-summary-value">${esc(summary.specs)}</span>
-          </div>
-          <div class="profile-summary-row">
-            <span class="profile-summary-label">Сдано домашек</span>
-            <span class="profile-summary-value">${summary.homework}</span>
-          </div>
-          <div class="profile-summary-row">
-            <span class="profile-summary-label">Статус</span>
-            <span class="profile-summary-value">Аккаунт подключён</span>
-          </div>
-        </div>
+        ${profileTabsHtml(summary, 'Статус', 'Аккаунт подключён')}
         <div class="btn-row" style="margin-top:20px;">
           <button class="btn btn-ghost" onclick="goPage('settings')">Открыть настройки</button>
           <button class="btn btn-gold" onclick="goPage('dashboard')">На главную</button>
