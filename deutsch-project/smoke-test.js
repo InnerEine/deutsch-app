@@ -174,6 +174,10 @@ async function main() {
         awaitPromise: true,
         returnByValue: true,
       });
+      if (result.exceptionDetails) {
+        const description = result.exceptionDetails.exception?.description || result.exceptionDetails.text;
+        throw new Error(description);
+      }
       return result.result?.value;
     };
 
@@ -189,17 +193,33 @@ async function main() {
       location.reload();
       true;
     `);
-    await sleep(1200);
+    await waitFor(
+      () => evalJs(`!!document.getElementById('nameInput')`),
+      10000,
+      'onboarding form after reload'
+    );
 
     await evalJs(`
-      document.getElementById('nameInput').value = 'Smoke';
-      obNext(2);
-      document.getElementById('sc-it').click();
-      obNext(3);
-      startLevelTest();
-      while (ltIdx < ltSession.length) { answerLT(ltSession[ltIdx].a); ltNextQ(); }
-      finishOnboarding();
-      true;
+      (async () => {
+        document.getElementById('nameInput').value = 'Smoke';
+        obNext(2);
+        document.getElementById('sc-it').click();
+        obNext(3);
+        startLevelTest();
+        for (let i = 0; i < 10; i += 1) {
+          answerLT(ltSession[ltIdx].a);
+          ltNextQ();
+        }
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        getReadingForCurrentLevel().questions.forEach((question, index) => selectReadingAnswer(index, question.a));
+        ltNextQ();
+        ltNextQ();
+        document.getElementById('ltWriting').value = 'Ich arbeite heute an einem Projekt, und ich habe mehrere Aufgaben erledigt. Wir testen die Anwendung und sprechen über Probleme. Danach schreibe ich einen Bericht.';
+        ltNextQ();
+        ltNextQ();
+        finishOnboarding();
+        return true;
+      })();
     `);
     await sleep(1000);
 

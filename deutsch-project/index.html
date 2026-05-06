@@ -28,6 +28,12 @@
   --gray: #9aa3b2;
   --pink: #f472b6;
   --hdr-bg: rgba(247,244,239,0.94);
+  --wl-a1: rgba(154,163,178,.28);
+  --wl-a2: rgba(167,139,250,.28);
+  --wl-b1: rgba(91,158,240,.28);
+  --wl-b2: rgba(61,214,140,.28);
+  --wl-c1: rgba(240,192,96,.34);
+  --wl-c2: rgba(240,85,85,.32);
 }
 body.dark {
   --bg: #07080a;
@@ -38,6 +44,12 @@ body.dark {
   --text: #e8eaf0;
   --muted: #8a91a3;
   --hdr-bg: rgba(7,8,10,0.95);
+  --wl-a1: rgba(154,163,178,.18);
+  --wl-a2: rgba(167,139,250,.22);
+  --wl-b1: rgba(91,158,240,.22);
+  --wl-b2: rgba(61,214,140,.2);
+  --wl-c1: rgba(240,192,96,.28);
+  --wl-c2: rgba(240,85,85,.26);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{overflow-x:hidden;}
@@ -111,9 +123,21 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .lt-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
 .lt-opt{border:1px solid var(--border2);padding:14px 18px;background:var(--bg3);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-radius:10px;text-align:left;transition:all .2s;}
 .lt-opt:hover{border-color:var(--border2);background:var(--bg2);transform:translateX(3px);}
+.lt-opt.selected{border-color:var(--gold);background:rgba(240,192,96,0.1);color:var(--gold);}
 .lt-opt.correct{border-color:var(--green);background:rgba(61,214,140,0.1);color:var(--green);}
 .lt-opt.wrong{border-color:var(--red);background:rgba(240,85,85,0.1);color:var(--red);}
 .lt-opt:disabled{cursor:not-allowed;}
+.lt-stage-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,5vw,42px);line-height:1.08;margin-bottom:12px;}
+.lt-stage-copy{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+.lt-reading{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;font-size:15px;line-height:1.85;margin-bottom:16px;}
+.lt-reading-q{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:12px;}
+.lt-reading-q-title{font-weight:700;font-size:14px;margin-bottom:10px;}
+.lt-writing{width:100%;min-height:170px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;color:var(--text);padding:16px;font-size:14px;line-height:1.7;resize:vertical;outline:none;}
+.lt-writing:focus{border-color:var(--gold);}
+.lt-checks{display:grid;gap:8px;margin:14px 0 4px;}
+.lt-check{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:9px 10px;}
+.lt-check.ok{border-color:rgba(61,214,140,.4);color:var(--green);background:rgba(61,214,140,.07);}
+.lt-check.no{border-color:rgba(240,85,85,.35);color:var(--red);background:rgba(240,85,85,.07);}
 
 /* RESULT */
 .result-ring{width:140px;height:140px;border-radius:50%;border:4px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 28px;position:relative;}
@@ -308,6 +332,25 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .lesson-example{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
 .lesson-example-de{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-size:13px;margin-bottom:5px;}
 .lesson-example-ru{font-size:12px;color:var(--muted);}
+.word-mark{border-radius:4px;padding:.02em .16em;box-decoration-break:clone;-webkit-box-decoration-break:clone;transition:filter .2s,box-shadow .2s,opacity .2s;}
+.word-level-a0{padding:0;background:none;}
+.word-level-a1{background:var(--wl-a1);}
+.word-level-a2{background:var(--wl-a2);}
+.word-level-b1{background:var(--wl-b1);}
+.word-level-b2{background:var(--wl-b2);}
+.word-level-c1{background:var(--wl-c1);}
+.word-level-c2{background:var(--wl-c2);}
+.word-dim{opacity:.58;}
+.word-bright{opacity:1;font-weight:650;filter:saturate(1.35);box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 14px rgba(91,158,240,.12);}
+.word-legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 22px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
+.word-legend-item{display:inline-flex;align-items:center;gap:4px;}
+.word-swatch{width:13px;height:13px;border-radius:3px;border:1px solid var(--border2);display:inline-block;background:transparent;}
+.word-swatch.a1{background:var(--wl-a1);}
+.word-swatch.a2{background:var(--wl-a2);}
+.word-swatch.b1{background:var(--wl-b1);}
+.word-swatch.b2{background:var(--wl-b2);}
+.word-swatch.c1{background:var(--wl-c1);}
+.word-swatch.c2{background:var(--wl-c2);}
 
 /* Misc */
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);letter-spacing:1px;}
@@ -503,7 +546,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   <div class="ob-step" id="ob3">
     <div class="ob-eyebrow">Шаг 2 из 3 — Тест уровня</div>
     <div class="ob-title">Проверим<br>твой <em>уровень</em></div>
-    <div class="ob-sub">10 быстрых вопросов. Не гугли — результат нужен честный, чтобы подобрать правильный старт.</div>
+    <div class="ob-sub">Три этапа: адаптивная грамматика, понимание текста и короткий письменный ответ. Результат сохранится и подстроит приложение под твой старт.</div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="obNext(2)">← Назад</button>
       <button class="btn btn-gold" onclick="startLevelTest()">Начать тест →</button>
@@ -512,7 +555,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 
   <!-- STEP 3b: Test in progress -->
   <div class="ob-step" id="ob3b">
-    <div class="ob-eyebrow">Тест уровня</div>
+    <div class="ob-eyebrow" id="ltStageLabel">Этап 1 из 3 — адаптивная грамматика</div>
     <div class="lt-progress"><div class="lt-bar" id="ltBar" style="width:0%"></div></div>
     <div class="lt-q-num" id="ltNum">Вопрос 1 из 10</div>
     <div class="lt-word" id="ltWord"></div>
@@ -526,8 +569,8 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
     <div class="ob-title">Твой уровень:</div>
     <div style="margin:32px 0;">
       <div class="result-ring" id="resultRing">
-        <div class="result-score" id="resultScore">0</div>
-        <div class="result-of">из 10</div>
+        <div class="result-score" id="resultScore">A1</div>
+        <div class="result-of">уровень</div>
       </div>
       <div class="result-level" id="resultLevel">A1</div>
       <div class="result-desc" id="resultDesc"></div>
@@ -797,17 +840,124 @@ const SPECIALIZATIONS = [
 ];
 
 const LEVEL_TEST = [
-  {q:"Hallo",opts:["Пока","Привет","Спасибо","Да"],a:1,lvl:'A1'},
-  {q:"danke",opts:["пожалуйста","нет","спасибо","да"],a:2,lvl:'A1'},
-  {q:"das Haus",opts:["машина","дом","стол","дерево"],a:1,lvl:'A1'},
-  {q:"ich arbeite",opts:["я учусь","я иду","я работаю","я сплю"],a:2,lvl:'A1'},
-  {q:"der Bahnhof",opts:["аэропорт","вокзал","больница","рынок"],a:1,lvl:'A2'},
-  {q:"Wie spät ist es?",opts:["Сколько стоит?","Который час?","Как далеко?","Что это?"],a:1,lvl:'A2'},
-  {q:"Ich würde gern...",opts:["Я должен...","Я не могу...","Я хотел бы...","Мне нравится..."],a:2,lvl:'B1'},
-  {q:"obwohl",opts:["потому что","хотя","если","когда"],a:1,lvl:'B1'},
-  {q:"das Gleichgewicht",opts:["возможность","равновесие","противоречие","исследование"],a:1,lvl:'B2'},
-  {q:"ungeachtet",opts:["несмотря на","согласно","вместо","благодаря"],a:0,lvl:'B2'},
+  { q: '___ Hund ist groß', opts: ['der', 'die', 'das'], a: 0, difficulty: 1 },
+  { q: 'Ich ___ Maria', opts: ['bin', 'bist', 'ist'], a: 0, difficulty: 1 },
+  { q: 'Wie viel Uhr ist ___?', opts: ['es', 'er', 'sie'], a: 0, difficulty: 1 },
+  { q: 'Ich gebe ___ Mann das Buch', opts: ['der', 'dem', 'den'], a: 1, difficulty: 2 },
+  { q: 'Er ___ gestern ins Kino gegangen', opts: ['hat', 'ist', 'war'], a: 1, difficulty: 2 },
+  { q: 'Das Buch liegt ___ dem Tisch', opts: ['auf', 'an', 'in'], a: 0, difficulty: 2 },
+  {
+    q: 'Перевод: «Я работаю программистом уже три года»',
+    opts: [
+      'Ich arbeite seit drei Jahren als Programmierer.',
+      'Ich habe drei Jahre als Programmierer gearbeitet.',
+      'Ich bin Programmierer für drei Jahre.',
+      'Ich arbeite als Programmierer vor drei Jahren.',
+    ],
+    a: 0,
+    difficulty: 3,
+  },
+  { q: 'Wenn ich Zeit hätte, ___ ich reisen', opts: ['würde', 'wäre', 'hätte'], a: 0, difficulty: 3 },
+  { q: 'Das ist der Mann, ___ ich gestern gesehen habe', opts: ['der', 'den', 'dem', 'dessen'], a: 1, difficulty: 4 },
+  { q: 'Das Buch ___ von ihm geschrieben', opts: ['wird', 'wurde', 'worden'], a: 1, difficulty: 4 },
+  {
+    q: 'Перевод: «Я думаю, что он сегодня придёт, если поезд не опоздает»',
+    opts: [
+      'Ich glaube, dass er heute kommt, wenn der Zug keine Verspätung hat.',
+      'Ich glaube, dass er kommt heute, wenn der Zug hat keine Verspätung.',
+      'Ich denke, er heute kommt, wenn der Zug nicht spät.',
+      'Ich glaube, dass kommt er heute, wenn der Zug keine Verspätung hat.',
+    ],
+    a: 0,
+    difficulty: 4,
+  },
+  {
+    q: 'Wenn ich mehr Zeit gehabt hätte, ___ ich den Bericht früher fertiggestellt',
+    opts: ['hätte', 'wäre', 'würde'],
+    a: 0,
+    difficulty: 5,
+  },
+  {
+    q: 'Номинализация: Nach ___ des Projekts prüfen wir die Ergebnisse.',
+    opts: ['Abschluss', 'abschließen', 'abgeschlossen'],
+    a: 0,
+    difficulty: 5,
+  },
+  {
+    q: 'Перевод: «Хотя я знал, что встреча важна, я не смог участвовать, потому что болел»',
+    opts: [
+      'Obwohl ich wusste, dass der Termin wichtig ist, konnte ich nicht teilnehmen, weil ich krank war.',
+      'Obwohl wusste ich, dass der Termin ist wichtig, konnte ich nicht teilnehmen, weil ich krank war.',
+      'Ich konnte nicht teilnehmen, obwohl ich wusste, weil der Termin wichtig ist, dass ich krank war.',
+      'Obwohl ich wusste, dass wichtig ist der Termin, ich konnte nicht teilnehmen, weil ich war krank.',
+    ],
+    a: 0,
+    difficulty: 5,
+  },
 ];
+
+const READING_TESTS = {
+  A1: {
+    text: `Maria wohnt in einer kleinen Stadt. Jeden Morgen geht sie zu Fuß zur Arbeit. Sie arbeitet in einem Café und spricht dort mit vielen Menschen. Am Nachmittag lernt sie Deutsch, weil sie später in Deutschland studieren möchte. Ihr Bruder hilft ihr manchmal mit neuen Wörtern. Am Abend schreibt Maria kurze Sätze in ein Heft.`,
+    questions: [
+      { q: 'Почему Maria учит немецкий?', opts: ['Она хочет позже учиться в Германии.', 'Она работает учителем немецкого.', 'Ей нужно прочитать письмо от брата.'], a: 0 },
+      { q: 'Что помогает ей продвигаться?', opts: ['Регулярная короткая практика после работы.', 'Она каждый день ездит в другой город.', 'Она говорит только с туристами.'], a: 0 },
+      { q: 'Какой вывод лучше всего описывает Maria?', opts: ['Она совмещает работу и учёбу.', 'Она не любит разговаривать с людьми.', 'Она уже закончила университет.'], a: 0 },
+    ],
+  },
+  A2: {
+    text: `Jonas hat vor sechs Monaten eine neue Stelle begonnen. Am Anfang war der Arbeitsweg schwierig, weil der Bus oft zu spät kam. Deshalb fährt er jetzt mit dem Fahrrad ins Büro. Er fühlt sich morgens wacher und spart Geld. Seine Kollegin findet die Idee gut, obwohl sie bei Regen lieber den Bus nimmt. Jonas plant, im Winter eine bessere Jacke zu kaufen.`,
+    questions: [
+      { q: 'Почему Jonas изменил способ поездки на работу?', opts: ['Автобус часто опаздывал, и велосипед оказался удобнее.', 'Коллега попросила его ездить быстрее.', 'Офис переехал ближе к дому.'], a: 0 },
+      { q: 'Как Jonas относится к новому решению?', opts: ['Положительно: он бодрее и экономит деньги.', 'Нейтрально: он не видит разницы.', 'Отрицательно: он хочет вернуться к автобусу.'], a: 0 },
+      { q: 'Что показывает план купить куртку?', opts: ['Он хочет продолжать ездить на велосипеде и зимой.', 'Он собирается сменить работу.', 'Он больше не будет ездить в дождь.'], a: 0 },
+    ],
+  },
+  B1: {
+    text: `Lea arbeitet in einem kleinen Softwareteam. Früher wurden Aufgaben oft mündlich verteilt, weshalb manche Informationen verloren gingen. Seit einigen Wochen nutzt das Team ein gemeinsames Board. Dadurch sehen alle, wer woran arbeitet und welche Probleme noch offen sind. Lea bemerkt, dass die Besprechungen kürzer geworden sind. Trotzdem spricht sie wichtige Fragen weiterhin persönlich an, damit Missverständnisse schnell geklärt werden.`,
+    questions: [
+      { q: 'Какое главное изменение произошло в команде?', opts: ['Работа стала прозрачнее благодаря общему board.', 'Команда перестала проводить встречи.', 'Lea стала руководителем проекта.'], a: 0 },
+      { q: 'Почему Lea всё ещё обсуждает важные вопросы лично?', opts: ['Чтобы быстро прояснять возможные недопонимания.', 'Потому что board больше не работает.', 'Потому что коллеги не умеют читать задачи.'], a: 0 },
+      { q: 'Какой вывод лучше всего следует из текста?', opts: ['Инструмент помогает, но живое общение всё ещё нужно.', 'Письменные задачи всегда хуже устных.', 'Короткие встречи решают все проблемы автоматически.'], a: 0 },
+    ],
+  },
+  B2: {
+    text: `In vielen Unternehmen verändert mobiles Arbeiten die interne Kommunikation. Einerseits gewinnen Mitarbeitende Flexibilität, weil sie konzentrierte Aufgaben zu Hause erledigen können. Andererseits entstehen neue Anforderungen an klare Absprachen, da spontane Rückfragen seltener werden. Ein Team, das nur zusätzliche Tools einführt, löst das Problem nicht automatisch. Entscheidend ist, welche Informationen schriftlich festgehalten werden und wann ein Gespräch sinnvoller ist. Führungskräfte müssen deshalb Vertrauen ermöglichen, ohne Verantwortung zu verwässern. Gelingt dieser Ausgleich, kann mobiles Arbeiten produktiver sein als ein starres Büromodell.`,
+    questions: [
+      { q: 'Какая центральная идея текста?', opts: ['Мобильная работа полезна, если коммуникация осознанно организована.', 'Мобильная работа всегда снижает продуктивность.', 'Новые инструменты сами решают проблему доверия.'], a: 0 },
+      { q: 'Почему одних инструментов недостаточно?', opts: ['Нужно договориться, что фиксировать письменно, а что обсуждать устно.', 'Сотрудники не хотят пользоваться программами.', 'Руководители должны запретить домашнюю работу.'], a: 0 },
+      { q: 'Что означает “Vertrauen ermöglichen, ohne Verantwortung zu verwässern”?', opts: ['Давать свободу, сохраняя ясные обязанности.', 'Передать ответственность только руководителю.', 'Убрать контроль и правила полностью.'], a: 0 },
+    ],
+  },
+};
+
+const WRITING_PROMPTS = {
+  A1: 'Напиши 3-5 предложений о своём обычном дне: работа, учёба, еда, вечер.',
+  A2: 'Напиши 3-5 предложений о поездке или встрече, которая прошла не совсем по плану.',
+  B1: 'Напиши 3-5 предложений о рабочей задаче: что было сложно, как ты решил проблему, какой вывод сделал.',
+  B2: 'Напиши 3-5 предложений о плюсах и рисках удалённой работы или цифровых инструментов.',
+};
+
+const wordLevels = {};
+const WORD_LEVEL_SEED = {
+  A1: [
+    'der','die','das','ein','eine','einen','einem','einer','ich','du','er','sie','es','wir','ihr','mich','dich','mir','dir','mein','meine','dein','seine','ihre','unser','ist','bin','bist','sind','seid','war','waren','habe','hast','hat','haben','hatte','werden','wird','gehe','gehen','geht','komme','kommen','kommt','wohne','wohnen','lerne','lernen','arbeite','arbeiten','mache','machen','esse','essen','trinke','trinken','kaufe','kaufen','sehe','sehen','höre','hören','spreche','sprechen','schreibe','schreiben','lese','lesen','brauche','brauchen','möchte','möchten','kann','können','muss','müssen','darf','dürfen','gut','schlecht','groß','klein','neu','alt','schön','schnell','langsam','heute','morgen','gestern','jetzt','immer','oft','nie','bitte','danke','hallo','tschüss','ja','nein','haus','mann','frau','kind','name','freund','freundin','familie','mutter','vater','bruder','schwester','stadt','straße','bahnhof','auto','bus','zug','wasser','brot','kaffee','tee','arbeit','schule','deutsch','uhr','tag','woche','monat','jahr','frage','antwort','buch','tisch','stuhl','tür','fenster','zimmer','geld','preis','apfel','milch','arzt','krank','hilfe','wo','wer','was','wie','wann','warum','aus','in','auf','mit','ohne','und','oder','aber','also','sehr'
+  ],
+  A2: [
+    'weil','dass','wenn','obwohl','deshalb','trotzdem','jedoch','bereits','eigentlich','vielleicht','manchmal','meistens','zuerst','danach','später','früher','seit','während','bis','gegen','zwischen','neben','vor','hinter','über','unter','bei','nach','zu','vom','zum','zur','dem','den','dessen','erfahrung','meinung','termin','reise','urlaub','wohnung','miete','nachricht','email','konto','rechnung','angebot','kunde','markt','besprechung','ziel','plan','grund','ausbildung','beruf','kollege','kollegin','firma','problem','lösung','verbindung','server','datei','ordner','passwort','fehler','daten','anwendung','update','krankheit','apotheke','rezept','versicherung','patient','patientin','untersuchung','schmerzen','behandlung','wetter','wolke','regen','schnee','sommer','winter','frühling','herbst','kleidung','hemd','jacke','schuhe','supermarkt','bezahlen','bestellen','erklären','besuchen','warten','verlieren','finden','suchen','geben','nehmen','bringen','bleiben','anfangen','aufstehen','anrufen','vorbereiten','vergleichen','benutzen','entscheiden','empfehlen','erzählen','verstehen','erinnern','hoffen','planen','liegen','stellen','setzen','fahren','gefahren','gegangen','gearbeitet','geschrieben','gesprochen','gelernt','gekauft','bekommen','braucht','brauchen'
+  ],
+  B1: [
+    'darüber','hinaus','allerdings','infolgedessen','zusammenhang','ermöglichen','voraussetzung','entscheidung','entwicklung','gesellschaft','wirtschaft','politik','umwelt','bildung','gesundheit','sicherheit','verantwortung','verhalten','möglichkeit','wahrscheinlichkeit','bedeutung','beziehung','bereich','maßnahme','unterstützung','verbesserung','vermeiden','erreichen','entstehen','bestehen','erhalten','beeinflussen','berücksichtigen','feststellen','darstellen','durchführen','teilnehmen','vereinbaren','beschäftigen','verfügen','erweitern','begründen','behaupten','beweisen','untersuchen','wechseln','veröffentlichen','erwarten','fordern','fördern','bewerten','sobald','nachdem','bevor','damit','sodass','falls','indem','dennoch','dagegen','inzwischen','einerseits','andererseits','folglich','außerdem','schließlich','grundsätzlich','tatsächlich','vermutlich','insbesondere','hinsichtlich','abhängig','unabhängig','notwendig','wesentlich','ähnlich','unterschiedlich','öffentlich','beruflich','persönlich','schriftlich','mündlich','gemeinsam','erfolgreich','möglich','schwierig','regelmäßig','freiwillig','zuständig','angemessen','zuverlässig','langfristig','projekt','bericht','ergebnis','aufgabe','aufgaben','informationen','missverständnisse','geklärt','verteilt','genutzt','kürzer','wichtig','wurde','würde','hätte','könnte'
+  ],
+  B2: [
+    'nichtsdestotrotz','inanspruchnahme','gewährleistung','diesbezüglich','dementsprechend','demzufolge','gleichwohl','ungeachtet','sofern','wohingegen','wenngleich','zumal','vielmehr','mithilfe','anhand','zwecks','seitens','infolge','bezüglich','angesichts','vorausgesetzt','auseinandersetzung','sachverhalt','erkenntnis','leistungsfähigkeit','nachhaltigkeit','verfügbarkeit','zuständigkeit','anspruch','anforderung','umsetzung','einhaltung','auswirkung','herangehensweise','rahmenbedingung','schwerpunkt','widerspruch','beurteilung','genehmigung','verfahren','beschaffung','beschäftigung','vereinbarkeit','effizienz','transparenz','komplexität','flexibilität','produktivität','priorisierung','authentifizierung','verschlüsselung','wiederherstellung','datenschutz','schnittstelle','benutzeroberfläche','berechtigung','wartung','anreiz','einschränkung','nachvollziehbarkeit','erheblich','überwiegend','ausdrücklich','gegebenenfalls','voraussichtlich','gleichermaßen','folgerichtig','zweckmäßig','hinreichend','umfassend','unverzüglich','einschließlich','ausgehend','betreffend','verwässern','starres','büromodell','rückfragen','absprachen','führungskräfte','flexibilität','produktiv','konzentrierte','automatisch'
+  ],
+  C1: ['ambivalent','implizit','kohärent','diskrepanz','paradigma','legitimation','instrumentalisierung','differenzierung','rekonstruieren','relativieren'],
+  C2: ['obsolet','idiosynkratisch','apodiktisch','hermeneutik','epistemologisch','konterkarieren','subsidiarität','inkommensumverteilung','rechtsförmigkeit','unverhältnismäßigkeit'],
+};
+Object.entries(WORD_LEVEL_SEED).forEach(([level, words]) => {
+  words.forEach((word) => { wordLevels[word.toLowerCase()] = level; });
+});
 
 const vocabularyData = [
   { de: 'das Haus', ru: 'дом', example: 'Das Haus ist groß und hell.', category: 'Everyday' },
@@ -1429,6 +1579,38 @@ const GENERAL_LESSONS = [
       {q:'der Erfolg',opts:['неудача','успех','начало','конец'],a:1},
     ]
   },
+  { id:'g21', title:'Аргументация B2', de:'Argumentation und Abwägung', color:'c-blue', type:'B2',
+    words:[
+      {de:'nichtsdestotrotz',ru:'тем не менее',ex:'Nichtsdestotrotz bleibt das Risiko bestehen.',cat:'general'},
+      {de:'gleichwohl',ru:'однако / всё же',ex:'Gleichwohl ist die Entscheidung nachvollziehbar.',cat:'general'},
+      {de:'wohingegen',ru:'тогда как',ex:'Die Lösung ist flexibel, wohingegen der alte Prozess starr war.',cat:'general'},
+      {de:'die Auswirkung',ru:'последствие / влияние',ex:'Die Auswirkung auf das Team ist erheblich.',cat:'general'},
+      {de:'die Einschränkung',ru:'ограничение',ex:'Diese Einschränkung muss berücksichtigt werden.',cat:'general'},
+      {de:'die Nachvollziehbarkeit',ru:'понятность / прослеживаемость',ex:'Nachvollziehbarkeit ist für Entscheidungen wichtig.',cat:'general'},
+      {de:'umfassend',ru:'всесторонний',ex:'Wir brauchen eine umfassende Analyse.',cat:'general'},
+      {de:'hinreichend',ru:'достаточный',ex:'Die Begründung ist hinreichend klar.',cat:'general'},
+    ],
+    quiz:[
+      {q:'nichtsdestotrotz',opts:['поэтому','тем не менее','в частности','согласно'],a:1},
+      {q:'wohingegen',opts:['тогда как','если','после того как','пока не'],a:0},
+    ]
+  },
+  { id:'g22', title:'Рабочая коммуникация B2', de:'Mobiles Arbeiten und Verantwortung', color:'c-green', type:'B2',
+    words:[
+      {de:'die Inanspruchnahme',ru:'использование / обращение за услугой',ex:'Die Inanspruchnahme des Angebots bleibt freiwillig.',cat:'general'},
+      {de:'die Gewährleistung',ru:'обеспечение / гарантия',ex:'Die Gewährleistung der Sicherheit hat Priorität.',cat:'general'},
+      {de:'diesbezüglich',ru:'в этой связи',ex:'Diesbezüglich brauchen wir klare Absprachen.',cat:'general'},
+      {de:'die Schnittstelle',ru:'интерфейс / точка взаимодействия',ex:'Die Schnittstelle zwischen Teams ist noch unklar.',cat:'general'},
+      {de:'die Verfügbarkeit',ru:'доступность',ex:'Die Verfügbarkeit der Daten muss gesichert werden.',cat:'general'},
+      {de:'die Zuständigkeit',ru:'зона ответственности',ex:'Die Zuständigkeit wird schriftlich festgelegt.',cat:'general'},
+      {de:'die Umsetzung',ru:'реализация',ex:'Die Umsetzung erfolgt schrittweise.',cat:'general'},
+      {de:'unverzüglich',ru:'незамедлительно',ex:'Kritische Fehler müssen unverzüglich gemeldet werden.',cat:'general'},
+    ],
+    quiz:[
+      {q:'die Zuständigkeit',opts:['доступность','зона ответственности','обеспечение','ограничение'],a:1},
+      {q:'unverzüglich',opts:['примерно','незамедлительно','по желанию','заранее'],a:1},
+    ]
+  },
 ];
 
 const SPEC_VOCAB = {
@@ -1703,6 +1885,7 @@ function normalizeState(state) {
   next.lastStudyDate = localStorage.getItem('lastStudyDate') || localStorage.getItem('lastDate') || next.lastStudyDate || '';
   next.aiCleanStreak = Math.max(0, Number(next.aiCleanStreak || 0));
   next.theme = localStorage.getItem('theme') || next.theme || 'dark';
+  next.level = localStorage.getItem('userLevel') || next.level || DEFAULT_STATE.level;
 
   if (CONFIG_API_URL && BACKEND_CONFIG.staticMode === false) {
     next.staticMode = false;
@@ -1742,6 +1925,7 @@ function saveS(){
   localStorage.setItem('lastStudyDate', S.lastStudyDate || '');
   localStorage.setItem('achievements', JSON.stringify(S.achievements));
   localStorage.setItem('theme', S.theme || 'dark');
+  localStorage.setItem('userLevel', S.level || 'A1');
   syncContentStorage();
 }
 
@@ -1757,6 +1941,18 @@ let ltIdx = 0;
 let ltScore = 0;
 let ltAnswered = false;
 let ltSession = [];
+let ltDifficulty = 2;
+let ltStage = 'grammar';
+let ltPlacement = {
+  grammarCorrect: 0,
+  difficulties: [],
+  stage1Avg: 0,
+  score: 0,
+  readingAnswers: [],
+  readingCorrect: 0,
+  writingChecks: null,
+  confirmed: false,
+};
 
 function shuffleArray(items) {
   const arr = [...items];
@@ -1767,8 +1963,26 @@ function shuffleArray(items) {
   return arr;
 }
 
+function ltEsc(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function buildTestSession() {
-  return shuffleArray(LEVEL_TEST).map((question) => {
+  return [prepareGrammarQuestion(pickGrammarQuestion(ltDifficulty, new Set()))];
+}
+
+function prepareGrammarQuestion(question) {
+  const source = question || LEVEL_TEST.find((item) => item.difficulty === ltDifficulty) || LEVEL_TEST[0];
+  return shuffleGrammarOptions(source);
+}
+
+function shuffleGrammarOptions(question) {
+  return (() => {
     const opts = question.opts.map((text, idx) => ({
       text,
       isAnswer: idx === question.a,
@@ -1779,7 +1993,47 @@ function buildTestSession() {
       opts: shuffled.map((item) => item.text),
       a: shuffled.findIndex((item) => item.isAnswer),
     };
-  });
+  })();
+}
+
+function pickGrammarQuestion(difficulty, used) {
+  const available = LEVEL_TEST.filter((question) => question.difficulty === difficulty && !used.has(question.q));
+  if (available.length) return shuffleArray(available)[0];
+
+  const fallback = LEVEL_TEST
+    .filter((question) => !used.has(question.q))
+    .sort((a, b) => Math.abs(a.difficulty - difficulty) - Math.abs(b.difficulty - difficulty));
+  return fallback[0] || LEVEL_TEST[0];
+}
+
+function grammarLevelFromAverage(avg) {
+  if (avg < 2) return 'A1';
+  if (avg < 3) return 'A2';
+  if (avg < 4) return 'B1';
+  return 'B2';
+}
+
+function clampPlacementScore(value) {
+  return Math.max(1, Math.min(5, value));
+}
+
+function stepLevelDown(level) {
+  const order = ['A1', 'A2', 'B1', 'B2'];
+  return order[Math.max(0, order.indexOf(level) - 1)] || 'A1';
+}
+
+function getReadingForCurrentLevel() {
+  return READING_TESTS[grammarLevelFromAverage(ltPlacement.score)] || READING_TESTS.A1;
+}
+
+function getWritingPromptForCurrentLevel() {
+  return WRITING_PROMPTS[grammarLevelFromAverage(ltPlacement.score)] || WRITING_PROMPTS.A1;
+}
+
+function finalizePlacementLevel() {
+  let level = grammarLevelFromAverage(ltPlacement.score);
+  if (ltPlacement.writingChecks && !ltPlacement.confirmed) level = stepLevelDown(level);
+  return level;
 }
 
 function buildSpecGrid() {
@@ -1826,6 +2080,18 @@ function startLevelTest() {
   ltIdx = 0;
   ltScore = 0;
   ltAnswered = false;
+  ltDifficulty = 2;
+  ltStage = 'grammar';
+  ltPlacement = {
+    grammarCorrect: 0,
+    difficulties: [],
+    stage1Avg: 0,
+    score: 0,
+    readingAnswers: [],
+    readingCorrect: 0,
+    writingChecks: null,
+    confirmed: false,
+  };
   ltSession = buildTestSession();
   document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
   document.getElementById('ob3b').classList.add('on');
@@ -1833,15 +2099,22 @@ function startLevelTest() {
 }
 
 function renderLTQ() {
-  if (ltIdx >= ltSession.length) {
-    showLTResult();
+  if (ltIdx >= 10) {
+    document.getElementById('ltNum').textContent = 'Грамматика завершена';
+    document.getElementById('ltBar').style.width = '33%';
+    document.getElementById('ltNext').style.display = 'none';
+    setTimeout(() => {
+      if (ltStage === 'grammar') renderReadingStage();
+    }, 0);
     return;
   }
   const question = ltSession[ltIdx];
-  document.getElementById('ltNum').textContent = `Вопрос ${ltIdx + 1} из ${ltSession.length}`;
-  document.getElementById('ltBar').style.width = `${(ltIdx / ltSession.length) * 100}%`;
+  document.getElementById('ltStageLabel').textContent = 'Этап 1 из 3 — адаптивная грамматика';
+  document.getElementById('ltNum').textContent = `Вопрос ${ltIdx + 1} из 10 · сложность ${question.difficulty}/5`;
+  document.getElementById('ltBar').style.width = `${(ltIdx / 10) * 100}%`;
   document.getElementById('ltWord').textContent = question.q;
   document.getElementById('ltNext').style.display = 'none';
+  document.getElementById('ltNext').textContent = 'Следующий →';
   ltAnswered = false;
 
   const optsWrap = document.getElementById('ltOpts');
@@ -1860,54 +2133,216 @@ function answerLT(selected) {
   ltAnswered = true;
   const question = ltSession[ltIdx];
   document.querySelectorAll('.lt-opt').forEach((button, index) => {
-    button.classList.add(index === question.a ? 'correct' : 'wrong');
+    if (index === question.a) button.classList.add('correct');
+    else if (index === selected) button.classList.add('wrong');
     button.disabled = true;
   });
-  if (selected === question.a) ltScore += 1;
+  const correct = selected === question.a;
+  if (correct) {
+    ltScore += 1;
+    ltPlacement.grammarCorrect += 1;
+  }
+  ltPlacement.difficulties.push(question.difficulty);
+  ltDifficulty = Math.max(1, Math.min(5, ltDifficulty + (correct ? 1 : -1)));
   document.getElementById('ltNext').style.display = 'inline-flex';
 }
 
 function ltNextQ() {
+  if (ltStage === 'reading') {
+    submitReadingStage();
+    return;
+  }
+  if (ltStage === 'reading-reviewed') {
+    renderWritingStage();
+    return;
+  }
+  if (ltStage === 'writing') {
+    submitWritingStage();
+    return;
+  }
+  if (ltStage === 'writing-reviewed') {
+    showLTResult();
+    return;
+  }
+  if (!ltAnswered) {
+    toast('Выбери ответ');
+    return;
+  }
   ltIdx += 1;
+  if (ltIdx < 10) {
+    const used = new Set(ltSession.map((question) => question.q));
+    ltSession.push(prepareGrammarQuestion(pickGrammarQuestion(ltDifficulty, used)));
+  } else {
+    ltPlacement.stage1Avg = ltPlacement.difficulties.reduce((sum, value) => sum + value, 0) / Math.max(ltPlacement.difficulties.length, 1);
+    ltPlacement.score = ltPlacement.stage1Avg;
+    S.level = grammarLevelFromAverage(ltPlacement.score);
+    S.levelScore = Number(ltPlacement.score.toFixed(2));
+    saveS();
+  }
   renderLTQ();
 }
 
-function showLTResult() {
-  const score = ltScore;
-  let level = 'A1';
-  let desc = '';
+function renderReadingStage() {
+  ltStage = 'reading';
+  ltPlacement.readingAnswers = [];
+  const reading = getReadingForCurrentLevel();
+  const level = grammarLevelFromAverage(ltPlacement.score);
+  document.getElementById('ltStageLabel').textContent = 'Этап 2 из 3 — понимание текста';
+  document.getElementById('ltNum').textContent = `Текст уровня ${level} · 3 вопроса`;
+  document.getElementById('ltBar').style.width = '66%';
+  document.getElementById('ltWord').innerHTML = `
+    <div class="lt-stage-title">Прочитай текст</div>
+    <div class="lt-stage-copy">Ответы проверяют общий смысл, а не поиск отдельных слов.</div>
+    <div class="lt-reading">${typeof highlightText === 'function' ? highlightText(reading.text) : ltEsc(reading.text)}</div>
+    ${typeof wordLevelLegendHtml === 'function' ? wordLevelLegendHtml() : ''}
+  `;
+  const optsWrap = document.getElementById('ltOpts');
+  optsWrap.innerHTML = reading.questions.map((question, qIndex) => `
+    <div class="lt-reading-q">
+      <div class="lt-reading-q-title">${qIndex + 1}. ${ltEsc(question.q)}</div>
+      <div class="lt-opts" style="margin-bottom:0;">
+        ${question.opts.map((option, optIndex) => `
+          <button class="lt-opt" data-reading-q="${qIndex}" data-reading-opt="${optIndex}" onclick="selectReadingAnswer(${qIndex},${optIndex})">${ltEsc(option)}</button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('ltNext').textContent = 'Проверить понимание →';
+  document.getElementById('ltNext').style.display = 'inline-flex';
+}
 
-  if (score <= 3) {
-    level = 'A1';
-    desc = 'Ты в самом начале пути. Мы начнём с основ: приветствия, базовых слов и простых конструкций.';
-  } else if (score <= 5) {
-    level = 'A2';
-    desc = 'Базовый уровень уже есть. Дальше усилим бытовой немецкий, понимание речи и короткие диалоги.';
-  } else if (score <= 7) {
-    level = 'B1';
-    desc = 'Хорошая база. Теперь фокус на более длинных фразах, уверенном общении и профессиональной лексике.';
-  } else {
-    level = 'B2';
-    desc = 'Уровень уже крепкий. Можно больше работать над беглостью, нюансами и рабочими сценариями.';
+function selectReadingAnswer(qIndex, optIndex) {
+  if (ltStage !== 'reading') return;
+  ltPlacement.readingAnswers[qIndex] = optIndex;
+  document.querySelectorAll(`[data-reading-q="${qIndex}"]`).forEach((button) => {
+    button.classList.toggle('selected', Number(button.dataset.readingOpt) === optIndex);
+  });
+}
+
+function submitReadingStage() {
+  const reading = getReadingForCurrentLevel();
+  if (ltPlacement.readingAnswers.filter((value) => Number.isInteger(value)).length < reading.questions.length) {
+    toast('Ответь на все 3 вопроса по тексту');
+    return;
   }
+  const correct = reading.questions.reduce((sum, question, index) => (
+    sum + (ltPlacement.readingAnswers[index] === question.a ? 1 : 0)
+  ), 0);
+  ltPlacement.readingCorrect = correct;
+  if (correct === reading.questions.length) ltPlacement.score = clampPlacementScore(ltPlacement.score + 0.5);
+  if (correct === 0) ltPlacement.score = clampPlacementScore(ltPlacement.score - 0.5);
+
+  reading.questions.forEach((question, qIndex) => {
+    document.querySelectorAll(`[data-reading-q="${qIndex}"]`).forEach((button) => {
+      const optIndex = Number(button.dataset.readingOpt);
+      button.classList.remove('selected');
+      if (optIndex === question.a) button.classList.add('correct');
+      else if (optIndex === ltPlacement.readingAnswers[qIndex]) button.classList.add('wrong');
+      button.disabled = true;
+    });
+  });
+
+  ltStage = 'reading-reviewed';
+  document.getElementById('ltNum').textContent = `Понимание текста: ${correct}/3`;
+  document.getElementById('ltNext').textContent = 'К письменному ответу →';
+}
+
+function renderWritingStage() {
+  ltStage = 'writing';
+  const level = grammarLevelFromAverage(ltPlacement.score);
+  document.getElementById('ltStageLabel').textContent = 'Этап 3 из 3 — письменный ответ';
+  document.getElementById('ltNum').textContent = `Тема уровня ${level}`;
+  document.getElementById('ltBar').style.width = '90%';
+  document.getElementById('ltWord').innerHTML = `
+    <div class="lt-stage-title">Напиши 3-5 предложений</div>
+    <div class="lt-stage-copy">${ltEsc(getWritingPromptForCurrentLevel())}</div>
+  `;
+  document.getElementById('ltOpts').innerHTML = `
+    <textarea class="lt-writing" id="ltWriting" placeholder="Schreibe hier auf Deutsch..."></textarea>
+    <div class="lt-checks" id="ltWritingChecks"></div>
+  `;
+  document.getElementById('ltNext').textContent = 'Проверить текст →';
+  document.getElementById('ltNext').style.display = 'inline-flex';
+  setTimeout(() => document.getElementById('ltWriting')?.focus(), 50);
+}
+
+function analyzeWriting(text) {
+  const words = (text.toLowerCase().match(/[a-zäöüß]+/g) || []);
+  const unique = new Set(words);
+  const endings = new Set();
+  words.forEach((word) => {
+    if (/te$/.test(word)) endings.add('-te');
+    if (/en$/.test(word)) endings.add('-en');
+    if (/t$/.test(word)) endings.add('-t');
+  });
+  return [
+    { id: 'length', ok: text.trim().length >= 80, label: `Длина текста: ${text.trim().length}/80 символов` },
+    { id: 'unique', ok: unique.size >= 15, label: `Уникальные слова: ${unique.size}/15` },
+    { id: 'comma', ok: /,/.test(text), label: 'Есть хотя бы одна запятая' },
+    { id: 'verbs', ok: endings.size >= 2, label: `Формы глаголов найдены: ${endings.size}/2` },
+  ];
+}
+
+function renderWritingChecks(checks) {
+  const wrap = document.getElementById('ltWritingChecks');
+  if (!wrap) return;
+  wrap.innerHTML = checks.map((check) => `
+    <div class="lt-check ${check.ok ? 'ok' : 'no'}">${check.ok ? '✓' : '×'} ${ltEsc(check.label)}</div>
+  `).join('');
+}
+
+function submitWritingStage() {
+  const text = document.getElementById('ltWriting')?.value || '';
+  const checks = analyzeWriting(text);
+  const passed = checks.filter((check) => check.ok).length >= 3;
+  ltPlacement.writingChecks = checks;
+  ltPlacement.confirmed = passed;
+  renderWritingChecks(checks);
+  ltStage = 'writing-reviewed';
+  document.getElementById('ltNum').textContent = passed ? 'Письменный этап подтверждён' : 'Письменный этап понижает уровень на одну ступень';
+  document.getElementById('ltNext').textContent = 'Показать результат →';
+}
+
+function showLTResult() {
+  const level = finalizePlacementLevel();
+  const descByLevel = {
+    A1: 'Стартуем с базы: простые предложения, артикли, частые глаголы и короткие тексты.',
+    A2: 'База уже есть. Дальше усилим падежи, прошедшее время, бытовые и рабочие ситуации.',
+    B1: 'Хорошая опора. Начинаем с более длинных фраз, порядка слов, связок и профессиональной лексики.',
+    B2: 'Уровень крепкий. Фокус на нюансах, сложных придаточных, аргументации и рабочем немецком.',
+  };
+  const writingNote = ltPlacement.writingChecks
+    ? (ltPlacement.confirmed ? 'Письменный этап подтвердил уровень.' : 'Письменный этап понизил итог на одну ступень.')
+    : 'Письменный этап не был завершён.';
 
   S.level = level;
-  S.levelScore = score;
+  S.levelScore = Number((ltPlacement.score || ltPlacement.stage1Avg || 1).toFixed(2));
+  S.placement = {
+    grammarCorrect: ltPlacement.grammarCorrect,
+    stage1Avg: Number((ltPlacement.stage1Avg || 0).toFixed(2)),
+    readingCorrect: ltPlacement.readingCorrect,
+    writingConfirmed: ltPlacement.confirmed,
+    completedAt: new Date().toISOString(),
+  };
+  localStorage.setItem('userLevel', level);
   saveS();
 
-  document.getElementById('resultScore').textContent = score;
+  document.getElementById('resultScore').textContent = level;
   document.getElementById('resultLevel').textContent = `Уровень: ${level}`;
-  document.getElementById('resultDesc').textContent = desc;
+  document.getElementById('resultDesc').textContent = `${descByLevel[level]} ${writingNote}`;
   const specNames = SPECIALIZATIONS
     .filter((item) => S.specs.includes(item.id))
     .map((item) => item.name)
     .join(', ') || 'Общий';
-  const recommended = (typeof REQUIRED_LESSONS !== 'undefined' && REQUIRED_LESSONS[0]) || (typeof APP_LESSONS !== 'undefined' && APP_LESSONS[0]) || GENERAL_LESSONS[0];
+  const recommended = typeof getRecommendedLessonForLevel === 'function'
+    ? getRecommendedLessonForLevel(level)
+    : ((typeof REQUIRED_LESSONS !== 'undefined' && REQUIRED_LESSONS[0]) || (typeof APP_LESSONS !== 'undefined' && APP_LESSONS[0]) || GENERAL_LESSONS[0]);
   document.getElementById('planPreview').innerHTML = `
     <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Твой план будет включать:</div>
     <div style="font-size:13px;line-height:1.8;color:var(--text);">
       ✦ Общий немецкий с уровня <strong style="color:var(--gold);">${level}</strong><br>
       ✦ Профессиональная лексика: <strong style="color:var(--gold);">${specNames}</strong><br>
+      ✦ Грамматика: <strong style="color:var(--gold);">${ltPlacement.grammarCorrect}/10</strong>, текст: <strong style="color:var(--gold);">${ltPlacement.readingCorrect}/3</strong><br>
       ✦ Домашние задания под каждый урок<br>
       ✦ Разговорник и словарь по специальности
     </div>
@@ -1922,6 +2357,7 @@ function showLTResult() {
 }
 
 function finishOnboarding(openLessonId) {
+  ltStage = 'done';
   S.onboardingDone = true;
   saveS();
   document.getElementById('onboarding').classList.add('hidden');
@@ -1970,6 +2406,85 @@ function esc(text) {
 
 function avatarLetter(name) {
   return (name || 'A').trim().slice(0, 1).toUpperCase() || 'A';
+}
+
+const CEFR_LEVELS = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+function normalizeLevelName(level) {
+  const match = String(level || '').toUpperCase().match(/\b(A0|A1|A2|B1|B2|C1|C2)\b/);
+  return match ? match[1] : 'A1';
+}
+
+function levelRank(level) {
+  const idx = CEFR_LEVELS.indexOf(normalizeLevelName(level));
+  return idx >= 0 ? idx : 1;
+}
+
+function getUserLevel() {
+  return normalizeLevelName(localStorage.getItem('userLevel') || S.level || 'A1');
+}
+
+function getLessonLevel(lesson) {
+  if (lesson.level) return normalizeLevelName(lesson.level);
+  const matches = [...String(lesson.type || '').toUpperCase().matchAll(/\b(A1|A2|B1|B2|C1|C2)\b/g)].map((item) => item[1]);
+  return matches.length ? normalizeLevelName(matches[matches.length - 1]) : 'A1';
+}
+
+function getAdaptiveLessons(lessons = APP_LESSONS, level = getUserLevel()) {
+  const userRank = levelRank(level);
+  const normalized = lessons.map((lesson, index) => ({ lesson, index, rank: levelRank(getLessonLevel(lesson)) }));
+  const currentAndAbove = normalized.filter((item) => item.rank >= userRank);
+  const review = normalized.filter((item) => item.rank < userRank);
+  const ordered = currentAndAbove.length
+    ? [...currentAndAbove, ...review]
+    : normalized.sort((a, b) => b.rank - a.rank || a.index - b.index);
+  return ordered.map((item) => item.lesson);
+}
+
+function getRecommendedLessonForLevel(level = getUserLevel()) {
+  const ordered = getAdaptiveLessons(APP_LESSONS, level);
+  return ordered.find((lesson) => !S.completedLessons.includes(lesson.id)) || ordered[0] || APP_LESSONS[0] || GENERAL_LESSONS[0];
+}
+
+function wordLevelLegendHtml() {
+  return `
+    <div class="word-legend" aria-label="Легенда уровней слов">
+      <span class="word-legend-item"><span class="word-swatch a1"></span>⬜A1</span>
+      <span class="word-legend-item"><span class="word-swatch a2"></span>🟣A2</span>
+      <span class="word-legend-item"><span class="word-swatch b1"></span>🔵B1</span>
+      <span class="word-legend-item"><span class="word-swatch b2"></span>🟢B2</span>
+      <span class="word-legend-item"><span class="word-swatch c1"></span>🟡C1</span>
+      <span class="word-legend-item"><span class="word-swatch c2"></span>🔴C2</span>
+    </div>
+  `;
+}
+
+function normalizeLookupWord(word) {
+  return String(word || '').toLowerCase();
+}
+
+function getWordLevel(word) {
+  const key = normalizeLookupWord(word);
+  if (wordLevels[key]) return wordLevels[key];
+  if (key.endsWith('t') && wordLevels[`${key.slice(0, -1)}en`]) return wordLevels[`${key.slice(0, -1)}en`];
+  if (key.endsWith('e') && wordLevels[`${key}n`]) return wordLevels[`${key}n`];
+  if (key.endsWith('te') && wordLevels[`${key.slice(0, -2)}en`]) return wordLevels[`${key.slice(0, -2)}en`];
+  return 'A0';
+}
+
+function highlightText(text) {
+  const userRank = levelRank(getUserLevel());
+  return String(text || '')
+    .split(/([A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?)/g)
+    .map((token) => {
+      if (!/^[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?$/.test(token)) {
+        return esc(token).replace(/\r?\n/g, '<br>');
+      }
+      const level = getWordLevel(token);
+      const tone = level === 'A0' ? '' : (levelRank(level) > userRank ? ' word-bright' : ' word-dim');
+      return `<span class="word-mark word-level-${level.toLowerCase()}${tone}" data-level="${level}">${esc(token)}</span>`;
+    })
+    .join('');
 }
 
 function hasBackend() {
@@ -2027,6 +2542,7 @@ function normalizeLesson(lesson, index = 0) {
     de: lesson.de || (typeof lessonGermanTitles !== 'undefined' ? lessonGermanTitles[lesson.id] : '') || lesson.title,
     color: lesson.color || (typeof lessonColors !== 'undefined' ? lessonColors[index % lessonColors.length] : 'c-gold'),
     type: lesson.type || `${lesson.category || 'Everyday'} ${lesson.level || 'A1'}`,
+    level: lesson.level || getLessonLevel(lesson),
   };
 }
 
@@ -2130,8 +2646,8 @@ function getXPLevelInfo() {
 
 function updateHeaderLevel() {
   const levelInfo = getXPLevelInfo();
-  const level = levelInfo.current.level;
-  S.level = S.level || level;
+  const level = getUserLevel() || levelInfo.current.level;
+  S.level = level;
   const hdrLevel = document.getElementById('hdrLevel');
   if (hdrLevel) hdrLevel.textContent = level;
 }
@@ -2377,9 +2893,9 @@ function updateDash() {
     lt.appendChild(item);
   });
 
-  const nextLesson = APP_LESSONS.find((lesson) => !S.completedLessons.includes(lesson.id));
+  const nextLesson = getRecommendedLessonForLevel(getUserLevel());
   const nextLessonEl = document.getElementById('nextLesson');
-  if (nextLesson) {
+  if (nextLesson && !S.completedLessons.includes(nextLesson.id)) {
     nextLessonEl.innerHTML = `
       <div class="plan-card ${nextLesson.color}" style="max-width:420px;cursor:pointer;" onclick="openLessonById('${nextLesson.id}')">
         <div class="plan-type">${nextLesson.type}</div>
@@ -2416,10 +2932,13 @@ function updateDash() {
 function renderPlan() {
   const generalGrid = document.getElementById('generalGrid');
   generalGrid.innerHTML = '';
+  const userRank = levelRank(getUserLevel());
+  const planLessons = getAdaptiveLessons(APP_LESSONS);
 
-  APP_LESSONS.forEach((lesson, index) => {
+  planLessons.forEach((lesson, index) => {
     const done = S.completedLessons.includes(lesson.id);
-    const unlocked = done || index === 0 || S.completedLessons.includes(APP_LESSONS[index - 1]?.id);
+    const lessonRank = levelRank(getLessonLevel(lesson));
+    const unlocked = done || lessonRank <= userRank || index === 0 || S.completedLessons.includes(planLessons[index - 1]?.id);
     const card = document.createElement('div');
     card.className = `plan-card ${lesson.color}${unlocked ? '' : ' locked'}`;
     card.innerHTML = `
@@ -2686,11 +3205,19 @@ function getAllVocab() {
   const primary = typeof vocabularyData !== 'undefined' ? vocabularyData.map(normalizeWord) : APP_LESSONS.flatMap((lesson) => lesson.words);
   const spec = S.specs.flatMap((specId) => SPEC_VOCAB[specId] || []).map(normalizeWord);
   const seen = new Set();
-  return [...primary, ...spec].filter((word) => {
+  const words = [...primary, ...spec].filter((word) => {
     const key = `${word.de}|${word.cat}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
+  });
+  const userRank = levelRank(getUserLevel());
+  return words.sort((a, b) => {
+    const rankA = Math.max(...(a.de.match(/[A-Za-zÄÖÜäöüß]+/g) || []).map((token) => levelRank(getWordLevel(token))), 0);
+    const rankB = Math.max(...(b.de.match(/[A-Za-zÄÖÜäöüß]+/g) || []).map((token) => levelRank(getWordLevel(token))), 0);
+    const bucketA = rankA >= userRank ? 0 : 1;
+    const bucketB = rankB >= userRank ? 0 : 1;
+    return bucketA - bucketB || rankA - rankB || a.de.localeCompare(b.de);
   });
 }
 
@@ -2719,7 +3246,7 @@ function renderVocab(filter) {
     row.innerHTML = `
       <td><span class="vt-de">${word.de}</span> <button onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
       <td class="vt-ru">${word.ru}</td>
-      <td class="vt-ex">${word.ex}</td>
+      <td class="vt-ex">${highlightText(word.ex)}</td>
       <td><span class="vt-tag">${word.cat}</span></td>
     `;
     body.appendChild(row);
@@ -2733,7 +3260,7 @@ function renderPhrases() {
     const card = document.createElement('div');
     card.className = 'ph-card';
     card.innerHTML = `
-      <div class="ph-de">${phrase.de} <button onclick="speak('${phrase.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></div>
+      <div class="ph-de">${highlightText(phrase.de)} <button onclick="speak('${phrase.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></div>
       <div class="ph-ru">${phrase.ru}</div>
       <div class="ph-cat">${phrase.cat}</div>
     `;
@@ -2816,7 +3343,8 @@ function renderModal() {
 
   if (QS.phase === 'theory') {
     body.innerHTML = `
-      <div class="lesson-theory">${esc(lesson.theory)}</div>
+      <div class="lesson-theory">${highlightText(lesson.theory)}</div>
+      ${wordLevelLegendHtml()}
       <div class="btn-row">
         <button class="btn btn-gold" onclick="QS.phase='examples';renderModal()">Примеры →</button>
       </div>
@@ -2829,11 +3357,12 @@ function renderModal() {
       <div class="lesson-example-grid">
         ${(lesson.examples || []).map((item) => `
           <div class="lesson-example">
-            <div class="lesson-example-de">${esc(item.de)}</div>
+            <div class="lesson-example-de">${highlightText(item.de)}</div>
             <div class="lesson-example-ru">${esc(item.ru)}</div>
           </div>
         `).join('')}
       </div>
+      ${wordLevelLegendHtml()}
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="QS.phase='theory';renderModal()">← Теория</button>
         <button class="btn btn-gold" onclick="QS.phase='quiz';QS.idx=0;QS.score=0;QS.answered=false;renderModal()">Квиз →</button>
@@ -2852,7 +3381,7 @@ function renderModal() {
             <tr>
               <td><span class="vt-de">${word.de}</span> <button onclick="speak('${word.de.replace(/'/g, "\\'")}')" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
               <td>${word.ru}</td>
-              <td class="vt-ex">${word.ex}</td>
+              <td class="vt-ex">${highlightText(word.ex)}</td>
             </tr>
           `).join('')}
         </tbody>
