@@ -6,6 +6,9 @@
 <title>Deutsch · Azamat</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /*
 ИСПРАВЛЕННЫЕ БАГИ:
@@ -102,6 +105,11 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .nav-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:14px 20px;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
 .nav-btn:hover{color:var(--text);}
 .nav-btn.on{color:var(--gold);border-bottom-color:var(--gold);}
+.nav-btn{position:relative;}
+.chat-nav-badge{position:absolute;right:6px;top:5px;min-width:18px;height:18px;border-radius:999px;background:var(--red);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:18px;text-align:center;padding:0 5px;display:none;}
+.chat-nav-badge.on{display:block;}
+.mobile-menu-item .chat-nav-badge{position:static;display:none;margin-left:6px;vertical-align:middle;}
+.mobile-menu-item .chat-nav-badge.on{display:inline-block;}
 
 /* ── PAGE ── */
 .page{display:none;}
@@ -335,6 +343,49 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 @keyframes module-green-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
 @keyframes module-xp-float{0%{opacity:0;transform:translate(-50%,18px) scale(.94)}20%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-42px) scale(1.04)}}
 @keyframes module-confetti-fall{to{transform:translateY(110vh) rotate(680deg);opacity:0}}
+
+/* COMMUNITY CHAT */
+.community-chat-shell{height:min(760px,calc(100vh - 170px));min-height:560px;border:1px solid var(--border);background:var(--bg2);border-radius:8px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;}
+.community-chat-head{padding:18px 20px;border-bottom:1px solid var(--border);background:var(--bg2);display:grid;gap:12px;}
+.community-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.community-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(26px,4vw,36px);letter-spacing:0;line-height:1.05;}
+.community-online{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--green);border:1px solid rgba(61,214,140,.35);background:rgba(61,214,140,.08);border-radius:999px;padding:7px 11px;white-space:nowrap;}
+.community-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
+.community-tabs::-webkit-scrollbar{display:none;}
+.community-tab{min-height:42px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:8px;padding:9px 14px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.community-tab.on{border-color:var(--gold);background:rgba(240,192,96,.1);color:var(--gold);}
+.community-room-hint{font-size:13px;color:var(--muted);line-height:1.45;}
+.community-pin{border:1px solid rgba(240,192,96,.32);background:rgba(240,192,96,.08);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;color:var(--text);}
+.community-offline{display:none;border:1px solid rgba(240,85,85,.42);background:rgba(240,85,85,.08);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;}
+.community-offline.on{display:block;}
+.community-messages{overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,rgba(154,163,178,.04),transparent);}
+.community-empty{margin:auto;text-align:center;color:var(--muted);font-size:14px;line-height:1.5;max-width:360px;}
+.community-msg{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:end;max-width:min(78%,720px);position:relative;}
+.community-msg.mine{grid-template-columns:minmax(0,1fr) 38px;align-self:flex-end;}
+.community-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;box-shadow:0 8px 22px rgba(0,0,0,.16);}
+.community-bubble-wrap{min-width:0;}
+.community-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:5px;}
+.community-msg.mine .community-meta{justify-content:flex-end;}
+.community-name{font-weight:800;color:var(--text);}
+.community-level{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold);border:1px solid rgba(240,192,96,.3);background:rgba(240,192,96,.08);border-radius:999px;padding:2px 7px;}
+.community-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+.community-bubble{border:1px solid var(--border);background:var(--bg3);border-radius:8px 8px 8px 2px;padding:11px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
+.community-msg.mine .community-bubble{background:linear-gradient(135deg,rgba(240,192,96,.92),rgba(200,149,10,.82));color:#111;border-color:rgba(240,192,96,.65);border-radius:8px 8px 2px 8px;}
+.community-reactor{display:none;position:absolute;left:48px;top:-22px;z-index:5;border:1px solid var(--border2);background:var(--bg2);box-shadow:0 10px 34px rgba(0,0,0,.22);border-radius:999px;padding:4px;gap:2px;}
+.community-msg.mine .community-reactor{left:auto;right:48px;}
+.community-msg:hover .community-reactor,.community-msg.react-open .community-reactor{display:flex;}
+.community-reaction-btn{border:0;background:transparent;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:16px;display:grid;place-items:center;}
+.community-reaction-btn:hover{background:var(--bg3);}
+.community-reactions{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.community-reaction-pill{border:1px solid var(--border2);background:var(--bg2);border-radius:999px;padding:3px 8px;font-size:12px;}
+.community-composer{border-top:1px solid var(--border);background:var(--bg2);padding:12px 20px;display:grid;gap:8px;}
+.community-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;}
+.community-input{width:100%;min-height:46px;max-height:130px;resize:none;border:1px solid var(--border2);background:var(--bg3);color:var(--text);border-radius:8px;padding:12px 13px;outline:none;line-height:1.45;}
+.community-input:focus{border-color:var(--gold);}
+.community-send{min-height:46px;border:0;border-radius:8px;background:var(--gold);color:#111;font-family:'Syne',sans-serif;font-weight:800;padding:0 18px;cursor:pointer;}
+.community-send:disabled{opacity:.55;cursor:not-allowed;}
+.community-composer-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.community-error{color:var(--red);}
 @media(max-width:640px){
   .module-hero,.module-day-layout,.module-page-head{grid-template-columns:1fr;display:grid;}
   .module-hero{padding:16px;}
@@ -345,6 +396,15 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
   .module-text{font-size:16px;line-height:1.85;}
   .module-level-tab,.module-option,.module-back{min-height:46px;}
   .module-day-card.big,.module-day-card,.module-side-card,.module-panel{padding:14px;}
+  .community-chat-shell{height:calc(100vh - 132px);min-height:0;border-radius:0;border-left:0;border-right:0;margin:0 -12px;}
+  .community-chat-head{padding:12px;}
+  .community-messages{padding:14px 12px 96px;}
+  .community-msg{max-width:92%;grid-template-columns:34px minmax(0,1fr);}
+  .community-msg.mine{grid-template-columns:minmax(0,1fr) 34px;}
+  .community-avatar{width:34px;height:34px;}
+  .community-composer{position:sticky;bottom:78px;z-index:40;padding:10px 12px calc(10px + env(safe-area-inset-bottom));}
+  .community-input-row{grid-template-columns:minmax(0,1fr) 92px;}
+  .community-send{padding:0 10px;}
 }
 
 /* LEVEL BAR */
@@ -796,11 +856,917 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   .ob-sub,.hw-dsc,.pr-card-desc,.profile-sub{font-size:13px;}
 }
 
+/* Finexa-style UI rebuild */
+:root{
+  --bg-card:var(--bg2);
+  --bg-hover:var(--bg3);
+  --text-primary:var(--text);
+  --text-secondary:#4c5568;
+  --text-muted:var(--muted);
+  --accent-primary:var(--gold2);
+  --accent-secondary:var(--gold);
+  --accent-rgb:200,149,10;
+  --sidebar-w:200px;
+  --topbar-h:76px;
+  --card-shadow:0 2px 12px rgba(0,0,0,.15);
+  --card-shadow-hover:0 14px 36px rgba(0,0,0,.22);
+}
+body.dark{
+  --text-secondary:#bac0ce;
+  --accent-primary:var(--gold);
+  --accent-secondary:var(--gold2);
+  --accent-rgb:240,192,96;
+  --card-shadow:0 2px 12px rgba(0,0,0,.28);
+  --card-shadow-hover:0 16px 42px rgba(0,0,0,.38);
+}
+body.purple{
+  --bg:#130a1f;
+  --bg2:#1b102b;
+  --bg3:#26183b;
+  --border:#37224f;
+  --border2:#513174;
+  --text:#f4efff;
+  --muted:#b8aad7;
+  --gold:#a78bfa;
+  --gold2:#7c3aed;
+  --purple:#a78bfa;
+  --hdr-bg:rgba(19,10,31,.94);
+  --wl-a1:rgba(184,170,215,.18);
+  --wl-a2:rgba(167,139,250,.28);
+  --wl-b1:rgba(124,58,237,.28);
+  --wl-b2:rgba(45,212,191,.18);
+  --wl-c1:rgba(240,192,96,.22);
+  --wl-c2:rgba(240,85,85,.22);
+  --bg-card:var(--bg2);
+  --bg-hover:var(--bg3);
+  --text-primary:var(--text);
+  --text-secondary:#ddd4f4;
+  --text-muted:var(--muted);
+  --accent-primary:#a78bfa;
+  --accent-secondary:#7c3aed;
+  --accent-rgb:167,139,250;
+  --card-shadow:0 2px 12px rgba(0,0,0,.26);
+  --card-shadow-hover:0 16px 42px rgba(0,0,0,.4);
+}
+
+*{letter-spacing:0!important;}
+body{
+  font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--text-primary);
+  font-size:15px;
+  font-weight:400;
+}
+body *{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;}
+a,button,input,textarea,select{font-family:inherit;}
+#appHdr[style*="display:none"],
+#appHdr[style*="display: none"],
+#appNav[style*="display:none"],
+#appNav[style*="display: none"],
+#appMain[style*="display:none"],
+#appMain[style*="display: none"]{display:none!important;}
+
+.page.on{animation:pageEnter .25s ease-out;}
+@keyframes pageEnter{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes cardEnter{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes progressGrow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+
+.hdr{
+  background:var(--hdr-bg);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(18px);
+  box-shadow:none;
+}
+.hdr-logo{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:18px;
+  font-weight:800;
+  color:var(--accent-primary);
+}
+.hdr-logo span{color:var(--text-muted);}
+.topbar-title{
+  color:var(--text-primary);
+  font-size:28px;
+  font-weight:700;
+  line-height:1.1;
+  margin-right:auto;
+}
+.hdr-actions{justify-content:flex-end;}
+.topbar-stats{display:flex;align-items:center;gap:10px;}
+.topbar-pill{
+  min-height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--bg-card);
+  color:var(--text-primary);
+  font-size:13px;
+  font-weight:700;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.topbar-xp{color:var(--accent-primary);}
+.theme-toggle,.mobile-more-btn{
+  min-width:44px;
+  min-height:44px;
+  border-radius:12px;
+  border:1.5px solid var(--border);
+  background:var(--bg-card);
+  color:var(--text-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.theme-toggle:hover,.mobile-more-btn:hover{
+  border-color:var(--accent-primary);
+  color:var(--accent-primary);
+  transform:translateY(-1px);
+}
+.hdr-user{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px 12px;
+  box-shadow:var(--card-shadow);
+}
+.hdr-avatar,.profile-avatar{
+  background:linear-gradient(135deg,var(--accent-primary),var(--accent-secondary));
+  color:#fff;
+  font-family:'Inter',system-ui,sans-serif;
+}
+.hdr-name{font-size:14px;font-weight:700;color:var(--text-primary);}
+.hdr-level{
+  background:rgba(var(--accent-rgb),.12);
+  border:1px solid rgba(var(--accent-rgb),.28);
+  color:var(--accent-primary);
+  border-radius:6px;
+  padding:3px 8px;
+  font-size:11px;
+  font-weight:800;
+}
+
+.nav{
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  border-bottom:none;
+  box-shadow:8px 0 30px rgba(0,0,0,.04);
+}
+.nav-btn{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  border:0;
+  border-radius:10px;
+  padding:10px 16px;
+  color:var(--text-secondary);
+  font-size:14px;
+  font-weight:500;
+  text-transform:none;
+  background:transparent;
+  border-bottom:0;
+  white-space:nowrap;
+}
+.nav-btn:hover{
+  background:var(--bg-hover);
+  color:var(--text-primary);
+}
+.nav-btn.on{
+  background:var(--bg-hover);
+  color:var(--accent-primary);
+  font-weight:700;
+  border-bottom:0;
+}
+.nav-icon{
+  width:22px;
+  min-width:22px;
+  display:inline-grid;
+  place-items:center;
+  font-size:17px;
+}
+.nav-text{overflow:hidden;text-overflow:ellipsis;}
+.chat-nav-badge{
+  right:10px;
+  top:5px;
+  background:var(--red);
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+}
+
+.container{
+  width:100%;
+  max-width:1240px;
+  padding:32px;
+}
+.section-label,.xp-head,.daily-head,.kpi-label,.hw-sl,.profile-metric-label,.module-eyebrow,.module-meta,.reading-section-meta,.vocab-table th,.vf-btn,.hw-fb,.chip,.reading-badge,.vt-tag,.rep-stat-label,.community-composer-meta{
+  font-family:'Inter',system-ui,sans-serif!important;
+  font-size:12px!important;
+  font-weight:700!important;
+  text-transform:uppercase!important;
+  color:var(--text-muted)!important;
+}
+.section-label{margin-bottom:14px;}
+
+.dash-card,
+.kpi,
+.xp-panel,
+.daily-goal,
+.achievements-panel,
+.module-next-card,
+.module-hero,
+.module-panel,
+.module-row,
+.module-day-card,
+.module-side-card,
+.module-victory-box,
+.reading-section,
+.article-vocab,
+.exercise-panel,
+.diary-panel,
+.vocab-detail,
+.vocab-wrap,
+.ph-card,
+.pr-card,
+.pr-input-wrap,
+.community-chat-shell,
+.hw-card,
+.hw-stat,
+.rep-card,
+.rep-stat,
+.profile-panel,
+.profile-metric,
+.profile-summary,
+.pattern-card,
+.report-card,
+.lesson-example,
+.lt-reading,
+.lt-reading-q,
+.spec-card,
+#planPreview,
+#loginForm > div,
+#loginProfile > div{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--card-shadow);
+  transition:all .2s ease;
+}
+.dash-card,
+.xp-panel,
+.daily-goal,
+.achievements-panel,
+.module-next-card,
+.vocab-detail,
+.profile-panel{
+  padding:20px 24px;
+}
+.dash-card:hover,
+.kpi:hover,
+.xp-panel:hover,
+.daily-goal:hover,
+.achievements-panel:hover,
+.module-next-card:hover,
+.module-hero:hover,
+.module-panel:hover,
+.module-row:hover,
+.module-day-card:hover,
+.module-side-card:hover,
+.reading-section:hover,
+.article-vocab:hover,
+.exercise-panel:hover,
+.diary-panel:hover,
+.vocab-detail:hover,
+.ph-card:hover,
+.pr-card:hover,
+.hw-card:hover,
+.hw-stat:hover,
+.rep-stat:hover,
+.profile-panel:hover,
+.profile-metric:hover,
+.community-chat-shell:hover{
+  box-shadow:var(--card-shadow-hover);
+  transform:translateY(-2px);
+}
+.page.on .dash-card,
+.page.on .module-row,
+.page.on .reading-section,
+.page.on .hw-card,
+.page.on .ph-card,
+.page.on .pr-card,
+.page.on .profile-panel{
+  animation:cardEnter .25s ease-out both;
+}
+.page.on .dash-card:nth-child(2),
+.page.on .module-row:nth-child(2),
+.page.on .reading-section:nth-child(2),
+.page.on .hw-card:nth-child(2),
+.page.on .ph-card:nth-child(2),
+.page.on .pr-card:nth-child(2){animation-delay:.05s;}
+.page.on .dash-card:nth-child(3),
+.page.on .module-row:nth-child(3),
+.page.on .reading-section:nth-child(3),
+.page.on .hw-card:nth-child(3),
+.page.on .ph-card:nth-child(3),
+.page.on .pr-card:nth-child(3){animation-delay:.1s;}
+.page.on .dash-card:nth-child(4),
+.page.on .module-row:nth-child(4),
+.page.on .reading-section:nth-child(4),
+.page.on .hw-card:nth-child(4),
+.page.on .ph-card:nth-child(4),
+.page.on .pr-card:nth-child(4){animation-delay:.15s;}
+
+.btn,
+.community-send,
+.pr-send,
+.module-back,
+.module-option,
+.module-day-pill,
+.module-level-tab,
+.vf-btn,
+.hw-fb,
+.hw-ans-btn,
+.pr-action-btn,
+.profile-tab,
+.rate-btn,
+.parallel-tab,
+.favorite-btn,
+.community-tab{
+  min-height:44px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all .15s ease;
+  font-size:14px;
+  font-weight:700;
+}
+.btn-gold,.community-send{
+  background:var(--accent-primary);
+  color:#fff;
+  border:1px solid var(--accent-primary);
+  box-shadow:0 4px 12px rgba(var(--accent-rgb),.3);
+}
+.btn-gold:hover,.community-send:hover{
+  filter:brightness(1.08);
+  box-shadow:0 8px 22px rgba(var(--accent-rgb),.34);
+  transform:translateY(-1px);
+}
+.btn-ghost,
+.module-back,
+.favorite-btn,
+.parallel-tab,
+.rate-btn{
+  background:transparent;
+  border:1.5px solid var(--border);
+  color:var(--text-primary);
+}
+.btn-ghost:hover,
+.module-back:hover,
+.favorite-btn:hover,
+.parallel-tab:hover,
+.rate-btn:hover{
+  border-color:var(--accent-primary);
+  color:var(--accent-primary);
+  background:transparent;
+}
+.btn-green,.btn-blue,.btn-red,.btn-teal{
+  color:#fff;
+  box-shadow:0 4px 12px rgba(0,0,0,.16);
+}
+.btn-sm{min-height:38px;padding:8px 14px;font-size:13px;}
+
+.dashboard-container{max-width:1180px;}
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.18fr) minmax(320px,.82fr);
+  gap:24px;
+  align-items:start;
+}
+.dashboard-col{display:grid;gap:20px;min-width:0;}
+.dash-welcome{
+  min-height:150px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.dash-greeting{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:28px;
+  line-height:1.15;
+  font-weight:700;
+  color:var(--text-primary);
+  margin-bottom:8px;
+}
+.dash-greeting em{color:var(--accent-primary);font-style:normal;}
+.dash-meta{
+  color:var(--text-muted);
+  font-size:15px;
+  font-weight:500;
+  margin:0;
+  text-transform:none;
+}
+.kpi-row{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:0;
+}
+.kpi{
+  padding:18px;
+  min-height:112px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.kpi-val,
+.hw-sn,
+.rep-stat-value,
+.profile-metric-value{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:32px;
+  line-height:1;
+  font-weight:800;
+  color:var(--accent-primary);
+}
+.kpi-val.empty{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:16px;
+  font-weight:700;
+  color:var(--text-secondary);
+}
+.kpi-label{margin-top:8px;}
+.xp-panel,.daily-goal,.achievements-panel{margin:0;}
+.xp-head,.daily-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.xp-value,.daily-value{color:var(--accent-primary);font-weight:800;}
+.xp-route{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  color:var(--text-muted);
+  font-size:12px;
+  font-weight:800;
+}
+.xp-route span{color:var(--text-primary);}
+.xp-bar,.daily-bar,.module-progress,.lvl-prog,.audio-progress,.qz-prog,.error-bar-track{
+  height:8px;
+  border-radius:999px;
+  border:0;
+  background:var(--bg-hover);
+  overflow:hidden;
+}
+.xp-fill,.daily-fill,.module-progress-fill,.lvl-prog-fill,.audio-progress-fill,.qz-bar,.error-bar-fill{
+  height:100%;
+  border-radius:999px;
+  background:var(--accent-primary);
+  transform-origin:left center;
+  animation:progressGrow .6s ease-out both;
+}
+.daily-copy{font-size:13px;color:var(--text-muted);}
+.module-next-card{
+  padding:0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  cursor:pointer;
+}
+.module-next-card:hover{box-shadow:none;transform:none;}
+.current-module-card .module-eyebrow{display:none;}
+.module-row-title,.module-hero-title,.module-title-line{
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--text-primary);
+  font-weight:800;
+}
+.module-row-title{font-size:18px;line-height:1.25;}
+.module-row-sub,.module-hero-sub,.module-day-copy{
+  color:var(--text-muted);
+  font-size:13px;
+  line-height:1.55;
+}
+.module-progress-row{display:flex;align-items:center;gap:12px;margin-top:16px;}
+.module-progress{flex:1;}
+.ach-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.ach-badge{
+  min-height:78px;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--bg-hover);
+  box-shadow:none;
+}
+.ach-icon{font-size:22px;margin-bottom:6px;}
+.ach-title{font-family:'Inter',system-ui,sans-serif;font-size:12px;font-weight:800;}
+.ach-desc{display:none;}
+.activity-list{
+  display:grid;
+  gap:12px;
+  margin:0;
+  padding:0;
+  list-style:none;
+  color:var(--text-secondary);
+}
+.activity-list li{
+  position:relative;
+  padding-left:18px;
+  font-size:14px;
+  line-height:1.45;
+}
+.activity-list li::before{
+  content:'';
+  position:absolute;
+  left:0;
+  top:.65em;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--accent-primary);
+}
+.level-track{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:0;
+}
+.lvl-item{
+  min-width:0;
+  border-radius:12px;
+  background:var(--bg-hover);
+  border:1px solid var(--border);
+  padding:12px;
+}
+.lvl-item.cur{border-color:rgba(var(--accent-rgb),.42);background:rgba(var(--accent-rgb),.08);}
+.lvl-name{font-family:'Inter',system-ui,sans-serif;font-size:18px;color:var(--accent-primary);}
+.lvl-sub{font-family:'Inter',system-ui,sans-serif;font-size:11px;color:var(--text-muted);}
+.next-homework-card .hw-card{
+  box-shadow:none;
+  max-width:none!important;
+  padding:0!important;
+  border:0;
+  background:transparent;
+}
+.next-homework-card .hw-card:hover{box-shadow:none;transform:none;}
+
+.module-plan,.reading-shell{gap:22px;}
+.module-hero{
+  border-radius:16px;
+  background:var(--bg-card);
+  padding:22px 24px;
+}
+.module-list,.hw-list,.lesson-example-grid,.article-vocab-list,.error-list{gap:12px;}
+.module-row,.hw-card,.ph-card,.pr-card,.reading-section-body,.profile-panel,.exercise-panel,.diary-panel{padding:20px 24px;}
+.module-dot{
+  background:rgba(var(--accent-rgb),.12);
+  border:1px solid rgba(var(--accent-rgb),.24);
+  color:var(--accent-primary);
+}
+.module-row.current,.module-day-pill.current,.module-level-tab.active,.vf-btn.on,.hw-fb.on,.profile-tab.on,.community-tab.on,.parallel-tab.on,.rate-btn.on{
+  border-color:rgba(var(--accent-rgb),.45);
+  background:rgba(var(--accent-rgb),.1);
+  color:var(--accent-primary);
+}
+.reading-cover,.article-cover{
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(var(--accent-rgb),.38),rgba(91,158,240,.22));
+}
+.reading-badge,.vt-tag,.chip,.community-level,.hdr-level{
+  border-radius:6px;
+  padding:3px 8px;
+  font-size:11px!important;
+  font-weight:800!important;
+}
+.vocab-wrap{
+  overflow:hidden;
+}
+.vocab-table th,.vocab-table td{
+  border-color:var(--border);
+  padding:14px 16px;
+}
+.vocab-table tr:hover td{background:var(--bg-hover);}
+.community-chat-shell{
+  border-radius:16px;
+  overflow:hidden;
+}
+.community-chat-shell:hover{transform:none;}
+.community-chat-head,.community-composer{background:var(--bg-card);}
+.community-bubble,.community-input,.pr-input-wrap,.ob-input,.settings-select,.hw-textarea,.lt-writing{
+  border-radius:12px;
+  background:var(--bg-hover);
+  border:1px solid var(--border);
+  color:var(--text-primary);
+}
+.community-msg.mine .community-bubble{
+  background:var(--accent-primary);
+  color:#fff;
+  border-color:var(--accent-primary);
+}
+.modal{
+  border-radius:16px;
+  background:var(--bg-card);
+  box-shadow:0 24px 80px rgba(0,0,0,.42);
+}
+.toast{
+  border-radius:14px;
+  background:var(--bg-card);
+  border-color:rgba(var(--accent-rgb),.45);
+  box-shadow:var(--card-shadow-hover);
+}
+
+@media(min-width:1024px){
+  .hdr{
+    position:fixed;
+    top:0;
+    left:var(--sidebar-w);
+    right:0;
+    height:var(--topbar-h);
+    padding:0 32px;
+    z-index:120;
+  }
+  .hdr-logo{
+    position:fixed;
+    left:24px;
+    top:24px;
+    z-index:155;
+  }
+  .hdr-user{
+    position:fixed;
+    left:20px;
+    bottom:20px;
+    width:160px;
+    min-height:70px;
+    z-index:155;
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr);
+    grid-template-areas:'avatar name' 'avatar level';
+    align-items:center;
+    gap:2px 10px;
+  }
+  .hdr-avatar{grid-area:avatar;width:36px;height:36px;}
+  .hdr-name{grid-area:name;}
+  .hdr-level{grid-area:level;width:max-content;}
+  .nav{
+    position:fixed;
+    inset:0 auto 0 0;
+    width:var(--sidebar-w);
+    z-index:130;
+    display:flex!important;
+    flex-direction:column;
+    gap:6px;
+    padding:86px 14px 118px;
+    overflow-y:auto;
+  }
+  #appMain{
+    padding-left:var(--sidebar-w);
+    padding-top:var(--topbar-h);
+  }
+}
+
+@media(min-width:768px) and (max-width:1023px){
+  :root{--sidebar-w:76px;}
+  .hdr{
+    position:fixed;
+    top:0;
+    left:var(--sidebar-w);
+    right:0;
+    height:var(--topbar-h);
+    padding:0 22px;
+    z-index:120;
+  }
+  .hdr-logo{
+    position:fixed;
+    left:13px;
+    top:22px;
+    width:50px;
+    overflow:hidden;
+    z-index:155;
+  }
+  .hdr-logo span{display:none;}
+  .hdr-logo::first-letter{color:var(--accent-primary);}
+  .topbar-title{font-size:25px;}
+  .topbar-stats{gap:8px;}
+  .topbar-pill{padding:8px 10px;}
+  .hdr-user{
+    position:fixed;
+    left:12px;
+    bottom:18px;
+    width:52px;
+    height:52px;
+    z-index:155;
+    padding:0;
+    border-radius:16px;
+    display:grid;
+    place-items:center;
+  }
+  .hdr-avatar{width:36px;height:36px;}
+  .hdr-name,.hdr-level{display:none;}
+  .nav{
+    position:fixed;
+    inset:0 auto 0 0;
+    width:var(--sidebar-w);
+    z-index:130;
+    display:flex!important;
+    flex-direction:column;
+    gap:8px;
+    padding:86px 10px 88px;
+    overflow:hidden;
+  }
+  .nav-btn{justify-content:center;padding:10px;gap:0;}
+  .nav-text{display:none;}
+  .nav-icon{font-size:20px;}
+  .chat-nav-badge{right:3px;top:3px;}
+  #appMain{
+    padding-left:var(--sidebar-w);
+    padding-top:var(--topbar-h);
+  }
+  .container{padding:28px 22px;}
+  .dashboard-grid{grid-template-columns:1fr;}
+}
+
+@media(max-width:767px){
+  body{padding-bottom:76px;}
+  .hdr{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    min-height:64px;
+    height:64px;
+    padding:0 16px;
+    z-index:150;
+    display:flex;
+    align-items:center;
+  }
+  .hdr-logo{
+    position:static;
+    font-size:18px;
+  }
+  .topbar-title,.topbar-stats,.theme-toggle,.mobile-more-btn,.hdr-name,.hdr-level{
+    display:none!important;
+  }
+  .hdr-actions{
+    width:auto;
+    margin-left:auto;
+    display:flex;
+  }
+  .hdr-user{
+    display:flex!important;
+    width:auto;
+    padding:0;
+    border:0;
+    background:transparent;
+    box-shadow:none;
+  }
+  .hdr-avatar{width:38px;height:38px;}
+  .nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    top:auto;
+    z-index:160;
+    height:76px;
+    display:grid!important;
+    grid-template-columns:repeat(5,1fr);
+    gap:4px;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    border-right:0;
+    border-top:1px solid var(--border);
+    background:var(--hdr-bg);
+    backdrop-filter:blur(18px);
+    overflow:visible;
+  }
+  .nav-btn{
+    display:none;
+    min-height:56px;
+    padding:6px 2px;
+    justify-content:center;
+    gap:4px;
+    border-radius:12px;
+    font-size:11px;
+    line-height:1.1;
+    text-align:center;
+  }
+  .nav-btn.mobile-tab{
+    display:flex;
+    flex-direction:column;
+  }
+  .nav-icon{font-size:20px;width:auto;min-width:0;}
+  .nav-text{display:block;max-width:100%;}
+  .chat-nav-badge{display:none!important;}
+  #appMain{padding-top:64px;}
+  .container{padding:18px 14px 98px;}
+  .dashboard-grid{grid-template-columns:1fr;gap:16px;}
+  .dashboard-col{gap:16px;}
+  .dash-card,.xp-panel,.daily-goal,.achievements-panel,.module-next-card,.module-row,.hw-card,.ph-card,.pr-card,.profile-panel,.exercise-panel,.diary-panel,.vocab-detail{padding:18px;}
+  .dash-greeting{font-size:25px;}
+  .kpi-row,.ach-grid,.level-track,.hw-stats,.profile-grid,.rep-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .kpi{min-height:98px;padding:14px;}
+  .kpi-val,.hw-sn,.rep-stat-value,.profile-metric-value{font-size:28px;}
+  .xp-route{grid-template-columns:auto minmax(0,1fr) auto;}
+  .community-chat-shell{
+    height:calc(100vh - 156px);
+    min-height:0;
+    margin:0;
+    border-radius:16px;
+  }
+  .community-composer{bottom:0;}
+  .vocab-wrap{overflow-x:auto;}
+}
+
 </style>
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, serverTimestamp, limitToLast, query, set, update, remove, onDisconnect }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCR7SsOt3chFvmx6hjGiLS2a6hPntU6jTQ",
+  authDomain: "deutsch-app-b3986.firebaseapp.com",
+  projectId: "deutsch-app-b3986",
+  databaseURL: "https://deutsch-app-b3986-default-rtdb.europe-west1.firebasedatabase.app",
+  storageBucket: "deutsch-app-b3986.firebasestorage.app",
+  messagingSenderId: "1073419102096",
+  appId: "1:1073419102096:web:37b2b2f3dedbd2aed4f515"
+};
+
+window.deutschFirebaseChat = {
+  config: firebaseConfig,
+  loading: false,
+  ready: false,
+  error: null,
+  app: null,
+  db: null,
+  auth: null,
+  user: null,
+  api: null,
+};
+
+window.initDeutschFirebaseChat = async function initDeutschFirebaseChat() {
+  const state = window.deutschFirebaseChat;
+  if (state.ready) return state;
+  if (state.loading && state.promise) return state.promise;
+  state.loading = true;
+  state.error = null;
+  state.promise = (async () => {
+    try {
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const auth = getAuth(app);
+      const credential = await signInAnonymously(auth);
+      state.app = app;
+      state.db = db;
+      state.auth = auth;
+      state.user = credential.user;
+      state.api = {
+        ref,
+        push,
+        onValue,
+        serverTimestamp,
+        limitToLast,
+        query,
+        set,
+        update,
+        remove,
+        onDisconnect,
+      };
+      state.ready = true;
+      window.dispatchEvent(new CustomEvent('deutsch-firebase-chat-ready'));
+      return state;
+    } catch (error) {
+      state.error = error;
+      state.ready = false;
+      window.dispatchEvent(new CustomEvent('deutsch-firebase-chat-error', { detail: error }));
+      return state;
+    } finally {
+      state.loading = false;
+    }
+  })();
+  return state.promise;
+};
+
+// Анонимный вход
+window.initDeutschFirebaseChat();
+</script>
 </head>
 <body>
 <script>
-  document.body.classList.toggle('dark', (localStorage.getItem('theme') || 'dark') === 'dark');
+  (function initBodyThemeClass() {
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.body.classList.toggle('dark', theme === 'dark');
+    document.body.classList.toggle('purple', theme === 'purple');
+  })();
 </script>
 
 <!-- ═══════════════ ONBOARDING ═══════════════ -->
@@ -881,13 +1847,20 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 <!-- ═══════════════ APP ═══════════════ -->
 <header class="hdr" id="appHdr" style="display:none;">
   <div class="hdr-logo">DEUTSCH<span>.app</span></div>
+  <div class="topbar-title" id="topbarTitle">Главная</div>
   <div class="hdr-actions">
+    <div class="topbar-stats" aria-label="Статус обучения">
+      <div class="topbar-pill topbar-bell" aria-label="Уведомления">🔔</div>
+      <div class="topbar-pill" id="topbarStreak">🔥 0</div>
+      <div class="topbar-pill topbar-xp" id="topbarXp">0 XP</div>
+    </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
     <button class="mobile-more-btn" id="mobileMoreBtn" onclick="toggleMobileMore()" aria-label="Меню">☰</button>
     <div class="mobile-more-menu" id="mobileMoreMenu">
       <button class="mobile-menu-item" onclick="goPage('plan')">🗺 План</button>
       <button class="mobile-menu-item" onclick="goPage('homework')">✏️ Задания</button>
       <button class="mobile-menu-item" onclick="goPage('phrases')">💬 Фразы</button>
+      <button class="mobile-menu-item" onclick="goPage('chat')">💬 Чат <span class="chat-nav-badge" id="chatMobileBadge">0</span></button>
       <button class="mobile-menu-item" onclick="goPage('repetition')">🔄 Повтор</button>
       <button class="mobile-menu-item" onclick="goPage('settings')">⚙️ Настройки</button>
     </div>
@@ -900,42 +1873,78 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 </header>
 
 <nav class="nav" id="appNav" style="display:none;">
-  <button class="nav-btn mobile-tab on" data-page="dashboard" onclick="goPage('dashboard')">🏠 Главная</button>
-  <button class="nav-btn" data-page="plan" onclick="goPage('plan')">🗺 План</button>
-  <button class="nav-btn mobile-tab" data-page="reading" onclick="goPage('reading')">📰 Чтение</button>
-  <button class="nav-btn" data-page="homework" onclick="goPage('homework')">✏️ Задания</button>
-  <button class="nav-btn mobile-tab" data-page="vocab" onclick="goPage('vocab')">📚 Словарь</button>
-  <button class="nav-btn" data-page="phrases" onclick="goPage('phrases')">💬 Фразы</button>
-  <button class="nav-btn mobile-tab" data-page="practice" onclick="goPage('practice')" style="color:var(--teal);">🤖 Практика</button>
-  <button class="nav-btn" data-page="repetition" onclick="goPage('repetition')">🔄 Повтор</button>
-  <button class="nav-btn mobile-tab" data-page="login" onclick="goPage('login')">👤 Профиль</button>
-  <button class="nav-btn" data-page="settings" onclick="goPage('settings')">⚙️ Настройки</button>
+  <button class="nav-btn mobile-tab on" data-page="dashboard" data-title="Главная" onclick="goPage('dashboard')"><span class="nav-icon">🏠</span><span class="nav-text">Главная</span></button>
+  <button class="nav-btn" data-page="plan" data-title="План" onclick="goPage('plan')"><span class="nav-icon">🗺</span><span class="nav-text">План</span></button>
+  <button class="nav-btn mobile-tab" data-page="reading" data-title="Чтение" onclick="goPage('reading')"><span class="nav-icon">📰</span><span class="nav-text">Чтение</span></button>
+  <button class="nav-btn" data-page="homework" data-title="Задания" onclick="goPage('homework')"><span class="nav-icon">✏️</span><span class="nav-text">Задания</span></button>
+  <button class="nav-btn mobile-tab" data-page="vocab" data-title="Словарь" onclick="goPage('vocab')"><span class="nav-icon">📚</span><span class="nav-text">Словарь</span></button>
+  <button class="nav-btn" data-page="phrases" data-title="Фразы" onclick="goPage('phrases')"><span class="nav-icon">💬</span><span class="nav-text">Фразы</span></button>
+  <button class="nav-btn mobile-tab" data-page="practice" data-title="Практика" onclick="goPage('practice')"><span class="nav-icon">🤖</span><span class="nav-text">Практика</span></button>
+  <button class="nav-btn" data-page="repetition" data-title="Повторение" onclick="goPage('repetition')"><span class="nav-icon">🔄</span><span class="nav-text">Повторение</span></button>
+  <button class="nav-btn" data-page="chat" data-title="Чат" onclick="goPage('chat')"><span class="nav-icon">💬</span><span class="nav-text">Чат</span> <span class="chat-nav-badge" id="chatNavBadge">0</span></button>
+  <button class="nav-btn mobile-tab" data-page="login" data-title="Профиль" onclick="goPage('login')"><span class="nav-icon">👤</span><span class="nav-text">Профиль</span></button>
+  <button class="nav-btn" data-page="settings" data-title="Настройки" onclick="goPage('settings')"><span class="nav-icon">⚙️</span><span class="nav-text">Настройки</span></button>
 </nav>
 
 <div id="appMain" style="display:none;">
 
   <!-- DASHBOARD -->
   <div class="page on" id="page-dashboard">
-    <div class="container">
-      <div class="dash-greeting">Привет, <em id="dName">Азамат</em>!</div>
-      <div class="dash-meta" id="dMeta">уровень A1 · немецкий с нуля</div>
-      <div class="xp-panel" id="xpPanel"></div>
-      <div class="kpi-row">
-        <div class="kpi"><div class="kpi-val" id="kpi-words">0</div><div class="kpi-label">Слов выучено</div></div>
-        <div class="kpi"><div class="kpi-val" id="kpi-lessons">0</div><div class="kpi-label">Уроков</div></div>
-        <div class="kpi"><div class="kpi-val" id="kpi-hw">0</div><div class="kpi-label">Заданий сдано</div></div>
-        <div class="kpi"><div class="kpi-val" id="kpi-streak">🔥 0 дней подряд</div><div class="kpi-label">Серия</div></div>
+    <div class="container dashboard-container">
+      <div class="dashboard-grid">
+        <div class="dashboard-col">
+          <section class="dash-card dash-welcome">
+            <div class="dash-greeting">Привет, <em id="dName">Азамат</em>! <span aria-hidden="true">👋</span></div>
+            <div class="dash-meta" id="dMeta">уровень A1 · немецкий с нуля</div>
+          </section>
+
+          <section class="dash-card xp-panel" id="xpPanel"></section>
+
+          <section class="dash-card current-module-card">
+            <div class="section-label">Текущий модуль</div>
+            <div id="nextLesson"></div>
+          </section>
+
+          <section class="dash-card daily-goal" id="dailyGoal"></section>
+          <div id="weakBanner"></div>
+        </div>
+
+        <div class="dashboard-col">
+          <section class="dash-card stats-card">
+            <div class="section-label">Статистика</div>
+            <div class="kpi-row">
+              <div class="kpi"><div class="kpi-val" id="kpi-words">0</div><div class="kpi-label">Слов</div></div>
+              <div class="kpi"><div class="kpi-val" id="kpi-lessons">0</div><div class="kpi-label">Уроков</div></div>
+              <div class="kpi"><div class="kpi-val" id="kpi-hw">0</div><div class="kpi-label">Заданий</div></div>
+              <div class="kpi"><div class="kpi-val" id="kpi-streak">🔥 0</div><div class="kpi-label">Серия</div></div>
+            </div>
+          </section>
+
+          <section class="dash-card achievements-panel">
+            <div class="section-label">Достижения</div>
+            <div class="ach-grid" id="achievementsGrid"></div>
+          </section>
+
+          <section class="dash-card activity-card">
+            <div class="section-label">Последняя активность</div>
+            <ul class="activity-list" aria-label="Последняя активность">
+              <li>Прочитал статью</li>
+              <li>Добавил слова</li>
+              <li>Продвинул модуль</li>
+            </ul>
+          </section>
+
+          <section class="dash-card levels-card">
+            <div class="section-label">Уровни</div>
+            <div class="level-track" id="levelTrack"></div>
+          </section>
+
+          <section class="dash-card next-homework-card">
+            <div class="section-label">Ближайшее задание</div>
+            <div id="nextHW"></div>
+          </section>
+        </div>
       </div>
-      <div class="daily-goal" id="dailyGoal"></div>
-      <div id="weakBanner"></div>
-      <div class="section-label">Достижения</div>
-      <div class="achievements-panel"><div class="ach-grid" id="achievementsGrid"></div></div>
-      <div class="section-label">Уровни</div>
-      <div class="level-track" id="levelTrack"></div>
-      <div class="section-label">Следующий урок</div>
-      <div id="nextLesson"></div>
-      <div style="margin-top:28px;" class="section-label">Ближайшее задание</div>
-      <div id="nextHW"></div>
     </div>
   </div>
 
@@ -1023,6 +2032,39 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
             <button class="pr-action-btn" onclick="requestHint()">💡 Подсказка</button>
             <button class="pr-action-btn" onclick="requestTranslation()">🔄 Переведи за меня</button>
             <button class="pr-action-btn" onclick="requestFeedback()">✏️ Разбор ошибок</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITY CHAT -->
+  <div class="page" id="page-chat">
+    <div class="container">
+      <div class="community-chat-shell">
+        <div class="community-chat-head">
+          <div class="community-title-row">
+            <div>
+              <div class="community-title">💬 Чат сообщества</div>
+              <div class="community-room-hint" id="communityRoomHint">Ты можешь писать в Общий чат и чат своего уровня.</div>
+            </div>
+            <div class="community-online" id="communityOnline">🟢 0 онлайн</div>
+          </div>
+          <div class="community-tabs" id="communityTabs"></div>
+          <div class="community-pin" id="communityWordOfDay"></div>
+          <div class="community-offline" id="communityOffline">Нет соединения. Чат недоступен офлайн.</div>
+        </div>
+        <div class="community-messages" id="communityMessages">
+          <div class="community-empty">Открываем чат...</div>
+        </div>
+        <div class="community-composer">
+          <div class="community-input-row">
+            <textarea class="community-input" id="communityInput" maxlength="500" rows="1" placeholder="Введи сообщение..."></textarea>
+            <button class="community-send" id="communitySend" onclick="sendCommunityMessage()">Отправить</button>
+          </div>
+          <div class="community-composer-meta">
+            <span id="communityWriteHint">Общий чат доступен всем.</span>
+            <span><span id="communityError" class="community-error"></span> <span id="communityCount">0/500</span></span>
           </div>
         </div>
       </div>
@@ -4786,15 +5828,21 @@ function showXPFloating(anchor, amount) {
 }
 
 function applyTheme(theme) {
-  S.theme = theme === 'light' ? 'light' : 'dark';
+  S.theme = ['light', 'purple'].includes(theme) ? theme : 'dark';
   document.body.classList.toggle('dark', S.theme === 'dark');
+  document.body.classList.toggle('purple', S.theme === 'purple');
   const btn = document.getElementById('themeToggle');
-  if (btn) btn.textContent = S.theme === 'dark' ? '☀️' : '🌙';
+  if (btn) {
+    btn.textContent = S.theme === 'dark' ? '☀️' : S.theme === 'light' ? '💜' : '🌙';
+    btn.setAttribute('aria-label', `Тема: ${S.theme}`);
+  }
   saveS();
 }
 
 function toggleTheme() {
-  applyTheme(S.theme === 'dark' ? 'light' : 'dark');
+  const themes = ['dark', 'purple', 'light'];
+  const index = themes.indexOf(S.theme || 'dark');
+  applyTheme(themes[(index + 1) % themes.length]);
 }
 
 function getProfileSummary() {
@@ -4952,6 +6000,7 @@ async function initApp() {
   renderHW();
   renderVocab();
   renderPhrases();
+  renderCommunityChatShell(false);
   renderLogin();
   checkAchievements();
   recomputeGrammarPatterns();
@@ -4974,15 +6023,473 @@ function goPage(name) {
   if (name === 'plan') renderPlan();
   if (name === 'vocab') renderVocab();
   if (name === 'practice') renderScenarios();
+  if (name === 'chat') openCommunityChat();
   if (name === 'settings') renderSettings();
   if (name === 'repetition') renderRepetition();
   if (name === 'login') renderLogin();
+  syncTopbarTitle(name);
   window.scrollTo(0, 0);
 }
 
 function toggleMobileMore() {
   document.getElementById('mobileMoreMenu')?.classList.toggle('on');
 }
+
+function syncTopbarTitle(name = 'dashboard') {
+  const title = document.querySelector(`.nav-btn[data-page="${name}"]`)?.dataset.title || 'Deutsch.app';
+  const el = document.getElementById('topbarTitle');
+  if (el) el.textContent = title;
+}
+
+const COMMUNITY_ROOMS = [
+  { id: 'general', label: 'Общий' },
+  { id: 'a1', label: 'A1' },
+  { id: 'a2', label: 'A2' },
+  { id: 'b1', label: 'B1' },
+  { id: 'b2', label: 'B2' },
+];
+const COMMUNITY_REACTIONS = ['👍', '❤️', '😄', '🇩🇪', '💡'];
+const COMMUNITY_BAD_WORDS = [
+  'бляд', 'блять', 'сука', 'хуй', 'пизд', 'еба', 'ёба', 'мудак', 'гандон', 'сволочь',
+  'fuck', 'shit', 'bitch', 'cunt', 'dickhead', 'asshole',
+  'scheiss', 'scheiß', 'arschloch', 'mistkerl', 'fotze',
+];
+const COMMUNITY_WORDS_OF_DAY = [
+  { word: 'der Mut', ru: 'смелость', ex: 'Er hat viel Mut gezeigt.' },
+  { word: 'die Geduld', ru: 'терпение', ex: 'Geduld hilft beim Lernen.' },
+  { word: 'die Neugier', ru: 'любопытство', ex: 'Neugier macht Sprachen lebendig.' },
+  { word: 'der Alltag', ru: 'повседневность', ex: 'Im Alltag lernt man echte Wörter.' },
+  { word: 'die Stimme', ru: 'голос', ex: 'Ihre Stimme klingt ruhig.' },
+  { word: 'der Zweifel', ru: 'сомнение', ex: 'Zweifel kann nützlich sein.' },
+  { word: 'die Zuversicht', ru: 'уверенность', ex: 'Sie spricht mit Zuversicht.' },
+  { word: 'der Austausch', ru: 'обмен', ex: 'Der Austausch in der Gruppe motiviert.' },
+  { word: 'die Gewohnheit', ru: 'привычка', ex: 'Eine kleine Gewohnheit wirkt stark.' },
+  { word: 'das Gespräch', ru: 'разговор', ex: 'Ein gutes Gespräch beginnt mit Zuhören.' },
+];
+
+let communityChat = {
+  room: 'general',
+  messages: [],
+  unsubMessages: null,
+  unsubPresence: null,
+  unreadSubs: [],
+  unreadStarted: false,
+  unreadCount: 0,
+  latestByRoom: {},
+  presenceRef: null,
+  presenceTimer: null,
+  pagehideWired: false,
+  lastSendAt: 0,
+};
+
+function communityLevelRoom() {
+  const level = normalizeLevelName(localStorage.getItem('userLevel') || S.level || 'A1').toLowerCase();
+  return ['a1', 'a2', 'b1', 'b2'].includes(level) ? level : 'b2';
+}
+
+function getCommunityName() {
+  const storedState = readJSONKey('daz3', {});
+  const direct = String(S.name || storedState.name || localStorage.getItem('name') || '').trim();
+  if (direct) return direct.slice(0, 30);
+  let anon = localStorage.getItem('chatAnonName');
+  if (!anon) {
+    anon = `Аноним ${Math.floor(1000 + Math.random() * 9000)}`;
+    setStorageKey('chatAnonName', anon);
+  }
+  return anon;
+}
+
+function getCommunityProfile() {
+  const level = normalizeLevelName(localStorage.getItem('userLevel') || S.level || 'A1');
+  return { name: getCommunityName(), level, room: communityLevelRoom() };
+}
+
+function avatarColor(name) {
+  let hash = 0;
+  String(name || 'A').split('').forEach((char) => { hash = ((hash << 5) - hash) + char.charCodeAt(0); hash |= 0; });
+  return `hsl(${Math.abs(hash) % 360} 62% 44%)`;
+}
+
+function communityInitial(name) {
+  return (String(name || 'A').trim().slice(0, 1) || 'A').toUpperCase();
+}
+
+function isCommunityRoomWritable(room = communityChat.room) {
+  return room === 'general' || room === communityLevelRoom();
+}
+
+function setCommunityError(message = '') {
+  const el = document.getElementById('communityError');
+  if (el) el.textContent = message;
+}
+
+function setCommunityOffline(isOffline, message = 'Нет соединения. Чат недоступен офлайн.') {
+  const el = document.getElementById('communityOffline');
+  if (el) {
+    el.textContent = message;
+    el.classList.toggle('on', !!isOffline);
+  }
+  renderCommunityComposerState();
+}
+
+function renderCommunityChatShell(resetRoom = true) {
+  if (resetRoom && !COMMUNITY_ROOMS.some((room) => room.id === communityChat.room)) communityChat.room = 'general';
+  renderCommunityTabs();
+  renderCommunityWordOfDay();
+  renderCommunityComposerState();
+  updateCommunityCharCount();
+  wireCommunityInput();
+}
+
+function renderCommunityTabs() {
+  const el = document.getElementById('communityTabs');
+  if (!el) return;
+  el.innerHTML = COMMUNITY_ROOMS.map((room) => `
+    <button class="community-tab ${room.id === communityChat.room ? 'on' : ''}" onclick="switchCommunityRoom('${room.id}')">${room.label}</button>
+  `).join('');
+  const profile = getCommunityProfile();
+  const hint = document.getElementById('communityRoomHint');
+  if (hint) hint.textContent = `Ты можешь писать в Общий чат и чат ${profile.level}. Остальные комнаты доступны для чтения.`;
+}
+
+function renderCommunityWordOfDay() {
+  const el = document.getElementById('communityWordOfDay');
+  if (!el) return;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const day = Math.floor((now - start) / 86400000);
+  const item = COMMUNITY_WORDS_OF_DAY[day % COMMUNITY_WORDS_OF_DAY.length];
+  el.innerHTML = `📌 <strong>Слово дня:</strong> ${esc(item.word)} (${esc(item.ru)})<br><span style="color:var(--muted);">Beispiel: ${esc(item.ex)}</span>`;
+}
+
+function renderCommunityComposerState() {
+  const input = document.getElementById('communityInput');
+  const send = document.getElementById('communitySend');
+  const hint = document.getElementById('communityWriteHint');
+  if (!input || !send || !hint) return;
+  const writable = isCommunityRoomWritable();
+  const offline = !navigator.onLine || !!window.deutschFirebaseChat?.error || (window.deutschFirebaseChat?.loading && !window.deutschFirebaseChat?.ready);
+  input.disabled = !writable || offline;
+  send.disabled = !writable || offline;
+  if (!writable) {
+    const roomLabel = COMMUNITY_ROOMS.find((room) => room.id === communityChat.room)?.label || communityChat.room.toUpperCase();
+    hint.textContent = `Комната ${roomLabel}: только чтение. Писать можно в Общий чат и чат ${getCommunityProfile().level}.`;
+    input.placeholder = 'В эту комнату можно только читать';
+  } else if (offline) {
+    hint.textContent = 'Нет соединения. Чат недоступен офлайн.';
+    input.placeholder = 'Нет соединения';
+  } else {
+    hint.textContent = `Ты пишешь в ${communityChat.room === 'general' ? 'Общий чат' : `чат ${getCommunityProfile().level}`}.`;
+    input.placeholder = 'Введи сообщение...';
+  }
+}
+
+function wireCommunityInput() {
+  const input = document.getElementById('communityInput');
+  if (!input || input.dataset.wired) return;
+  input.dataset.wired = '1';
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendCommunityMessage();
+    }
+  });
+  input.addEventListener('input', () => {
+    if (input.value.length > 500) input.value = input.value.slice(0, 500);
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 130)}px`;
+    updateCommunityCharCount();
+  });
+}
+
+function updateCommunityCharCount() {
+  const input = document.getElementById('communityInput');
+  const count = document.getElementById('communityCount');
+  if (count) count.textContent = `${(input?.value || '').length}/500`;
+}
+
+async function openCommunityChat() {
+  resetCommunityUnread();
+  renderCommunityChatShell(false);
+  if (!navigator.onLine) {
+    setCommunityOffline(true);
+    renderCommunityMessages([]);
+    return;
+  }
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready) {
+    setCommunityOffline(true);
+    renderCommunityMessages([]);
+    return;
+  }
+  setCommunityOffline(false, '');
+  await updateCommunityPresence();
+  listenCommunityPresence();
+  listenCommunityRoom();
+  startCommunityUnreadListeners();
+}
+
+async function ensureCommunityFirebase() {
+  if (!navigator.onLine) {
+    setCommunityOffline(true);
+    return null;
+  }
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready) {
+    setCommunityOffline(true);
+    return null;
+  }
+  setCommunityOffline(false, '');
+  return firebase;
+}
+
+async function updateCommunityPresence() {
+  const firebase = await ensureCommunityFirebase();
+  if (!firebase?.ready || !firebase.user) return;
+  const { ref, set, serverTimestamp, onDisconnect, remove } = firebase.api;
+  const profile = getCommunityProfile();
+  communityChat.presenceRef = ref(firebase.db, `chat/presence/${firebase.user.uid}`);
+  await set(communityChat.presenceRef, {
+    name: profile.name,
+    level: profile.level,
+    lastSeen: serverTimestamp(),
+  }).catch(() => null);
+  onDisconnect(communityChat.presenceRef).remove().catch(() => null);
+  clearInterval(communityChat.presenceTimer);
+  communityChat.presenceTimer = setInterval(() => {
+    set(communityChat.presenceRef, {
+      name: getCommunityProfile().name,
+      level: getCommunityProfile().level,
+      lastSeen: serverTimestamp(),
+    }).catch(() => null);
+  }, 60000);
+  if (!communityChat.pagehideWired) {
+    communityChat.pagehideWired = true;
+    window.addEventListener('pagehide', () => {
+      const fb = window.deutschFirebaseChat;
+      if (fb?.ready && communityChat.presenceRef) remove(communityChat.presenceRef).catch(() => null);
+    });
+  }
+}
+
+async function listenCommunityPresence() {
+  const firebase = await ensureCommunityFirebase();
+  if (!firebase?.ready) return;
+  if (communityChat.unsubPresence) communityChat.unsubPresence();
+  const { ref, onValue } = firebase.api;
+  communityChat.unsubPresence = onValue(ref(firebase.db, 'chat/presence'), (snapshot) => {
+    const now = Date.now();
+    let count = 0;
+    snapshot.forEach((childSnap) => {
+      const item = childSnap.val() || {};
+      const lastSeen = Number(item.lastSeen || 0);
+      if (lastSeen && now - lastSeen <= 5 * 60 * 1000) count += 1;
+    });
+    const el = document.getElementById('communityOnline');
+    if (el) el.textContent = `🟢 ${count} онлайн`;
+  }, () => setCommunityOffline(true));
+}
+
+async function listenCommunityRoom() {
+  const firebase = await ensureCommunityFirebase();
+  if (!firebase?.ready) return;
+  if (communityChat.unsubMessages) communityChat.unsubMessages();
+  const { ref, query, limitToLast, onValue } = firebase.api;
+  const room = communityChat.room;
+  const messagesQuery = query(ref(firebase.db, `chat/${room}/messages`), limitToLast(50));
+  communityChat.unsubMessages = onValue(messagesQuery, (snapshot) => {
+    const items = [];
+    snapshot.forEach((childSnap) => {
+      items.push({ id: childSnap.key, ...(childSnap.val() || {}) });
+    });
+    communityChat.messages = items;
+    renderCommunityMessages(items);
+  }, () => {
+    setCommunityOffline(true);
+    renderCommunityMessages([]);
+  });
+  renderCommunityComposerState();
+}
+
+function renderCommunityMessages(items = communityChat.messages) {
+  const box = document.getElementById('communityMessages');
+  if (!box) return;
+  const firebaseUserId = window.deutschFirebaseChat?.user?.uid || '';
+  if (!items.length) {
+    box.innerHTML = '<div class="community-empty">Пока сообщений нет. Начни разговор по-немецки или спроси что-нибудь у сообщества.</div>';
+    return;
+  }
+  box.innerHTML = items.map((message) => {
+    const isMine = message.userId && message.userId === firebaseUserId;
+    const reactions = renderCommunityReactions(message.reactions);
+    return `
+      <div class="community-msg ${isMine ? 'mine' : ''}" data-id="${esc(message.id)}" onpointerdown="communityReactionHoldStart(event,this)" onpointerup="communityReactionHoldEnd(this)" onpointerleave="communityReactionHoldEnd(this)">
+        ${isMine ? '' : renderCommunityAvatar(message.userName)}
+        <div class="community-bubble-wrap">
+          <div class="community-meta">
+            <span class="community-name">${esc(message.userName || 'Аноним')}</span>
+            <span class="community-level">${esc(message.userLevel || 'A1')}</span>
+            <span class="community-time">${formatCommunityTime(message.timestamp)}</span>
+          </div>
+          <div class="community-bubble">${esc(message.text || '')}</div>
+          <div class="community-reactor">${COMMUNITY_REACTIONS.map((emoji) => `<button class="community-reaction-btn" onclick="addCommunityReaction('${communityChat.room}','${message.id}','${emoji}')">${emoji}</button>`).join('')}</div>
+          ${reactions ? `<div class="community-reactions">${reactions}</div>` : ''}
+        </div>
+        ${isMine ? renderCommunityAvatar(message.userName) : ''}
+      </div>
+    `;
+  }).join('');
+  requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
+}
+
+function renderCommunityAvatar(name) {
+  return `<div class="community-avatar" style="background:${avatarColor(name)};">${esc(communityInitial(name))}</div>`;
+}
+
+function renderCommunityReactions(reactions) {
+  const counts = {};
+  Object.values(reactions || {}).forEach((item) => {
+    const emoji = item?.emoji;
+    if (emoji) counts[emoji] = (counts[emoji] || 0) + 1;
+  });
+  return Object.entries(counts).map(([emoji, count]) => `<span class="community-reaction-pill">${emoji} ${count}</span>`).join('');
+}
+
+function formatCommunityTime(timestamp) {
+  const value = Number(timestamp || Date.now());
+  const diff = Date.now() - value;
+  if (!timestamp || diff < 60 * 1000) return 'только что';
+  if (diff < 60 * 60 * 1000) return `${Math.max(1, Math.floor(diff / 60000))} мин назад`;
+  const date = new Date(value);
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+let communityHoldTimer = null;
+function communityReactionHoldStart(event, el) {
+  clearTimeout(communityHoldTimer);
+  communityHoldTimer = setTimeout(() => el.classList.add('react-open'), event.pointerType === 'mouse' ? 600 : 420);
+}
+
+function communityReactionHoldEnd(el) {
+  clearTimeout(communityHoldTimer);
+  setTimeout(() => el.classList.remove('react-open'), 1800);
+}
+
+function containsBadCommunityWord(text) {
+  const value = String(text || '').toLowerCase().replace(/ё/g, 'е');
+  return COMMUNITY_BAD_WORDS.some((word) => value.includes(word.replace(/ё/g, 'е')));
+}
+
+async function sendCommunityMessage() {
+  setCommunityError('');
+  const input = document.getElementById('communityInput');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  if (text.length > 500) return setCommunityError('Максимум 500 символов');
+  if (!isCommunityRoomWritable()) return setCommunityError(`Писать можно только в Общий чат и чат ${getCommunityProfile().level}`);
+  if (containsBadCommunityWord(text)) return setCommunityError('Сообщение содержит недопустимые слова');
+  const now = Date.now();
+  if (now - communityChat.lastSendAt < 3000) return setCommunityError('Подожди немного перед следующим сообщением');
+  const firebase = await ensureCommunityFirebase();
+  if (!firebase?.ready || !firebase.user) return setCommunityError('Нет соединения. Чат недоступен офлайн.');
+  const { ref, push, serverTimestamp } = firebase.api;
+  const profile = getCommunityProfile();
+  communityChat.lastSendAt = now;
+  try {
+    await push(ref(firebase.db, `chat/${communityChat.room}/messages`), {
+      text,
+      userName: profile.name,
+      userLevel: profile.level,
+      userId: firebase.user.uid,
+      timestamp: serverTimestamp(),
+      room: communityChat.room,
+    });
+    input.value = '';
+    input.style.height = 'auto';
+    updateCommunityCharCount();
+  } catch {
+    communityChat.lastSendAt = 0;
+    setCommunityError('Не удалось отправить. Проверь соединение.');
+  }
+}
+
+function reactionKey(userId, emoji) {
+  const map = { '👍': 'like', '❤️': 'heart', '😄': 'smile', '🇩🇪': 'de', '💡': 'idea' };
+  return `${String(userId || 'anon').replace(/[.#$\[\]\/]/g, '_')}_${map[emoji] || 'reaction'}`;
+}
+
+async function addCommunityReaction(room, messageId, emoji) {
+  const firebase = await ensureCommunityFirebase();
+  if (!firebase?.ready || !firebase.user) return toast('Нет соединения. Чат недоступен офлайн.');
+  const { ref, update, serverTimestamp } = firebase.api;
+  const key = reactionKey(firebase.user.uid, emoji);
+  try {
+    await update(ref(firebase.db, `chat/${room}/messages/${messageId}/reactions/${key}`), {
+      emoji,
+      userId: firebase.user.uid,
+      userName: getCommunityProfile().name,
+      timestamp: serverTimestamp(),
+    });
+  } catch {
+    toast('Не удалось добавить реакцию');
+  }
+}
+
+function switchCommunityRoom(room) {
+  communityChat.room = room;
+  setCommunityError('');
+  renderCommunityChatShell(false);
+  listenCommunityRoom();
+}
+
+function resetCommunityUnread() {
+  communityChat.unreadCount = 0;
+  setStorageKey('communityChatLastSeen', String(Date.now()));
+  updateCommunityBadge();
+}
+
+function updateCommunityBadge() {
+  const count = communityChat.unreadCount;
+  ['chatNavBadge', 'chatMobileBadge'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = String(Math.min(count, 99));
+    el.classList.toggle('on', count > 0);
+  });
+}
+
+async function startCommunityUnreadListeners() {
+  if (communityChat.unreadStarted) return;
+  const firebase = await ensureCommunityFirebase();
+  if (!firebase?.ready) return;
+  communityChat.unreadStarted = true;
+  const { ref, query, limitToLast, onValue } = firebase.api;
+  communityChat.unreadSubs = COMMUNITY_ROOMS.map((room) => {
+    const latestQuery = query(ref(firebase.db, `chat/${room.id}/messages`), limitToLast(1));
+    return onValue(latestQuery, (snapshot) => {
+      let latest = null;
+      snapshot.forEach((childSnap) => { latest = { id: childSnap.key, ...(childSnap.val() || {}) }; });
+      if (!latest) return;
+      const prev = communityChat.latestByRoom[room.id];
+      communityChat.latestByRoom[room.id] = latest.id;
+      if (!prev || prev === latest.id) return;
+      const isChatOpen = document.getElementById('page-chat')?.classList.contains('on');
+      const isMine = latest.userId && latest.userId === firebase.user?.uid;
+      if (!isChatOpen && !isMine) {
+        communityChat.unreadCount += 1;
+        updateCommunityBadge();
+      }
+    });
+  });
+}
+
+window.addEventListener('online', () => {
+  if (document.getElementById('page-chat')?.classList.contains('on')) openCommunityChat();
+});
+window.addEventListener('offline', () => {
+  setCommunityOffline(true);
+});
 
 function updateDash() {
   refreshStreakForMissedDay();
@@ -4995,6 +6502,10 @@ function updateDash() {
   const streakEl = document.getElementById('kpi-streak');
   streakEl.textContent = (S.streakCount || 0) > 0 ? `🔥 ${S.streakCount}` : '0';
   streakEl.classList.toggle('empty', !(S.streakCount > 0));
+  const topbarStreak = document.getElementById('topbarStreak');
+  const topbarXp = document.getElementById('topbarXp');
+  if (topbarStreak) topbarStreak.textContent = `🔥 ${S.streakCount || 0}`;
+  if (topbarXp) topbarXp.textContent = `${S.points || 0} XP`;
 
   const levelInfo = getXPLevelInfo();
   const xpPanel = document.getElementById('xpPanel');
