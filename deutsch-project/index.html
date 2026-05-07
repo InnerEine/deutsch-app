@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 /*
 ИСПРАВЛЕННЫЕ БАГИ:
@@ -928,8 +929,9 @@ a,button,input,textarea,select{font-family:inherit;}
 
 .page.on{animation:pageEnter .25s ease-out;}
 @keyframes pageEnter{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-@keyframes cardEnter{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-@keyframes progressGrow{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes cardEnter{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(var(--accent-rgb),.4);}50%{box-shadow:0 0 0 8px rgba(var(--accent-rgb),0);}}
 
 .hdr{
   background:var(--hdr-bg);
@@ -1040,12 +1042,21 @@ a,button,input,textarea,select{font-family:inherit;}
   border-bottom:0;
 }
 .nav-icon{
-  width:22px;
-  min-width:22px;
+  width:18px;
+  min-width:18px;
   display:inline-grid;
   place-items:center;
-  font-size:17px;
+  color:inherit;
+  line-height:1;
 }
+.nav-icon svg,
+.mobile-menu-icon svg{
+  width:18px;
+  height:18px;
+  stroke:currentColor;
+}
+.mobile-menu-item{display:flex;align-items:center;gap:10px;}
+.mobile-menu-icon{width:18px;min-width:18px;display:inline-grid;place-items:center;color:inherit;}
 .nav-text{overflow:hidden;text-overflow:ellipsis;}
 .chat-nav-badge{
   right:10px;
@@ -1143,40 +1154,22 @@ a,button,input,textarea,select{font-family:inherit;}
 .pr-card:hover,
 .hw-card:hover,
 .hw-stat:hover,
+.rep-card:hover,
 .rep-stat:hover,
+.spec-card:hover,
+.ach-badge:hover,
+.lvl-item:hover,
 .profile-panel:hover,
 .profile-metric:hover,
 .community-chat-shell:hover{
-  box-shadow:var(--card-shadow-hover);
-  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  transform:translateY(-3px);
 }
-.page.on .dash-card,
-.page.on .module-row,
-.page.on .reading-section,
-.page.on .hw-card,
-.page.on .ph-card,
-.page.on .pr-card,
-.page.on .profile-panel{
-  animation:cardEnter .25s ease-out both;
+.page.on .motion-card{
+  opacity:0;
+  animation:cardIn .3s ease forwards!important;
+  animation-delay:calc(var(--card-index,0) * 60ms)!important;
 }
-.page.on .dash-card:nth-child(2),
-.page.on .module-row:nth-child(2),
-.page.on .reading-section:nth-child(2),
-.page.on .hw-card:nth-child(2),
-.page.on .ph-card:nth-child(2),
-.page.on .pr-card:nth-child(2){animation-delay:.05s;}
-.page.on .dash-card:nth-child(3),
-.page.on .module-row:nth-child(3),
-.page.on .reading-section:nth-child(3),
-.page.on .hw-card:nth-child(3),
-.page.on .ph-card:nth-child(3),
-.page.on .pr-card:nth-child(3){animation-delay:.1s;}
-.page.on .dash-card:nth-child(4),
-.page.on .module-row:nth-child(4),
-.page.on .reading-section:nth-child(4),
-.page.on .hw-card:nth-child(4),
-.page.on .ph-card:nth-child(4),
-.page.on .pr-card:nth-child(4){animation-delay:.15s;}
 
 .btn,
 .community-send,
@@ -1212,6 +1205,7 @@ a,button,input,textarea,select{font-family:inherit;}
   box-shadow:0 8px 22px rgba(var(--accent-rgb),.34);
   transform:translateY(-1px);
 }
+.btn-gold.continue-pulse{animation:pulse 3s infinite;}
 .btn-ghost,
 .module-back,
 .favorite-btn,
@@ -1326,9 +1320,11 @@ a,button,input,textarea,select{font-family:inherit;}
   height:100%;
   border-radius:999px;
   background:var(--accent-primary);
-  transform-origin:left center;
-  animation:progressGrow .6s ease-out both;
+  transition:width .8s ease-out;
 }
+.progress-animate{width:0!important;}
+.progress-animate.progress-animate-on{width:var(--progress-target,0%)!important;}
+.audio-progress-fill{transition:width .15s linear;}
 .daily-copy{font-size:13px;color:var(--text-muted);}
 .module-next-card{
   padding:0;
@@ -1610,9 +1606,11 @@ a,button,input,textarea,select{font-family:inherit;}
     position:static;
     font-size:18px;
   }
-  .topbar-title,.topbar-stats,.theme-toggle,.mobile-more-btn,.hdr-name,.hdr-level{
+  .topbar-title,.topbar-stats,.theme-toggle,.hdr-name,.hdr-level{
     display:none!important;
   }
+  .mobile-more-btn{display:flex!important;}
+  .mobile-more-menu{top:72px;right:14px;z-index:220;}
   .hdr-actions{
     width:auto;
     margin-left:auto;
@@ -1635,18 +1633,23 @@ a,button,input,textarea,select{font-family:inherit;}
     top:auto;
     z-index:160;
     height:76px;
-    display:grid!important;
-    grid-template-columns:repeat(5,1fr);
+    display:flex!important;
     gap:4px;
     padding:8px 8px calc(8px + env(safe-area-inset-bottom));
     border-right:0;
     border-top:1px solid var(--border);
     background:var(--hdr-bg);
     backdrop-filter:blur(18px);
-    overflow:visible;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+    scroll-snap-type:x proximity;
   }
+  .nav::-webkit-scrollbar{display:none;}
   .nav-btn{
-    display:none;
+    display:flex;
+    flex:0 0 76px;
+    flex-direction:column;
     min-height:56px;
     padding:6px 2px;
     justify-content:center;
@@ -1655,6 +1658,7 @@ a,button,input,textarea,select{font-family:inherit;}
     font-size:11px;
     line-height:1.1;
     text-align:center;
+    scroll-snap-align:start;
   }
   .nav-btn.mobile-tab{
     display:flex;
@@ -1857,12 +1861,17 @@ window.initDeutschFirebaseChat();
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
     <button class="mobile-more-btn" id="mobileMoreBtn" onclick="toggleMobileMore()" aria-label="Меню">☰</button>
     <div class="mobile-more-menu" id="mobileMoreMenu">
-      <button class="mobile-menu-item" onclick="goPage('plan')">🗺 План</button>
-      <button class="mobile-menu-item" onclick="goPage('homework')">✏️ Задания</button>
-      <button class="mobile-menu-item" onclick="goPage('phrases')">💬 Фразы</button>
-      <button class="mobile-menu-item" onclick="goPage('chat')">💬 Чат <span class="chat-nav-badge" id="chatMobileBadge">0</span></button>
-      <button class="mobile-menu-item" onclick="goPage('repetition')">🔄 Повтор</button>
-      <button class="mobile-menu-item" onclick="goPage('settings')">⚙️ Настройки</button>
+      <button class="mobile-menu-item" onclick="goPage('dashboard')"><span class="mobile-menu-icon"><i data-lucide="home" aria-hidden="true"></i></span>Главная</button>
+      <button class="mobile-menu-item" onclick="goPage('plan')"><span class="mobile-menu-icon"><i data-lucide="map" aria-hidden="true"></i></span>План</button>
+      <button class="mobile-menu-item" onclick="goPage('reading')"><span class="mobile-menu-icon"><i data-lucide="book-open" aria-hidden="true"></i></span>Чтение</button>
+      <button class="mobile-menu-item" onclick="goPage('homework')"><span class="mobile-menu-icon"><i data-lucide="pencil" aria-hidden="true"></i></span>Задания</button>
+      <button class="mobile-menu-item" onclick="goPage('vocab')"><span class="mobile-menu-icon"><i data-lucide="library" aria-hidden="true"></i></span>Словарь</button>
+      <button class="mobile-menu-item" onclick="goPage('phrases')"><span class="mobile-menu-icon"><i data-lucide="message-circle" aria-hidden="true"></i></span>Фразы</button>
+      <button class="mobile-menu-item" onclick="goPage('practice')"><span class="mobile-menu-icon"><i data-lucide="bot" aria-hidden="true"></i></span>Практика</button>
+      <button class="mobile-menu-item" onclick="goPage('repetition')"><span class="mobile-menu-icon"><i data-lucide="refresh-cw" aria-hidden="true"></i></span>Повторение</button>
+      <button class="mobile-menu-item" onclick="goPage('chat')"><span class="mobile-menu-icon"><i data-lucide="users" aria-hidden="true"></i></span>Чат <span class="chat-nav-badge" id="chatMobileBadge">0</span></button>
+      <button class="mobile-menu-item" onclick="goPage('login')"><span class="mobile-menu-icon"><i data-lucide="user" aria-hidden="true"></i></span>Профиль</button>
+      <button class="mobile-menu-item" onclick="goPage('settings')"><span class="mobile-menu-icon"><i data-lucide="settings" aria-hidden="true"></i></span>Настройки</button>
     </div>
     <div class="hdr-user">
       <div class="hdr-avatar" id="hdrAvatar">A</div>
@@ -1873,17 +1882,17 @@ window.initDeutschFirebaseChat();
 </header>
 
 <nav class="nav" id="appNav" style="display:none;">
-  <button class="nav-btn mobile-tab on" data-page="dashboard" data-title="Главная" onclick="goPage('dashboard')"><span class="nav-icon">🏠</span><span class="nav-text">Главная</span></button>
-  <button class="nav-btn" data-page="plan" data-title="План" onclick="goPage('plan')"><span class="nav-icon">🗺</span><span class="nav-text">План</span></button>
-  <button class="nav-btn mobile-tab" data-page="reading" data-title="Чтение" onclick="goPage('reading')"><span class="nav-icon">📰</span><span class="nav-text">Чтение</span></button>
-  <button class="nav-btn" data-page="homework" data-title="Задания" onclick="goPage('homework')"><span class="nav-icon">✏️</span><span class="nav-text">Задания</span></button>
-  <button class="nav-btn mobile-tab" data-page="vocab" data-title="Словарь" onclick="goPage('vocab')"><span class="nav-icon">📚</span><span class="nav-text">Словарь</span></button>
-  <button class="nav-btn" data-page="phrases" data-title="Фразы" onclick="goPage('phrases')"><span class="nav-icon">💬</span><span class="nav-text">Фразы</span></button>
-  <button class="nav-btn mobile-tab" data-page="practice" data-title="Практика" onclick="goPage('practice')"><span class="nav-icon">🤖</span><span class="nav-text">Практика</span></button>
-  <button class="nav-btn" data-page="repetition" data-title="Повторение" onclick="goPage('repetition')"><span class="nav-icon">🔄</span><span class="nav-text">Повторение</span></button>
-  <button class="nav-btn" data-page="chat" data-title="Чат" onclick="goPage('chat')"><span class="nav-icon">💬</span><span class="nav-text">Чат</span> <span class="chat-nav-badge" id="chatNavBadge">0</span></button>
-  <button class="nav-btn mobile-tab" data-page="login" data-title="Профиль" onclick="goPage('login')"><span class="nav-icon">👤</span><span class="nav-text">Профиль</span></button>
-  <button class="nav-btn" data-page="settings" data-title="Настройки" onclick="goPage('settings')"><span class="nav-icon">⚙️</span><span class="nav-text">Настройки</span></button>
+  <button class="nav-btn mobile-tab on" data-page="dashboard" data-title="Главная" onclick="goPage('dashboard')"><span class="nav-icon"><i data-lucide="home" aria-hidden="true"></i></span><span class="nav-text">Главная</span></button>
+  <button class="nav-btn" data-page="plan" data-title="План" onclick="goPage('plan')"><span class="nav-icon"><i data-lucide="map" aria-hidden="true"></i></span><span class="nav-text">План</span></button>
+  <button class="nav-btn mobile-tab" data-page="reading" data-title="Чтение" onclick="goPage('reading')"><span class="nav-icon"><i data-lucide="book-open" aria-hidden="true"></i></span><span class="nav-text">Чтение</span></button>
+  <button class="nav-btn" data-page="homework" data-title="Задания" onclick="goPage('homework')"><span class="nav-icon"><i data-lucide="pencil" aria-hidden="true"></i></span><span class="nav-text">Задания</span></button>
+  <button class="nav-btn mobile-tab" data-page="vocab" data-title="Словарь" onclick="goPage('vocab')"><span class="nav-icon"><i data-lucide="library" aria-hidden="true"></i></span><span class="nav-text">Словарь</span></button>
+  <button class="nav-btn" data-page="phrases" data-title="Фразы" onclick="goPage('phrases')"><span class="nav-icon"><i data-lucide="message-circle" aria-hidden="true"></i></span><span class="nav-text">Фразы</span></button>
+  <button class="nav-btn mobile-tab" data-page="practice" data-title="Практика" onclick="goPage('practice')"><span class="nav-icon"><i data-lucide="bot" aria-hidden="true"></i></span><span class="nav-text">Практика</span></button>
+  <button class="nav-btn" data-page="repetition" data-title="Повторение" onclick="goPage('repetition')"><span class="nav-icon"><i data-lucide="refresh-cw" aria-hidden="true"></i></span><span class="nav-text">Повторение</span></button>
+  <button class="nav-btn" data-page="chat" data-title="Чат" onclick="goPage('chat')"><span class="nav-icon"><i data-lucide="users" aria-hidden="true"></i></span><span class="nav-text">Чат</span> <span class="chat-nav-badge" id="chatNavBadge">0</span></button>
+  <button class="nav-btn mobile-tab" data-page="login" data-title="Профиль" onclick="goPage('login')"><span class="nav-icon"><i data-lucide="user" aria-hidden="true"></i></span><span class="nav-text">Профиль</span></button>
+  <button class="nav-btn" data-page="settings" data-title="Настройки" onclick="goPage('settings')"><span class="nav-icon"><i data-lucide="settings" aria-hidden="true"></i></span><span class="nav-text">Настройки</span></button>
 </nav>
 
 <div id="appMain" style="display:none;">
@@ -5734,6 +5743,167 @@ function renderKPI(id, value, emptyText) {
   }
 }
 
+const MOTION_CARD_SELECTOR = [
+  '.dash-card',
+  '.kpi',
+  '.xp-panel',
+  '.daily-goal',
+  '.achievements-panel',
+  '.module-next-card',
+  '.module-hero',
+  '.module-panel',
+  '.module-row',
+  '.module-day-card',
+  '.module-side-card',
+  '.reading-section',
+  '.article-vocab',
+  '.exercise-panel',
+  '.diary-panel',
+  '.vocab-detail',
+  '.vocab-wrap',
+  '.ph-card',
+  '.pr-card',
+  '.community-chat-shell',
+  '.hw-card',
+  '.hw-stat',
+  '.rep-card',
+  '.rep-stat',
+  '.profile-panel',
+  '.profile-metric',
+  '.profile-summary',
+  '.pattern-card',
+  '.report-card',
+  '.lesson-example',
+  '.lt-reading',
+  '.lt-reading-q',
+  '.spec-card',
+  '.ach-badge',
+  '.lvl-item',
+  '#planPreview',
+  '#loginForm > div',
+  '#loginProfile > div',
+].join(',');
+
+const PROGRESS_FILL_SELECTOR = [
+  '.xp-fill',
+  '.daily-fill',
+  '.module-progress-fill',
+  '.lvl-prog-fill',
+  '.qz-bar',
+  '.lt-bar',
+  '.error-bar-fill',
+].join(',');
+
+let progressObserver = null;
+
+function isRendered(el) {
+  return !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+}
+
+function renderLucideIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons({
+      attrs: {
+        width: 18,
+        height: 18,
+        'stroke-width': 2,
+        stroke: 'currentColor',
+      },
+    });
+  }
+}
+
+function initProgressObserver() {
+  if (progressObserver || !('IntersectionObserver' in window)) return;
+  progressObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('progress-animate-on');
+      progressObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.2 });
+}
+
+function setupProgressBarAnimations(scope = document) {
+  initProgressObserver();
+  const root = scope || document;
+  root.querySelectorAll(PROGRESS_FILL_SELECTOR).forEach((fill) => {
+    if (!isRendered(fill)) return;
+    const target = fill.style.width || fill.dataset.progressTarget || '0%';
+    fill.dataset.progressTarget = target;
+    fill.style.setProperty('--progress-target', target);
+    fill.classList.remove('progress-animate-on');
+    fill.classList.add('progress-animate');
+    if (progressObserver) progressObserver.observe(fill);
+    else requestAnimationFrame(() => fill.classList.add('progress-animate-on'));
+  });
+}
+
+function applyCardEntryAnimations(scope = document.querySelector('.page.on')) {
+  const root = scope || document;
+  const allCards = [...root.querySelectorAll(MOTION_CARD_SELECTOR)].filter(isRendered);
+  const topCards = allCards
+    .filter((card) => !allCards.some((other) => other !== card && other.contains(card)))
+    .sort((a, b) => {
+      const ar = a.getBoundingClientRect();
+      const br = b.getBoundingClientRect();
+      return ar.top - br.top || ar.left - br.left;
+    });
+  topCards.forEach((card, index) => {
+    card.classList.remove('motion-card');
+    card.style.removeProperty('--card-index');
+    void card.offsetWidth;
+    card.style.setProperty('--card-index', index);
+    card.classList.add('motion-card');
+  });
+}
+
+function animateCount(el, target, suffix = '') {
+  if (!el) return;
+  const finalValue = Math.max(0, Math.round(Number(target) || 0));
+  const token = `${finalValue}-${Date.now()}-${Math.random()}`;
+  el.dataset.countToken = token;
+  const startedAt = performance.now();
+  const duration = 600;
+  const draw = (now) => {
+    if (el.dataset.countToken !== token) return;
+    const progress = Math.min(1, (now - startedAt) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = `${Math.round(finalValue * eased)}${suffix}`;
+    if (progress < 1) requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+}
+
+function animateDashboardCounters() {
+  const dashboard = document.getElementById('page-dashboard');
+  if (!dashboard?.classList.contains('on')) return;
+  animateCount(document.querySelector('#xpPanel .xp-value'), getXPLevelInfo().xp, ' XP');
+  animateCount(document.getElementById('topbarXp'), S.points || S.xp || 0, ' XP');
+  animateCount(document.getElementById('kpi-words'), getLearnedWordSet().size);
+  animateCount(document.getElementById('kpi-lessons'), S.completedLessons.length);
+}
+
+function enhanceContinueButtons(scope = document) {
+  const root = scope || document;
+  root.querySelectorAll('button,.btn').forEach((button) => {
+    const isContinue = /\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0438\u0442\u044c/i.test(button.textContent || '');
+    button.classList.toggle('continue-pulse', isContinue && button.classList.contains('btn-gold'));
+  });
+}
+
+function refreshMotion(scope = document.querySelector('.page.on')) {
+  renderLucideIcons();
+  enhanceContinueButtons(scope || document);
+  setupProgressBarAnimations(scope || document);
+  applyCardEntryAnimations(scope || document);
+  animateDashboardCounters();
+}
+
+function refreshMotionSoon(scope) {
+  requestAnimationFrame(() => refreshMotion(scope || document.querySelector('.page.on')));
+}
+
 function fireConfetti() {
   if (typeof confetti === 'function') {
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.18 } });
@@ -6028,6 +6198,7 @@ function goPage(name) {
   if (name === 'repetition') renderRepetition();
   if (name === 'login') renderLogin();
   syncTopbarTitle(name);
+  refreshMotionSoon(document.getElementById(`page-${name}`));
   window.scrollTo(0, 0);
 }
 
@@ -6574,6 +6745,7 @@ function updateDash() {
   } else {
     nextHW.innerHTML = `<div style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:12px;">✓ Все задания сданы</div>`;
   }
+  refreshMotionSoon(document.getElementById('page-dashboard'));
 }
 
 function moduleWords(raw) {
@@ -7394,10 +7566,23 @@ function renderDashboardNextModule() {
 function renderPlan() {
   const root = document.getElementById('planRoot');
   if (!root) return;
-  if (modulePlanScreen.mode === 'module') return renderModulePage(modulePlanScreen.moduleId);
-  if (modulePlanScreen.mode === 'day') return renderModuleDay(modulePlanScreen.moduleId, modulePlanScreen.day);
-  if (modulePlanScreen.mode === 'test') return renderModuleTest(modulePlanScreen.moduleId);
+  if (modulePlanScreen.mode === 'module') {
+    renderModulePage(modulePlanScreen.moduleId);
+    refreshMotionSoon(document.getElementById('page-plan'));
+    return;
+  }
+  if (modulePlanScreen.mode === 'day') {
+    renderModuleDay(modulePlanScreen.moduleId, modulePlanScreen.day);
+    refreshMotionSoon(document.getElementById('page-plan'));
+    return;
+  }
+  if (modulePlanScreen.mode === 'test') {
+    renderModuleTest(modulePlanScreen.moduleId);
+    refreshMotionSoon(document.getElementById('page-plan'));
+    return;
+  }
   renderPlanMain();
+  refreshMotionSoon(document.getElementById('page-plan'));
 }
 
 function continueModulePlan() {
