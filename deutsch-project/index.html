@@ -423,6 +423,16 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .exercise-feedback{margin-top:14px;border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--muted);}
 .diary-panel{display:none;}
 .diary-panel.on{display:block;}
+.diary-title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;line-height:1.1;margin-bottom:8px;}
+.diary-reminder{border:1px solid rgba(240,192,96,.28);background:rgba(240,192,96,.07);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--gold);line-height:1.55;margin-bottom:12px;}
+.diary-counter{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:10px 0;}
+.diary-counter.ok{color:var(--green);}
+.diary-review{display:grid;gap:8px;margin-top:14px;}
+.diary-review-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.55;}
+.diary-review-item.ok{border-color:rgba(61,214,140,.35);background:rgba(61,214,140,.07);}
+.diary-review-item.warn{border-color:rgba(240,192,96,.35);background:rgba(240,192,96,.07);}
+.pattern-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:13px;line-height:1.65;}
+.pattern-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--gold);margin-bottom:6px;}
 .reading-popup{position:fixed;z-index:1200;max-width:min(340px,92vw);background:var(--bg2);border:1px solid var(--gold);box-shadow:0 18px 70px rgba(0,0,0,.32);border-radius:12px;padding:14px;display:none;}
 .reading-popup.on{display:block;}
 .reading-popup-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;}
@@ -537,6 +547,8 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .error-list{display:grid;gap:8px;margin-top:14px;}
 .error-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;}
 .error-item-topic{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.report-card{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.65;margin-bottom:10px;}
+.report-card-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
 .xp-float{position:absolute;left:50%;top:24px;transform:translateX(-50%);font-family:'Syne',sans-serif;font-weight:800;color:var(--green);pointer-events:none;animation:xp-pop 1s ease forwards;text-shadow:0 2px 12px rgba(0,0,0,.25);z-index:4;}
 @keyframes green-flash{0%{box-shadow:0 0 0 rgba(61,214,140,0);}35%{box-shadow:0 0 38px rgba(61,214,140,.35);border-color:var(--green);}100%{box-shadow:0 0 0 rgba(61,214,140,0);}}
 @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
@@ -2292,6 +2304,11 @@ const DEFAULT_STATE = {
   completedReadingSections: [],
   savedReadingWords: [],
   readingDiary: {},
+  diary: [],
+  grammarPatterns: {},
+  weeklyReports: [],
+  articleHistory: [],
+  xpLog: [],
   cardProgress: {},
   cardSessionCount: 0,
   errorHistory: [],
@@ -2355,6 +2372,19 @@ function normalizeStoredReadingWord(item) {
   };
 }
 
+function normalizeStoredDiaryEntry(item) {
+  if (!item || !item.text) return null;
+  return {
+    id: item.id || `diary_${item.articleId || 'manual'}_${item.date || Date.now()}`,
+    date: Number(item.date || Date.now()),
+    articleId: item.articleId || '',
+    sectionId: item.sectionId || '',
+    text: String(item.text || ''),
+    localReview: item.localReview || null,
+    grammarUsed: !!item.grammarUsed,
+  };
+}
+
 function normalizeState(state) {
   const next = { ...DEFAULT_STATE, ...(state || {}) };
   next.specs = Array.isArray(next.specs) ? next.specs : [];
@@ -2368,6 +2398,11 @@ function normalizeState(state) {
   next.completedReadingSections = Array.isArray(next.completedReadingSections) ? next.completedReadingSections : [];
   next.savedReadingWords = Array.isArray(next.savedReadingWords) ? next.savedReadingWords.map(normalizeStoredReadingWord).filter(Boolean) : [];
   next.readingDiary = next.readingDiary && typeof next.readingDiary === 'object' ? next.readingDiary : {};
+  next.diary = Array.isArray(next.diary) ? next.diary.map(normalizeStoredDiaryEntry).filter(Boolean) : [];
+  next.grammarPatterns = next.grammarPatterns && typeof next.grammarPatterns === 'object' ? next.grammarPatterns : {};
+  next.weeklyReports = Array.isArray(next.weeklyReports) ? next.weeklyReports : [];
+  next.articleHistory = Array.isArray(next.articleHistory) ? next.articleHistory : [];
+  next.xpLog = Array.isArray(next.xpLog) ? next.xpLog : [];
   next.cardProgress = next.cardProgress && typeof next.cardProgress === 'object' ? next.cardProgress : {};
   next.cardSessionCount = Number.isFinite(Number(next.cardSessionCount)) ? Number(next.cardSessionCount) : 0;
   next.errorHistory = Array.isArray(next.errorHistory) ? next.errorHistory : [];
@@ -2379,9 +2414,27 @@ function normalizeState(state) {
   const storedReadingWords = readJSONKey('readingWords', []);
   const storedErrors = readJSONKey('errorHistory', []);
   const storedCardProgress = readJSONKey('cardProgress', {});
+  const storedDiary = readJSONKey('diary', []);
+  const storedPatterns = readJSONKey('grammarPatterns', {});
+  const storedReports = readJSONKey('weeklyReports', []);
+  const storedArticleHistory = readJSONKey('articleHistory', []);
+  const storedXpLog = readJSONKey('xpLog', []);
   if (storedCardProgress && typeof storedCardProgress === 'object') {
     next.cardProgress = { ...storedCardProgress, ...next.cardProgress };
   }
+  if (Array.isArray(storedDiary)) {
+    const diaryMap = new Map(next.diary.map((item) => [item.id, item]));
+    storedDiary.map(normalizeStoredDiaryEntry).filter(Boolean).forEach((item) => diaryMap.set(item.id, item));
+    next.diary = [...diaryMap.values()];
+  }
+  if (storedPatterns && typeof storedPatterns === 'object') next.grammarPatterns = { ...storedPatterns, ...next.grammarPatterns };
+  if (Array.isArray(storedReports) && storedReports.length) {
+    const reportMap = new Map(next.weeklyReports.map((item) => [item.weekKey, item]));
+    storedReports.forEach((item) => { if (item?.weekKey) reportMap.set(item.weekKey, item); });
+    next.weeklyReports = [...reportMap.values()];
+  }
+  if (Array.isArray(storedArticleHistory)) next.articleHistory = [...next.articleHistory, ...storedArticleHistory];
+  if (Array.isArray(storedXpLog)) next.xpLog = [...next.xpLog, ...storedXpLog];
   const mergedWords = [
     ...next.savedReadingWords,
     ...(Array.isArray(storedReadingWords) ? storedReadingWords.map(normalizeStoredReadingWord).filter(Boolean) : []),
@@ -2457,6 +2510,11 @@ function saveS(){
   localStorage.setItem('achievements', JSON.stringify(S.achievements));
   localStorage.setItem('favorites', JSON.stringify(S.favorites || []));
   localStorage.setItem('readingWords', JSON.stringify(S.savedReadingWords || []));
+  localStorage.setItem('diary', JSON.stringify(S.diary || []));
+  localStorage.setItem('grammarPatterns', JSON.stringify(S.grammarPatterns || {}));
+  localStorage.setItem('weeklyReports', JSON.stringify(S.weeklyReports || []));
+  localStorage.setItem('articleHistory', JSON.stringify(S.articleHistory || []));
+  localStorage.setItem('xpLog', JSON.stringify(S.xpLog || []));
   localStorage.setItem('cardProgress', JSON.stringify(S.cardProgress || {}));
   localStorage.setItem('cardSessionCount', String(S.cardSessionCount || 0));
   localStorage.setItem('errorHistory', JSON.stringify(S.errorHistory || []));
@@ -3362,15 +3420,11 @@ function renderReadingArticle(id) {
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="toggleParallelTranslation()">${readingTranslationVisible ? 'Скрыть параллельный перевод' : 'Показать параллельный перевод'}</button>
       <button class="btn btn-gold" onclick="scrollToReadingExercises()">Упражнения →</button>
-      <button class="btn btn-ghost" onclick="toggleReadingDiary()">📓 Написать дневник →</button>
+      <button class="btn btn-ghost" onclick="toggleReadingDiary()">📓 Написать дневник дня →</button>
     </div>
     <div id="parallelWrap">${readingTranslationVisible ? renderParallelText(article) : ''}</div>
     <div class="exercise-panel" id="readingExercisePanel"></div>
-    <div class="diary-panel" id="readingDiaryPanel">
-      <div class="exercise-question">📓 Дневник по статье</div>
-      <textarea class="hw-textarea" id="readingDiaryText" placeholder="Schreibe 3-5 Sätze über den Artikel...">${esc((S.readingDiary || {})[article.id] || '')}</textarea>
-      <div class="btn-row"><button class="btn btn-gold" onclick="saveReadingDiary('${article.id}')">Сохранить дневник</button></div>
-    </div>
+    ${renderDiaryPanel(article, section)}
     <div class="audio-panel">
       <button class="btn btn-gold btn-sm" onclick="playReadingAudio()">▶ Играть</button>
       <button class="btn btn-ghost btn-sm" onclick="pauseReadingAudio()">⏸ Пауза</button>
@@ -3392,15 +3446,206 @@ function scrollToReadingExercises() {
   document.getElementById('readingExercisePanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function todayDiaryDateLabel() {
+  return new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function getLatestDiaryForArticle(articleId) {
+  const entries = (S.diary || []).filter((item) => item.articleId === articleId);
+  return entries.sort((a, b) => Number(b.date) - Number(a.date))[0] || null;
+}
+
+function renderDiaryReview(review) {
+  if (!review) return '';
+  return `
+    <div class="diary-review">
+      ${review.items.map((item) => `
+        <div class="diary-review-item ${item.ok ? 'ok' : 'warn'}">${item.ok ? '✓' : '⚠'} ${esc(item.text)}</div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderDiaryPanel(article, section) {
+  const saved = getLatestDiaryForArticle(article.id);
+  const text = saved?.text || (S.readingDiary || {})[article.id] || '';
+  const count = countDiarySentences(text);
+  return `
+    <div class="diary-panel" id="readingDiaryPanel">
+      <div class="diary-title">Дневник · ${todayDiaryDateLabel()}</div>
+      <div class="diary-reminder">💡 Используй грамматику раздела: ${esc(section.grammar)}</div>
+      <textarea class="hw-textarea" id="readingDiaryText" placeholder="Schreibe mindestens 3 Sätze über den Artikel..." oninput="updateDiaryCounter('${article.id}')">${esc(text)}</textarea>
+      <div class="diary-counter ${count >= 3 ? 'ok' : ''}" id="diarySentenceCounter">Предложений: ${count} / минимум 3</div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="saveDiaryBtn" onclick="saveReadingDiary('${article.id}')" ${count >= 3 ? '' : 'disabled'}>Сохранить</button>
+      </div>
+      <div id="diaryReviewWrap">${renderDiaryReview(saved?.localReview)}</div>
+    </div>
+  `;
+}
+
 function toggleReadingDiary() {
   document.getElementById('readingDiaryPanel')?.classList.toggle('on');
+  updateDiaryCounter(activeReadingArticleId);
+}
+
+function countDiarySentences(text) {
+  return (String(text || '').match(/[.!?]+/g) || []).length;
+}
+
+function diaryWords(text) {
+  return String(text || '').match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+}
+
+function updateDiaryCounter(articleId) {
+  const textarea = document.getElementById('readingDiaryText');
+  const counter = document.getElementById('diarySentenceCounter');
+  const button = document.getElementById('saveDiaryBtn');
+  if (!textarea || !counter || !button) return;
+  const count = countDiarySentences(textarea.value);
+  counter.textContent = `Предложений: ${count} / минимум 3`;
+  counter.classList.toggle('ok', count >= 3);
+  button.disabled = count < 3;
+}
+
+function grammarHintForSection(sectionId) {
+  const hints = {
+    food: 'essen/trinken/mögen + Akkusativ: Ich esse den Reis.',
+    tech: 'Passiv Präsens: Die App wird entwickelt.',
+    politics: 'Konjunktiv II: Ich würde gern helfen.',
+    health: 'Modalverben: Man sollte viel Wasser trinken.',
+    culture: 'Relativsatz: Das Bild, das im Museum hängt, ist alt.',
+  };
+  return hints[sectionId] || 'ключевую конструкцию раздела';
+}
+
+function checkDiarySectionGrammar(text, sectionId) {
+  const lower = String(text || '').toLowerCase();
+  if (sectionId === 'food') {
+    return /\b(esse|isst|essen|trinke|trinkt|trinken|mag|möchte|kocht|kochen)\b/i.test(text)
+      && /\b(den|einen|die|das|eine)\s+[a-zäöüß]+/i.test(text);
+  }
+  if (sectionId === 'tech') return /\b(wird|werden)\b/i.test(text);
+  if (sectionId === 'politics') return /\b(würde|könnte|sollte|hätte|wäre)\b/i.test(text);
+  if (sectionId === 'health') return /\b(muss|müssen|soll|sollen|darf|dürfen|kann|können|sollte)\b/i.test(text);
+  if (sectionId === 'culture') return /,\s*(der|die|das|den|dem|deren|dessen)\b/i.test(text);
+  return lower.length > 0;
+}
+
+const DIARY_PATTERN_INFO = {
+  seit_year: {
+    title: 'seit + Dativ',
+    short: 'seit + цифра + Jahr без окончания',
+    rule: 'seit всегда требует Dativ.',
+    example: 'Ich lerne seit drei Jahren Deutsch. ✓',
+  },
+  seit_akkusativ: {
+    title: 'seit + Dativ',
+    short: 'seit + Akkusativ',
+    rule: 'После seit нужен Dativ, не Akkusativ.',
+    example: 'Ich wohne seit einem Jahr hier. ✓',
+  },
+  verb_second: {
+    title: 'Глагол на 2-й позиции',
+    short: 'глагол не на второй позиции',
+    rule: 'В немецком повествовательном предложении спрягаемый глагол стоит на 2-й позиции.',
+    example: 'Heute lerne ich Deutsch. ✓',
+  },
+  proper_article: {
+    title: 'Имена без артикля',
+    short: 'артикль перед именем собственным',
+    rule: 'Имена собственные обычно употребляются без der/die/das.',
+    example: 'Maria liest den Artikel. ✓',
+  },
+};
+
+function detectDiaryPatterns(text) {
+  const patterns = [];
+  if (/\bseit\s+(ein|eine|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|\d+)\s+jahr\b/i.test(text)) patterns.push('seit_year');
+  if (/\bseit\s+(den|einen|die|das)\b/i.test(text)) patterns.push('seit_akkusativ');
+  if (/\b(ich|du|er|sie|wir|ihr)\s+(heute|gestern|morgen|oft|manchmal|auch|jetzt)\s+[a-zäöüß]+\b/i.test(text)) patterns.push('verb_second');
+  if (/\b(der|die|das)\s+(Lina|Amir|Nora|Paul|Mara|Maria|Berlin|Deutschland)\b/.test(text)) patterns.push('proper_article');
+  return [...new Set(patterns)];
+}
+
+function analyzeReadingDiary(text, article) {
+  const section = getReadingSection(article.sectionId);
+  const grammarUsed = checkDiarySectionGrammar(text, article.sectionId);
+  const words = diaryWords(text).map((word) => word.toLowerCase());
+  const uniqueCount = new Set(words).size;
+  const sentenceCount = Math.max(1, countDiarySentences(text));
+  const avgWords = words.length / sentenceCount;
+  const patterns = detectDiaryPatterns(text);
+  const items = [];
+  items.push({
+    ok: grammarUsed,
+    text: grammarUsed ? 'Использована грамматика раздела' : `Попробуй добавить: ${grammarHintForSection(article.sectionId)}`,
+  });
+  items.push({
+    ok: uniqueCount >= 20,
+    text: uniqueCount < 20 ? 'Попробуй написать чуть подробнее' : (uniqueCount <= 35 ? 'Хороший словарный запас!' : 'Отличный развёрнутый ответ! 🌟'),
+  });
+  items.push({
+    ok: avgWords >= 5,
+    text: avgWords < 5 ? 'Попробуй строить более сложные предложения' : (avgWords <= 10 ? 'Хорошая структура предложений' : 'Отличные сложные предложения!'),
+  });
+  patterns.forEach((id) => items.push({ ok: false, text: `${DIARY_PATTERN_INFO[id].short}: ${DIARY_PATTERN_INFO[id].example}` }));
+  if (!patterns.length) items.push({ ok: true, text: 'Типичные ошибки русскоязычных не найдены' });
+  return {
+    date: Date.now(),
+    sectionGrammar: section?.grammar || '',
+    grammarUsed,
+    uniqueWords: uniqueCount,
+    averageWordsPerSentence: Number(avgWords.toFixed(1)),
+    patterns,
+    items,
+  };
+}
+
+function recomputeGrammarPatterns() {
+  const counts = {};
+  (S.diary || []).forEach((entry) => {
+    const reviewPatterns = entry.localReview?.patterns || detectDiaryPatterns(entry.text);
+    reviewPatterns.forEach((id) => {
+      const info = DIARY_PATTERN_INFO[id];
+      if (!info) return;
+      counts[id] = counts[id] || { id, count: 0, ...info, lastDate: entry.date };
+      counts[id].count += 1;
+      counts[id].lastDate = Math.max(Number(counts[id].lastDate || 0), Number(entry.date || 0));
+    });
+  });
+  S.grammarPatterns = counts;
+  localStorage.setItem('grammarPatterns', JSON.stringify(S.grammarPatterns));
+  return counts;
 }
 
 function saveReadingDiary(articleId) {
+  const article = getReadingArticle(articleId);
+  const text = document.getElementById('readingDiaryText')?.value || '';
+  if (!article) return;
+  if (countDiarySentences(text) < 3) return toast('Нужно минимум 3 предложения');
+  const review = analyzeReadingDiary(text, article);
+  const entry = {
+    id: `diary_${articleId}_${Date.now()}`,
+    date: Date.now(),
+    articleId,
+    sectionId: article.sectionId,
+    text,
+    localReview: review,
+    grammarUsed: review.grammarUsed,
+  };
+  S.diary = Array.isArray(S.diary) ? S.diary : [];
+  S.diary.unshift(entry);
+  S.diary = S.diary.slice(0, 200);
   S.readingDiary = S.readingDiary || {};
-  S.readingDiary[articleId] = document.getElementById('readingDiaryText')?.value || '';
+  S.readingDiary[articleId] = text;
+  recomputeGrammarPatterns();
+  recordStudyActivity();
+  addXP(10 + (review.grammarUsed ? 5 : 0), 'diary');
   saveS();
-  toast('✓ Дневник сохранён');
+  document.getElementById('diaryReviewWrap').innerHTML = renderDiaryReview(review);
+  toast(`✓ Дневник сохранён · +${10 + (review.grammarUsed ? 5 : 0)} XP`);
+  updateDash();
 }
 
 function toggleReadingFavorite(articleId) {
@@ -3573,6 +3818,14 @@ function renderReadingExerciseResult(article) {
   if (!completedArticles.has(article.id)) {
     completedArticles.add(article.id);
     S.completedArticles = [...completedArticles];
+    S.articleHistory = Array.isArray(S.articleHistory) ? S.articleHistory : [];
+    S.articleHistory.unshift({
+      articleId: article.id,
+      articleTitle: article.title,
+      sectionId: article.sectionId,
+      date: Date.now(),
+    });
+    S.articleHistory = S.articleHistory.slice(0, 300);
   }
   if (!completedSections.has(article.sectionId)) {
     completedSections.add(article.sectionId);
@@ -3823,6 +4076,9 @@ function recordStudyActivity() {
 function addXP(amount, reason = '', anchor = null) {
   S.xp = Number(S.xp || S.points || 0) + amount;
   S.points = S.xp;
+  S.xpLog = Array.isArray(S.xpLog) ? S.xpLog : [];
+  if (amount > 0) S.xpLog.unshift({ date: Date.now(), amount, reason });
+  S.xpLog = S.xpLog.slice(0, 500);
   saveS();
   if (anchor) showXPFloating(anchor, amount);
   updateHeaderLevel();
@@ -3873,16 +4129,27 @@ function renderWeakBanner() {
   const el = document.getElementById('weakBanner');
   if (!el) return;
   const weak = getErrorTopicStats().find((item) => item.count >= 3);
-  if (!weak) {
-    el.innerHTML = '';
-    return;
+  const pattern = Object.values(S.grammarPatterns || {}).find((item) => item.count >= 3);
+  const blocks = [];
+  if (weak) {
+    blocks.push(`
+      <div class="weak-banner">
+        <div class="weak-banner-copy">💡 Ты часто ошибаешься с ${esc(weak.topic)} — пройди короткую тренировку по этой теме.</div>
+        <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Потренировать слабые места</button>
+      </div>
+    `);
   }
-  el.innerHTML = `
-    <div class="weak-banner">
-      <div class="weak-banner-copy">💡 Ты часто ошибаешься с ${esc(weak.topic)} — пройди короткую тренировку по этой теме.</div>
-      <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Потренировать слабые места</button>
-    </div>
-  `;
+  if (pattern) {
+    blocks.push(`
+      <div class="pattern-card">
+        <div class="pattern-title">🔍 Твой паттерн: ${esc(pattern.title)}</div>
+        <div>Ты уже ${pattern.count} раза встретил эту ошибку в дневнике. Это типичная ошибка русскоязычных.</div>
+        <div><strong>Правило:</strong> ${esc(pattern.rule)}</div>
+        <div><strong>Пример:</strong> ${esc(pattern.example)}</div>
+      </div>
+    `);
+  }
+  el.innerHTML = blocks.join('');
 }
 
 let weakPractice = { items: [], idx: 0, score: 0, answered: false };
@@ -4125,6 +4392,115 @@ function getProfileSummary() {
   };
 }
 
+function lastNDaysCutoff(days = 7) {
+  return Date.now() - (days * 86400000);
+}
+
+function inLastDays(date, days = 7) {
+  return Number(date || 0) >= lastNDaysCutoff(days);
+}
+
+function currentWeekKey(date = new Date()) {
+  const copy = new Date(date);
+  const day = copy.getDay();
+  copy.setHours(0, 0, 0, 0);
+  copy.setDate(copy.getDate() - day);
+  return copy.toISOString().slice(0, 10);
+}
+
+function getTopErrorTopics(days = 7) {
+  const counts = new Map();
+  (S.errorHistory || []).filter((item) => inLastDays(item.date, days)).forEach((item) => {
+    const topic = item.topic || 'Общее';
+    counts.set(topic, (counts.get(topic) || 0) + 1);
+  });
+  return [...counts.entries()]
+    .map(([topic, count]) => ({ topic, count }))
+    .sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic));
+}
+
+function recommendSectionForTopic(topic) {
+  const value = String(topic || '').toLowerCase();
+  const section = READING_SECTIONS.find((item) => value.includes(item.grammar.toLowerCase().split(':')[0].split(' ')[0].toLowerCase()))
+    || READING_SECTIONS.find((item) => item.grammar.toLowerCase().includes(value.split(' ')[0] || ''));
+  if (section) return section.title;
+  if (/passiv/.test(value)) return 'Мир технологий';
+  if (/konjunktiv/.test(value)) return 'Политика и общество';
+  if (/akkusativ/.test(value)) return 'Зарубежная кухня';
+  if (/modal/.test(value)) return 'Медицина и здоровье';
+  if (/relativ/.test(value)) return 'Культура и искусство';
+  return 'раздел чтения с нужной грамматикой';
+}
+
+function buildWeeklyReport() {
+  const topErrors = getTopErrorTopics(7).slice(0, 3);
+  const errorTopics = new Set(topErrors.map((item) => item.topic));
+  const sectionStrengths = READING_SECTIONS
+    .filter((section) => ![...errorTopics].some((topic) => String(topic).includes(section.grammar.split(':')[0])))
+    .slice(0, 2)
+    .map((section) => section.title);
+  const stats = {
+    articles: (S.articleHistory || []).filter((item) => inLastDays(item.date, 7)).length,
+    words: (S.savedReadingWords || []).filter((item) => inLastDays(item.addedDate, 7)).length,
+    diary: (S.diary || []).filter((item) => inLastDays(item.date, 7)).length,
+    xp: (S.xpLog || []).filter((item) => inLastDays(item.date, 7)).reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    topErrors,
+  };
+  const attention = topErrors[0]?.topic || 'нет явных слабых тем';
+  const strengths = sectionStrengths.length ? sectionStrengths.join(', ') : 'стабильная работа без частых ошибок';
+  const recommendation = topErrors[0] ? recommendSectionForTopic(topErrors[0].topic) : 'любой новый раздел чтения';
+  const summaryText = `За эту неделю ты прочитал(а) ${stats.articles} статей и выучил(а) ${stats.words} новых слов. Твои сильные стороны: ${strengths}. Обрати внимание на: ${attention}. На следующей неделе рекомендуем: ${recommendation}.`;
+  return {
+    id: `weekly_${currentWeekKey()}`,
+    weekKey: currentWeekKey(),
+    createdAt: Date.now(),
+    stats,
+    summaryText,
+  };
+}
+
+function showWeeklyReportModal(report) {
+  document.getElementById('modalTtl').textContent = '📊 Твоя неделя';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="rep-stat-grid">
+      <div class="rep-stat"><div class="rep-stat-value">${report.stats.articles}</div><div class="rep-stat-label">Статей</div></div>
+      <div class="rep-stat"><div class="rep-stat-value">${report.stats.words}</div><div class="rep-stat-label">Слов</div></div>
+      <div class="rep-stat"><div class="rep-stat-value">${report.stats.diary}</div><div class="rep-stat-label">Дневник</div></div>
+      <div class="rep-stat"><div class="rep-stat-value">${report.stats.xp}</div><div class="rep-stat-label">XP</div></div>
+    </div>
+    <div class="report-card">
+      <div class="report-card-title">Вывод</div>
+      <div>${esc(report.summaryText)}</div>
+    </div>
+    <div class="error-list">
+      ${(report.stats.topErrors || []).map((item) => `
+        <div class="error-item">
+          <div class="error-item-topic">${esc(item.topic)}</div>
+          <div>${item.count} ошибок за последние 7 дней</div>
+        </div>
+      `).join('') || '<div class="profile-sub">Ошибок за неделю нет.</div>'}
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:18px;">
+      <button class="btn btn-gold" onclick="closeModal();profileTab='reports';goPage('login')">Открыть отчёты</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
+    </div>
+  `;
+  document.getElementById('lessonModal').classList.add('on');
+}
+
+function checkWeeklyReport() {
+  const today = new Date();
+  if (today.getDay() !== 0) return;
+  S.weeklyReports = Array.isArray(S.weeklyReports) ? S.weeklyReports : [];
+  const weekKey = currentWeekKey(today);
+  if (S.weeklyReports.some((report) => report.weekKey === weekKey)) return;
+  const report = buildWeeklyReport();
+  S.weeklyReports.unshift(report);
+  S.weeklyReports = S.weeklyReports.slice(0, 20);
+  saveS();
+  setTimeout(() => showWeeklyReportModal(report), 450);
+}
+
 async function initApp() {
   applyTheme(S.theme || 'dark');
   refreshStreakForMissedDay();
@@ -4158,6 +4534,9 @@ async function initApp() {
   renderPhrases();
   renderLogin();
   checkAchievements();
+  recomputeGrammarPatterns();
+  renderWeakBanner();
+  checkWeeklyReport();
 }
 
 function goPage(name) {
@@ -5213,7 +5592,7 @@ async function logAnalytics(action, data = null) {
 let profileTab = 'summary';
 
 function setProfileTab(tab) {
-  profileTab = tab === 'errors' ? 'errors' : 'summary';
+  profileTab = ['summary', 'errors', 'patterns', 'reports'].includes(tab) ? tab : 'summary';
   renderLogin();
 }
 
@@ -5268,13 +5647,52 @@ function profileErrorsHtml() {
   `;
 }
 
+function profilePatternsHtml() {
+  const patterns = Object.values(S.grammarPatterns || {}).sort((a, b) => b.count - a.count);
+  return `
+    <div class="profile-summary">
+      ${patterns.length ? patterns.map((item) => `
+        <div class="pattern-card">
+          <div class="pattern-title">🔍 ${esc(item.title)} · ${item.count} раз(а)</div>
+          <div>${esc(item.short || '')}</div>
+          <div><strong>Правило:</strong> ${esc(item.rule)}</div>
+          <div><strong>Пример:</strong> ${esc(item.example)}</div>
+        </div>
+      `).join('') : '<div class="profile-sub">Паттерны пока не обнаружены. Дневник постепенно покажет, что повторяется.</div>'}
+    </div>
+  `;
+}
+
+function profileReportsHtml() {
+  const reports = (S.weeklyReports || []).slice().sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  return `
+    <div class="profile-summary">
+      ${reports.length ? reports.map((report) => `
+        <div class="report-card">
+          <div class="report-card-title">📅 ${esc(report.weekKey || 'Неделя')}</div>
+          <div>${esc(report.summaryText || '')}</div>
+          <div style="color:var(--muted);margin-top:6px;">Статьи: ${report.stats?.articles || 0} · Слова: ${report.stats?.words || 0} · Дневник: ${report.stats?.diary || 0} · XP: ${report.stats?.xp || 0}</div>
+        </div>
+      `).join('') : '<div class="profile-sub">Еженедельные отчёты появятся здесь по воскресеньям.</div>'}
+    </div>
+  `;
+}
+
 function profileTabsHtml(summary, statusLabel, statusValue) {
+  const content = {
+    summary: profileSummaryHtml(summary, statusLabel, statusValue),
+    errors: profileErrorsHtml(),
+    patterns: profilePatternsHtml(),
+    reports: profileReportsHtml(),
+  }[profileTab] || profileSummaryHtml(summary, statusLabel, statusValue);
   return `
     <div class="profile-tabs">
       <button class="profile-tab ${profileTab === 'summary' ? 'on' : ''}" onclick="setProfileTab('summary')">Профиль</button>
       <button class="profile-tab ${profileTab === 'errors' ? 'on' : ''}" onclick="setProfileTab('errors')">📊 Мои ошибки</button>
+      <button class="profile-tab ${profileTab === 'patterns' ? 'on' : ''}" onclick="setProfileTab('patterns')">🔍 Мои паттерны</button>
+      <button class="profile-tab ${profileTab === 'reports' ? 'on' : ''}" onclick="setProfileTab('reports')">📅 Мои отчёты</button>
     </div>
-    ${profileTab === 'errors' ? profileErrorsHtml() : profileSummaryHtml(summary, statusLabel, statusValue)}
+    ${content}
   `;
 }
 
