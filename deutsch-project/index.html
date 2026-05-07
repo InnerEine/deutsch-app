@@ -992,7 +992,10 @@ a,button,input,textarea,select{font-family:inherit;}
   border-radius:14px;
   padding:10px 12px;
   box-shadow:var(--card-shadow);
+  cursor:pointer;
+  transition:all .2s ease;
 }
+.hdr-user:hover{border-color:var(--accent-primary);transform:translateY(-1px);}
 .hdr-avatar,.profile-avatar{
   background:linear-gradient(135deg,var(--accent-primary),var(--accent-secondary));
   color:#fff;
@@ -1901,7 +1904,7 @@ window.initDeutschFirebaseChat();
       <div class="topbar-pill topbar-xp" id="topbarXp">0 XP</div>
     </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
-    <button class="mobile-chat-btn" id="mobileChatBtn" onclick="goPage('chat')" aria-label="Чат">
+    <button class="mobile-chat-btn" id="mobileChatBtn" onclick="toggleChatFromHeader()" aria-label="Чат">
       <i data-lucide="message-circle" aria-hidden="true"></i>
       <span class="chat-nav-badge" id="chatHeaderBadge">0</span>
     </button>
@@ -1916,10 +1919,9 @@ window.initDeutschFirebaseChat();
       <button class="mobile-menu-item" onclick="goPage('practice')"><span class="mobile-menu-icon"><i data-lucide="bot" aria-hidden="true"></i></span>Практика</button>
       <button class="mobile-menu-item" onclick="goPage('repetition')"><span class="mobile-menu-icon"><i data-lucide="refresh-cw" aria-hidden="true"></i></span>Повторение</button>
       <button class="mobile-menu-item" onclick="goPage('chat')"><span class="mobile-menu-icon"><i data-lucide="users" aria-hidden="true"></i></span>Чат <span class="chat-nav-badge" id="chatMobileBadge">0</span></button>
-      <button class="mobile-menu-item" onclick="goPage('login')"><span class="mobile-menu-icon"><i data-lucide="user" aria-hidden="true"></i></span>Профиль</button>
       <button class="mobile-menu-item" onclick="goPage('settings')"><span class="mobile-menu-icon"><i data-lucide="settings" aria-hidden="true"></i></span>Настройки</button>
     </div>
-    <div class="hdr-user">
+    <div class="hdr-user" onclick="goPage('login')" role="button" tabindex="0" aria-label="Профиль" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goPage('login');}">
       <div class="hdr-avatar" id="hdrAvatar">A</div>
       <div class="hdr-name" id="hdrName">Азамат</div>
       <div class="hdr-level" id="hdrLevel">A1</div>
@@ -2152,6 +2154,14 @@ window.initDeutschFirebaseChat();
           <select class="settings-select" id="translationLangSelect">
             <option value="ru">Русский перевод</option>
             <option value="de">Немецкие определения</option>
+          </select>
+        </div>
+        <div style="margin-top:16px;">
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Тема</label>
+          <select class="settings-select" id="settingsThemeSelect">
+            <option value="dark">Обычный</option>
+            <option value="light">Белый</option>
+            <option value="purple">Фиолетовый</option>
           </select>
         </div>
       </div>
@@ -5841,6 +5851,7 @@ const PROGRESS_FILL_SELECTOR = [
 ].join(',');
 
 let progressObserver = null;
+let headerChatReturnPage = 'dashboard';
 
 function isRendered(el) {
   return !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
@@ -5950,6 +5961,21 @@ function refreshMotionSoon(scope) {
   requestAnimationFrame(() => refreshMotion(scope || document.querySelector('.page.on')));
 }
 
+function getActivePageName() {
+  const active = document.querySelector('.page.on');
+  return active?.id?.replace(/^page-/, '') || 'dashboard';
+}
+
+function toggleChatFromHeader() {
+  const activePage = getActivePageName();
+  if (activePage === 'chat') {
+    goPage(headerChatReturnPage && headerChatReturnPage !== 'chat' ? headerChatReturnPage : 'dashboard');
+    return;
+  }
+  headerChatReturnPage = activePage || 'dashboard';
+  goPage('chat');
+}
+
 function fireConfetti() {
   if (typeof confetti === 'function') {
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.18 } });
@@ -6049,14 +6075,15 @@ function applyTheme(theme) {
   document.body.classList.toggle('purple', S.theme === 'purple');
   const btn = document.getElementById('themeToggle');
   if (btn) {
+    const label = S.theme === 'dark' ? 'Обычный' : S.theme === 'light' ? 'Белый' : 'Фиолетовый';
     btn.textContent = S.theme === 'dark' ? '☀️' : S.theme === 'light' ? '💜' : '🌙';
-    btn.setAttribute('aria-label', `Тема: ${S.theme}`);
+    btn.setAttribute('aria-label', `Тема: ${label}`);
   }
   saveS();
 }
 
 function toggleTheme() {
-  const themes = ['dark', 'purple', 'light'];
+  const themes = ['dark', 'light', 'purple'];
   const index = themes.indexOf(S.theme || 'dark');
   applyTheme(themes[(index + 1) % themes.length]);
 }
@@ -8792,6 +8819,8 @@ function renderSettings() {
   if (levelSelect) levelSelect.value = normalizeLevelName(S.level || 'A1');
   const translationSelect = document.getElementById('translationLangSelect');
   if (translationSelect) translationSelect.value = getTranslationLang();
+  const themeSelect = document.getElementById('settingsThemeSelect');
+  if (themeSelect) themeSelect.value = ['light', 'purple'].includes(S.theme) ? S.theme : 'dark';
   const grid = document.getElementById('settingsSpecGrid');
   grid.innerHTML = '';
 
@@ -8823,6 +8852,7 @@ function saveSettings() {
     setStorageKey('userLevel', S.level);
   }
   S.translationLang = document.getElementById('translationLangSelect')?.value === 'de' ? 'de' : 'ru';
+  applyTheme(document.getElementById('settingsThemeSelect')?.value || 'dark');
   S.specs = SPECIALIZATIONS
     .filter((spec) => document.getElementById(`spec-${spec.id}`).checked)
     .map((spec) => spec.id);
