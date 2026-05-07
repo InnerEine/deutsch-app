@@ -6,8 +6,24 @@
 <title>Deutsch · Azamat</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/*
+ИСПРАВЛЕННЫЕ БАГИ:
+- Онбординг после перезагрузки начинался заново -> сохранение и восстановление текущего шага, выбранных специализаций и этапа placement-теста.
+- Переполненный localStorage ломал сохранение прогресса -> безопасная запись с понятным сообщением пользователю.
+- Дневная цель и стрик считались по UTC, а не по локальной полуночи -> локальный ключ даты.
+- В чтении не было фильтра по уровню и блокировки статей выше уровня пользователя -> добавлены фильтры и запрет открытия закрытых статей.
+- Неправильный ответ в упражнениях статьи вызывал ReferenceError -> список вариантов теперь вычисляется внутри обработчика.
+- Раскраска вариантов упражнения и мини-теста добавляла пустой CSS-класс -> классы добавляются только при наличии состояния.
+- Раздел чтения отмечался завершённым после одной статьи -> раздел завершается только после всех статей раздела.
+- Попап слова терял обработчик клика вне попапа после первого закрытия -> единый обработчик без повторных addEventListener.
+- Кнопка «+ В словарь» могла ломаться из-за кавычек в inline-обработчике -> аргументы передаются через безопасную JSON-строку в одинарном атрибуте.
+- Озвучка продолжала играть при смене раздела и могла стартовать повторно -> стоп при навигации и защита от двойного запуска.
+- Дневник считал знаки пунктуации без текста как предложения -> считаются только предложения с буквами.
+- В словаре нельзя было удалить добавленное из статьи слово -> добавлено удаление пользовательских слов.
+- В настройках нельзя было вручную изменить уровень и режим перевода -> добавлены сохраняемые поля уровня и языка/режима перевода.
+- Внешние Google Fonts/CDN-скрипт блокировали load/offline-сценарий -> удалены блокирующие внешние ресурсы, confetti сделан опциональным.
+*/
 :root {
   --bg: #f7f4ef;
   --bg2: #ffffff;
@@ -51,7 +67,7 @@ body.dark {
   --wl-c1: rgba(240,192,96,.28);
   --wl-c2: rgba(240,85,85,.26);
 }
-*{margin:0;padding:0;box-sizing:border-box;}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;}
 html{overflow-x:hidden;}
 body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden;}
 a,button,input,textarea,select{font:inherit;}
@@ -73,6 +89,12 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .hdr-level{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);background:rgba(240,192,96,0.1);padding:2px 8px;border-radius:20px;border:1px solid rgba(240,192,96,0.2);}
 .theme-toggle{width:38px;height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
 .theme-toggle:hover{border-color:var(--gold);transform:translateY(-1px);}
+.mobile-more-btn{display:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:18px;align-items:center;justify-content:center;}
+.mobile-more-menu{display:none;position:fixed;top:64px;right:12px;z-index:160;background:var(--bg2);border:1px solid var(--border2);box-shadow:0 18px 70px rgba(0,0,0,.28);border-radius:12px;padding:8px;min-width:190px;}
+.mobile-more-menu.on{display:grid;gap:4px;animation:fadeIn .25s ease;}
+.mobile-menu-item{min-height:44px;border:none;background:transparent;color:var(--text);text-align:left;padding:10px 12px;border-radius:9px;cursor:pointer;font-size:14px;}
+.mobile-menu-item:hover{background:var(--bg3);}
+.read-more-toggle{display:none;border:0;background:none;color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 0;cursor:pointer;}
 
 /* ── NAV ── */
 .nav{display:flex;gap:2px;padding:0 32px;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto;scrollbar-width:none;}
@@ -83,7 +105,8 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 
 /* ── PAGE ── */
 .page{display:none;}
-.page.on{display:block;}
+.page.on{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
 /* ── ONBOARDING OVERLAY ── */
 #onboarding{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;}
@@ -148,7 +171,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .result-desc{font-size:14px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:32px;}
 
 /* BUTTONS */
-.btn{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:14px 28px;border:none;cursor:pointer;border-radius:10px;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+.btn{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;min-height:44px;padding:12px 24px;border:none;cursor:pointer;border-radius:10px;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;}
 .btn-gold{background:var(--gold);color:#000;}
 .btn-gold:hover{background:#f5ca70;transform:translateY(-1px);}
 .btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
@@ -161,8 +184,11 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .btn-red:hover{opacity:.9;}
 .btn-teal{background:var(--teal);color:#000;}
 .btn-teal:hover{opacity:.9;}
-.btn-sm{font-size:12px;padding:8px 16px;}
+.btn-sm{font-size:12px;min-height:36px;padding:8px 16px;}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!important;}
+.settings-select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;padding:12px 14px;border-radius:10px;outline:none;}
+.settings-select:focus{border-color:var(--gold);}
 
 /* ── MAIN APP ── */
 .container{max-width:1100px;margin:0 auto;padding:40px 32px;min-width:0;}
@@ -222,6 +248,104 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .plan-status{position:absolute;top:16px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;}
 .plan-status.done{color:var(--green);}
 .plan-status.cur{color:var(--gold);}
+
+/* MODULE PLAN */
+.module-plan{display:grid;gap:22px;}
+.module-hero{border:1px solid var(--border);background:linear-gradient(135deg,rgba(61,214,140,.08),rgba(240,192,96,.06));border-radius:8px;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;}
+.module-eyebrow,.module-meta,.module-status,.module-day-label,.module-test-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);}
+.module-hero-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.05;letter-spacing:0;margin:8px 0;}
+.module-hero-sub{font-size:14px;color:var(--muted);line-height:1.5;}
+.module-progress-row{display:flex;align-items:center;gap:10px;margin-top:14px;min-width:0;}
+.module-progress{height:10px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;overflow:hidden;flex:1;min-width:120px;}
+.module-progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:999px;transition:width .35s ease;}
+.module-level-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.module-level-tab{border:1px solid var(--border);background:var(--bg2);color:var(--text);border-radius:8px;min-height:44px;padding:10px 16px;font-family:'Syne',sans-serif;font-weight:800;cursor:pointer;}
+.module-level-tab.active{border-color:var(--gold);background:rgba(240,192,96,.08);color:var(--gold);}
+.module-level-tab.locked{opacity:.48;cursor:not-allowed;}
+.module-list{display:grid;gap:10px;}
+.module-row{border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:14px 16px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;cursor:pointer;transition:all .2s ease;}
+.module-row:hover,.module-row.current{border-color:var(--border2);background:var(--bg3);}
+.module-row.locked{opacity:.55;cursor:not-allowed;}
+.module-row.final{border-color:rgba(240,192,96,.26);}
+.module-dot{width:28px;height:28px;border-radius:50%;border:1px solid var(--border2);display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);flex:none;}
+.module-row.done .module-dot{border-color:rgba(61,214,140,.55);color:var(--green);background:rgba(61,214,140,.08);}
+.module-row.current .module-dot{border-color:rgba(240,192,96,.6);color:var(--gold);background:rgba(240,192,96,.09);}
+.module-row-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:0;line-height:1.2;}
+.module-row-sub{font-size:12px;color:var(--muted);line-height:1.45;margin-top:4px;}
+.module-page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;}
+.module-back{border:1px solid var(--border);background:var(--bg2);color:var(--text);border-radius:8px;min-height:42px;padding:9px 14px;cursor:pointer;font-weight:700;}
+.module-title-line{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.08;letter-spacing:0;margin-bottom:8px;}
+.module-topic-line{font-size:13px;color:var(--muted);line-height:1.55;}
+.module-day-track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:18px 0 22px;}
+.module-day-pill{border:1px solid var(--border);background:var(--bg2);border-radius:8px;min-height:48px;padding:9px 8px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);display:grid;place-items:center;cursor:pointer;}
+.module-day-pill.done{color:var(--green);border-color:rgba(61,214,140,.45);background:rgba(61,214,140,.06);}
+.module-day-pill.current{color:var(--gold);border-color:rgba(240,192,96,.55);background:rgba(240,192,96,.08);}
+.module-day-pill.locked{opacity:.45;cursor:not-allowed;}
+.module-day-layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start;}
+.module-day-card,.module-side-card,.module-panel{border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:18px;}
+.module-day-card.big{padding:22px;}
+.module-day-title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;letter-spacing:0;line-height:1.15;margin:6px 0 8px;}
+.module-day-copy{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+.module-small-days{display:grid;gap:8px;}
+.module-small-day{border:1px solid var(--border);background:var(--bg3);border-radius:8px;padding:12px;cursor:pointer;}
+.module-test-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:8px;padding:16px;margin-top:12px;}
+.module-text{font-size:18px;line-height:1.95;color:var(--text);}
+.module-speaker{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 16px;}
+.module-word{border:0;background:transparent;color:inherit;font:inherit;padding:0 2px;border-radius:5px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(240,192,96,.35);text-underline-offset:4px;}
+.module-word.a1{background:rgba(61,214,140,.09);}
+.module-word.a2{background:rgba(104,180,255,.1);}
+.module-word.b1{background:rgba(240,192,96,.12);}
+.module-word.b2{background:rgba(197,132,255,.12);}
+.module-word.mark{box-shadow:inset 0 -0.72em rgba(240,192,96,.28);text-decoration:none;}
+.module-word-pop{position:fixed;z-index:1200;max-width:min(320px,92vw);border:1px solid var(--border2);background:var(--bg2);box-shadow:0 18px 50px rgba(0,0,0,.32);border-radius:8px;padding:14px;display:none;}
+.module-word-pop.on{display:block;}
+.module-word-pop-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:4px;}
+.module-word-pop-def{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px;}
+.module-options{display:grid;gap:8px;margin-top:12px;}
+.module-option{border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:8px;min-height:44px;padding:10px 12px;text-align:left;cursor:pointer;font-weight:700;}
+.module-option.selected{border-color:var(--gold);background:rgba(240,192,96,.09);}
+.module-option.ok{border-color:rgba(61,214,140,.55);background:rgba(61,214,140,.09);}
+.module-option.no{border-color:rgba(255,107,107,.55);background:rgba(255,107,107,.08);}
+.module-word-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.module-word-chip{border:1px solid var(--border2);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);background:var(--bg3);}
+.module-word-chip.used{border-color:rgba(61,214,140,.5);color:var(--green);background:rgba(61,214,140,.08);}
+.module-word-chip.gold{border-color:rgba(240,192,96,.55);color:var(--gold);background:rgba(240,192,96,.08);}
+.module-input,.module-textarea{width:100%;border:1px solid var(--border2);background:var(--bg3);color:var(--text);border-radius:8px;padding:12px 13px;font:inherit;outline:none;}
+.module-textarea{min-height:132px;resize:vertical;line-height:1.55;}
+.module-input:focus,.module-textarea:focus{border-color:var(--gold);}
+.module-checks{display:grid;gap:8px;margin-top:12px;}
+.module-check{border:1px solid var(--border);background:var(--bg3);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.45;}
+.module-check.ok{border-color:rgba(61,214,140,.45);background:rgba(61,214,140,.08);}
+.module-check.warn{border-color:rgba(240,192,96,.45);background:rgba(240,192,96,.08);}
+.module-pattern-list{display:grid;gap:10px;margin:14px 0;}
+.module-pattern-sentence{border:1px solid var(--border);background:var(--bg3);border-radius:8px;padding:12px 14px;font-size:16px;line-height:1.6;}
+.module-gap-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,210px);gap:10px;align-items:center;margin-top:10px;}
+.module-flash-card{border:1px solid var(--border2);background:var(--bg3);border-radius:8px;min-height:190px;display:grid;place-items:center;text-align:center;padding:20px;touch-action:pan-y;}
+.module-flash-word{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;letter-spacing:0;margin-bottom:8px;}
+.module-flash-ru{color:var(--muted);}
+.module-confetti{position:fixed;inset:0;pointer-events:none;z-index:1300;overflow:hidden;}
+.module-confetti i{position:absolute;top:-20px;width:9px;height:14px;background:var(--gold);animation:module-confetti-fall 1.9s linear forwards;}
+.module-victory{position:fixed;inset:0;background:rgba(8,10,14,.88);z-index:1250;display:grid;place-items:center;padding:20px;}
+.module-victory-box{max-width:520px;border:1px solid rgba(240,192,96,.45);background:var(--bg2);border-radius:8px;padding:28px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.38);}
+.module-victory-title{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:0;line-height:1.05;margin-bottom:10px;color:var(--gold);}
+.module-flash{position:fixed;inset:0;background:rgba(61,214,140,.2);z-index:1220;pointer-events:none;animation:module-green-flash .7s ease forwards;}
+.module-xp-float{position:fixed;left:50%;top:22%;transform:translate(-50%,0);z-index:1230;color:#08100c;background:var(--green);border-radius:999px;padding:10px 18px;font-family:'Syne',sans-serif;font-weight:800;animation:module-xp-float 1.15s ease forwards;}
+.module-next-card{border:1px solid rgba(240,192,96,.35);background:var(--bg2);border-radius:8px;padding:18px;max-width:520px;cursor:pointer;}
+.module-next-card:hover{border-color:var(--gold);}
+@keyframes module-green-flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+@keyframes module-xp-float{0%{opacity:0;transform:translate(-50%,18px) scale(.94)}20%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-42px) scale(1.04)}}
+@keyframes module-confetti-fall{to{transform:translateY(110vh) rotate(680deg);opacity:0}}
+@media(max-width:640px){
+  .module-hero,.module-day-layout,.module-page-head{grid-template-columns:1fr;display:grid;}
+  .module-hero{padding:16px;}
+  .module-row{grid-template-columns:auto minmax(0,1fr);padding:13px;}
+  .module-status{grid-column:2;}
+  .module-day-track{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .module-gap-row{grid-template-columns:1fr;}
+  .module-text{font-size:16px;line-height:1.85;}
+  .module-level-tab,.module-option,.module-back{min-height:46px;}
+  .module-day-card.big,.module-day-card,.module-side-card,.module-panel{padding:14px;}
+}
 
 /* LEVEL BAR */
 .level-track{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
@@ -381,6 +505,8 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .reading-article-list{display:grid;gap:8px;}
 .reading-article-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .2s;}
 .reading-article-row:hover{border-color:var(--gold);transform:translateY(-1px);}
+.reading-article-row.locked{opacity:.58;cursor:not-allowed;}
+.reading-article-row.locked:hover{border-color:var(--border);transform:none;}
 .reading-article-title{font-size:13px;font-weight:700;}
 .reading-article-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
 .reading-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;border:1px solid var(--border2);border-radius:999px;color:var(--gold);padding:3px 8px;white-space:nowrap;}
@@ -404,10 +530,16 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .article-text .read-word.saved{border-bottom:2px solid var(--teal);}
 .article-text .read-word.speaking{background:rgba(240,192,96,.62);color:#111;box-shadow:0 0 0 2px rgba(240,192,96,.2);}
 .parallel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 22px;}
+.parallel-tabs{display:none;gap:8px;margin:12px 0;}
+.parallel-tab{min-height:44px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer;}
+.parallel-tab.on{border-color:var(--gold);background:rgba(240,192,96,.1);color:var(--gold);}
 .parallel-row{display:contents;}
 .parallel-cell{border:1px solid var(--border);background:var(--bg2);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.6;}
+.parallel-cell.de{}
 .parallel-cell.ru{color:var(--muted);}
 .audio-panel{position:sticky;bottom:0;z-index:50;margin-top:22px;background:var(--hdr-bg);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.audio-progress{height:6px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;overflow:hidden;flex:1;min-width:120px;}
+.audio-progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .15s linear;}
 .audio-rate{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
 .rate-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);border-radius:8px;padding:7px 9px;cursor:pointer;}
 .rate-btn.on{color:#000;background:var(--gold);border-color:var(--gold);}
@@ -444,15 +576,60 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 .spec-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(240,192,96,.08);border:1px solid rgba(240,192,96,.2);padding:5px 12px;border-radius:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:1px;}
 
 @media(max-width:600px){
-  .hdr,.nav{padding-left:16px;padding-right:16px;}
-  .container{padding:24px 16px;}
-  .hw-stats{grid-template-columns:repeat(2,1fr);}
-  .lt-opts,.qz-opts{grid-template-columns:1fr;}
-  .parallel-grid{grid-template-columns:1fr;}
-  .article-title-row{display:block;}
-  .article-actions{margin-top:12px;}
-  .audio-rate{margin-left:0;}
-  .vocab-table td:last-child{display:none;}
+  body{padding-bottom:82px;}
+  .hdr{padding:10px 12px;min-height:56px;align-items:center;flex-wrap:nowrap;}
+  .hdr-logo{font-size:18px;}
+  .hdr-actions{width:auto;margin-left:auto;gap:8px;}
+  .hdr-user{display:none;}
+  .theme-toggle,.mobile-more-btn{display:flex;width:40px;height:40px;}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:150;background:var(--hdr-bg);backdrop-filter:blur(14px);border-top:1px solid var(--border);border-bottom:none;padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid!important;grid-template-columns:repeat(5,1fr);gap:4px;overflow:visible;}
+  .nav-btn{display:none;min-height:50px;padding:6px 2px;border:0;border-radius:10px;font-size:10px;letter-spacing:0;text-transform:none;white-space:normal;line-height:1.1;align-items:center;justify-content:center;text-align:center;}
+  .nav-btn.mobile-tab{display:flex;flex-direction:column;}
+  .nav-btn.mobile-tab.on{background:rgba(240,192,96,.1);border-bottom-color:transparent;}
+  .container{padding:16px 12px 112px;}
+  .page .container > div[style*="font-size:32px"],.article-title,.ob-title,.dash-greeting,.profile-title,.exercise-question,.diary-title{font-size:24px!important;letter-spacing:0!important;line-height:1.12!important;}
+  [style*="font-size:32px"]{font-size:24px!important;}
+  [style*="font-size:28px"]{font-size:22px!important;}
+  .ob-title{margin-bottom:10px;}
+  .ob-sub,.dash-meta,.plan-sub,.hw-dsc,.pr-card-desc,.profile-sub,.reading-section-desc,.daily-copy,.ach-desc{font-size:12px!important;line-height:1.35!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px!important;}
+  .mobile-collapsed{display:-webkit-box!important;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .mobile-collapsed.open{display:block!important;-webkit-line-clamp:unset;overflow:visible;}
+  .read-more-toggle{display:inline-flex;}
+  .dash-meta{font-size:11px!important;margin-bottom:14px!important;display:block;}
+  .btn{min-height:44px;padding:10px 14px;}
+  .btn-sm{min-height:40px;}
+  .btn-row{gap:8px;margin-top:8px;}
+  .kpi-row,.hw-stats,.profile-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:16px;}
+  .kpi,.profile-metric,.hw-stat{padding:12px;}
+  .kpi-val,.kpi-val.empty,.profile-metric-value{font-size:24px;font-family:'Syne',sans-serif;line-height:1;}
+  .xp-panel,.daily-goal,.achievements-panel,.exercise-panel,.diary-panel,.profile-panel{padding:12px 14px;margin-bottom:14px;border-radius:10px;}
+  .xp-bar,.daily-bar{height:8px;}
+  .level-track,.plan-grid,.reading-section-grid,.phrases-grid,.pr-scenarios,.ach-grid{display:grid;grid-template-columns:1fr!important;gap:10px;margin-bottom:16px;}
+  .plan-card,.reading-section,.pr-card,.hw-card,.ph-card,.article-vocab,.vocab-detail,.pattern-card,.report-card{width:100%;border-radius:10px;}
+  .plan-card,.pr-card,.hw-card,.ph-card,.reading-section-body{padding:14px;}
+  .reading-cover{min-height:96px;padding:14px;}
+  .article-cover{min-height:130px;border-radius:10px;padding:16px;margin-bottom:14px;}
+  .article-title-row{display:block;margin-bottom:8px;}
+  .article-actions{margin-top:10px;}
+  .article-meta{gap:6px;margin-bottom:12px;}
+  .article-text{font-size:16px;line-height:1.72;}
+  .parallel-tabs{display:flex;}
+  .parallel-grid{grid-template-columns:1fr;margin:12px 0 16px;}
+  .parallel-grid.lang-de .parallel-cell.ru,.parallel-grid.lang-ru .parallel-cell.de{display:none;}
+  .audio-panel{position:fixed;left:10px;right:10px;bottom:72px;z-index:145;margin:0;border-radius:14px;padding:8px;display:grid;grid-template-columns:44px 44px 1fr auto;gap:6px;box-shadow:0 12px 50px rgba(0,0,0,.25);}
+  .audio-panel .btn{width:44px;min-height:44px;padding:0;font-size:18px;}
+  .audio-rate{margin-left:0;display:grid;grid-template-columns:repeat(2,1fr);gap:4px;}
+  .rate-btn{padding:5px 6px;font-size:9px;}
+  .reading-popup{left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100%!important;max-width:none;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -18px 70px rgba(0,0,0,.38);}
+  .reading-popup.on{display:block;animation:sheetUp .25s ease;}
+  @keyframes sheetUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+  .rep-card{width:85vw;min-height:330px;padding:22px;margin:0 auto;will-change:transform;}
+  .rep-front,.rep-back{padding:20px;}
+  .rep-word{font-size:32px;}
+  .rep-actions{position:fixed;left:10px;right:10px;bottom:86px;z-index:146;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0;pointer-events:auto;}
+  .rep-actions button{max-width:none;min-height:60px;font-size:16px;}
+  .vocab-table{min-width:620px;}
+  .vocab-table td:last-child{display:table-cell;}
 }
 
 /* ── AI PRACTICE ── */
@@ -600,9 +777,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 
 @media(max-width:600px){
   html{overflow-x:hidden;}
-  .hdr,.nav{padding-left:16px;padding-right:16px;}
-  .nav-btn{font-size:9px;letter-spacing:1px;padding:12px 14px;}
-  .container{padding:24px 16px;}
+  .container{padding:16px 12px 112px;}
   .btn{width:100%;justify-content:center;}
   .btn-row{display:grid;grid-template-columns:1fr;}
   .hw-stats{grid-template-columns:repeat(2,1fr);}
@@ -638,7 +813,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--gold);letter-spacing:-1px;margin-bottom:48px;">DEUTSCH<span style="color:var(--muted);">.app</span></div>
       <div class="ob-eyebrow">Добро пожаловать</div>
       <div class="ob-title">Учи немецкий<br>под <em>себя</em></div>
-      <div class="ob-sub">Пройди 2-минутный онбординг — и получишь персональный план, подобранный под твою специальность и уровень.</div>
+      <div class="ob-sub">Персональный план за 2 минуты.</div>
     </div>
     <div style="margin-bottom:20px;">
       <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Как тебя зовут?</label>
@@ -653,7 +828,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   <div class="ob-step" id="ob2">
     <div class="ob-eyebrow">Шаг 1 из 3 — Специализация</div>
     <div class="ob-title">Выбери свою<br><em>сферу</em></div>
-    <div class="ob-sub">Немецкий будет адаптирован под твои профессиональные термины и сценарии. Можно выбрать несколько.</div>
+    <div class="ob-sub">Можно выбрать несколько сфер.</div>
     <div class="spec-grid" id="specGrid"></div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="obNext(1)">← Назад</button>
@@ -665,7 +840,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   <div class="ob-step" id="ob3">
     <div class="ob-eyebrow">Шаг 2 из 3 — Тест уровня</div>
     <div class="ob-title">Проверим<br>твой <em>уровень</em></div>
-    <div class="ob-sub">Три этапа: адаптивная грамматика, понимание текста и короткий письменный ответ. Результат сохранится и подстроит приложение под твой старт.</div>
+    <div class="ob-sub">Быстрый тест подстроит старт.</div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="obNext(2)">← Назад</button>
       <button class="btn btn-gold" onclick="startLevelTest()">Начать тест →</button>
@@ -696,7 +871,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:12px;margin-bottom:28px;" id="planPreview"></div>
     <div class="btn-row" style="justify-content:center;">
-      <button class="btn btn-gold" onclick="finishOnboarding()" style="font-size:16px;padding:16px 32px;">Начать обучение →</button>
+      <button class="btn btn-gold" onclick="finishOnboarding()" style="font-size:16px;padding:16px 32px;">Начать →</button>
     </div>
   </div>
 
@@ -708,6 +883,14 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   <div class="hdr-logo">DEUTSCH<span>.app</span></div>
   <div class="hdr-actions">
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
+    <button class="mobile-more-btn" id="mobileMoreBtn" onclick="toggleMobileMore()" aria-label="Меню">☰</button>
+    <div class="mobile-more-menu" id="mobileMoreMenu">
+      <button class="mobile-menu-item" onclick="goPage('plan')">🗺 План</button>
+      <button class="mobile-menu-item" onclick="goPage('homework')">✏️ Задания</button>
+      <button class="mobile-menu-item" onclick="goPage('phrases')">💬 Фразы</button>
+      <button class="mobile-menu-item" onclick="goPage('repetition')">🔄 Повтор</button>
+      <button class="mobile-menu-item" onclick="goPage('settings')">⚙️ Настройки</button>
+    </div>
     <div class="hdr-user">
       <div class="hdr-avatar" id="hdrAvatar">A</div>
       <div class="hdr-name" id="hdrName">Азамат</div>
@@ -717,16 +900,16 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 </header>
 
 <nav class="nav" id="appNav" style="display:none;">
-  <button class="nav-btn on" onclick="goPage('dashboard')">📊 Главная</button>
-  <button class="nav-btn" onclick="goPage('plan')">🗺 Мой план</button>
-  <button class="nav-btn" onclick="goPage('reading')">📰 Чтение</button>
-  <button class="nav-btn" onclick="goPage('homework')">✏️ Задания</button>
-  <button class="nav-btn" onclick="goPage('vocab')">📚 Словарь</button>
-  <button class="nav-btn" onclick="goPage('phrases')">💬 Фразы</button>
-  <button class="nav-btn" onclick="goPage('practice')" style="color:var(--teal);">🤖 AI Практика</button>
-  <button class="nav-btn" onclick="goPage('repetition')">🔄 Повторение</button>
-  <button class="nav-btn" onclick="goPage('login')">🔑 Аккаунт</button>
-  <button class="nav-btn" onclick="goPage('settings')">⚙️ Настройки</button>
+  <button class="nav-btn mobile-tab on" data-page="dashboard" onclick="goPage('dashboard')">🏠 Главная</button>
+  <button class="nav-btn" data-page="plan" onclick="goPage('plan')">🗺 План</button>
+  <button class="nav-btn mobile-tab" data-page="reading" onclick="goPage('reading')">📰 Чтение</button>
+  <button class="nav-btn" data-page="homework" onclick="goPage('homework')">✏️ Задания</button>
+  <button class="nav-btn mobile-tab" data-page="vocab" onclick="goPage('vocab')">📚 Словарь</button>
+  <button class="nav-btn" data-page="phrases" onclick="goPage('phrases')">💬 Фразы</button>
+  <button class="nav-btn mobile-tab" data-page="practice" onclick="goPage('practice')" style="color:var(--teal);">🤖 Практика</button>
+  <button class="nav-btn" data-page="repetition" onclick="goPage('repetition')">🔄 Повтор</button>
+  <button class="nav-btn mobile-tab" data-page="login" onclick="goPage('login')">👤 Профиль</button>
+  <button class="nav-btn" data-page="settings" onclick="goPage('settings')">⚙️ Настройки</button>
 </nav>
 
 <div id="appMain" style="display:none;">
@@ -759,15 +942,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   <!-- PLAN -->
   <div class="page" id="page-plan">
     <div class="container">
-      <div style="margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;">Мой план обучения</div>
-        <div class="spec-pill" id="planSpecLabel">IT · Медицина</div>
-      </div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:32px;">Уроки подобраны под твою специальность и уровень.</div>
-      <div class="section-label">Общий немецкий</div>
-      <div class="plan-grid" id="generalGrid"></div>
-      <div class="section-label" style="margin-top:32px;" id="specGridLabel">Профессиональные темы</div>
-      <div class="plan-grid" id="specPlanGrid"></div>
+      <div id="planRoot"></div>
     </div>
   </div>
 
@@ -865,14 +1040,29 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
         <input class="ob-input" id="settingsName" value="">
         <div style="margin-top:16px;">
           <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Уровень</label>
-          <div style="font-size:16px;color:var(--gold);font-weight:500;" id="settingsLevel">A1</div>
+          <select class="settings-select" id="settingsLevelSelect">
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+            <option value="C1">C1</option>
+            <option value="C2">C2</option>
+          </select>
+          <div style="font-size:16px;color:var(--gold);font-weight:500;display:none;" id="settingsLevel">A1</div>
+        </div>
+        <div style="margin-top:16px;">
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Язык перевода</label>
+          <select class="settings-select" id="translationLangSelect">
+            <option value="ru">Русский перевод</option>
+            <option value="de">Немецкие определения</option>
+          </select>
         </div>
       </div>
       <div class="section-label">Специальности</div>
       <div class="spec-grid" id="settingsSpecGrid"></div>
       <div class="btn-row" style="margin-top:28px;">
         <button class="btn btn-gold" onclick="saveSettings()">Сохранить изменения</button>
-        <button class="btn btn-ghost" onclick="retakeTest()">Перепройти тест уровня</button>
+        <button class="btn btn-ghost" onclick="retakeTest()">Пройти тест</button>
       </div>
     </div>
   </div>
@@ -952,7 +1142,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 <div class="toast" id="toast"></div>
 
 <!-- JS — встроено для статического однофайлового приложения -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>window.confetti = window.confetti || null;</script>
 <script>
 // Source: js\data.js
 // ═══════════════════════════════════
@@ -2293,6 +2483,8 @@ const DEFAULT_STATE = {
   hwDone: {},
   hwAnswers: {},
   onboardingDone: false,
+  onboardingStep: 'ob1',
+  levelTestState: null,
   points: 0,
   xp: 0,
   streakCount: 0,
@@ -2314,6 +2506,7 @@ const DEFAULT_STATE = {
   errorHistory: [],
   aiCleanStreak: 0,
   theme: 'dark',
+  translationLang: 'ru',
   badges: [],
   vocabProgress: {}, // {word: {level: 0, nextReview: '2024-01-01'}}
   staticMode: !CONFIG_API_URL,
@@ -2391,6 +2584,8 @@ function normalizeState(state) {
   next.completedLessons = Array.isArray(next.completedLessons) ? next.completedLessons : [];
   next.hwDone = next.hwDone && typeof next.hwDone === 'object' ? next.hwDone : {};
   next.hwAnswers = next.hwAnswers && typeof next.hwAnswers === 'object' ? next.hwAnswers : {};
+  next.onboardingStep = typeof next.onboardingStep === 'string' ? next.onboardingStep : 'ob1';
+  next.levelTestState = next.levelTestState && typeof next.levelTestState === 'object' ? next.levelTestState : null;
   next.badges = Array.isArray(next.badges) ? next.badges : [];
   next.achievements = Array.isArray(next.achievements) ? next.achievements : [];
   next.favorites = Array.isArray(next.favorites) ? next.favorites : [];
@@ -2469,6 +2664,7 @@ function normalizeState(state) {
   next.lastStudyDate = localStorage.getItem('lastStudyDate') || localStorage.getItem('lastDate') || next.lastStudyDate || '';
   next.aiCleanStreak = Math.max(0, Number(next.aiCleanStreak || 0));
   next.theme = localStorage.getItem('theme') || next.theme || 'dark';
+  next.translationLang = ['ru', 'de'].includes(next.translationLang) ? next.translationLang : 'ru';
   next.level = localStorage.getItem('userLevel') || next.level || DEFAULT_STATE.level;
 
   if (CONFIG_API_URL && BACKEND_CONFIG.staticMode === false) {
@@ -2491,9 +2687,34 @@ function loadS() {
   }
 }
 
+let storageWarningShown = false;
+
+function notifyStorageProblem() {
+  if (storageWarningShown) return;
+  storageWarningShown = true;
+  toast('Хранилище браузера заполнено. Экспортируй прогресс или очисти место, чтобы новые данные сохранялись.');
+}
+
+function setStorageKey(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    const isQuota = error && (
+      error.name === 'QuotaExceededError'
+      || error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+      || error.code === 22
+      || error.code === 1014
+    );
+    if (isQuota) notifyStorageProblem();
+    else toast('Не удалось сохранить прогресс в браузере.');
+    return false;
+  }
+}
+
 function syncContentStorage() {
-  if (typeof vocabularyData !== 'undefined') localStorage.setItem('vocabulary', JSON.stringify(vocabularyData));
-  if (typeof lessonsData !== 'undefined') localStorage.setItem('lessons', JSON.stringify(lessonsData));
+  if (typeof vocabularyData !== 'undefined') setStorageKey('vocabulary', JSON.stringify(vocabularyData));
+  if (typeof lessonsData !== 'undefined') setStorageKey('lessons', JSON.stringify(lessonsData));
 }
 
 function saveS(){
@@ -2501,25 +2722,25 @@ function saveS(){
   S.points = S.xp;
   S.achievements = Array.isArray(S.achievements) ? S.achievements : [];
   S.badges = [...S.achievements];
-  localStorage.setItem('daz3',JSON.stringify(S));
-  localStorage.setItem('xp', String(S.xp));
-  localStorage.setItem('streak', String(S.streakCount || 0));
-  localStorage.setItem('streakCount', String(S.streakCount || 0));
-  localStorage.setItem('lastDate', S.lastStudyDate || '');
-  localStorage.setItem('lastStudyDate', S.lastStudyDate || '');
-  localStorage.setItem('achievements', JSON.stringify(S.achievements));
-  localStorage.setItem('favorites', JSON.stringify(S.favorites || []));
-  localStorage.setItem('readingWords', JSON.stringify(S.savedReadingWords || []));
-  localStorage.setItem('diary', JSON.stringify(S.diary || []));
-  localStorage.setItem('grammarPatterns', JSON.stringify(S.grammarPatterns || {}));
-  localStorage.setItem('weeklyReports', JSON.stringify(S.weeklyReports || []));
-  localStorage.setItem('articleHistory', JSON.stringify(S.articleHistory || []));
-  localStorage.setItem('xpLog', JSON.stringify(S.xpLog || []));
-  localStorage.setItem('cardProgress', JSON.stringify(S.cardProgress || {}));
-  localStorage.setItem('cardSessionCount', String(S.cardSessionCount || 0));
-  localStorage.setItem('errorHistory', JSON.stringify(S.errorHistory || []));
-  localStorage.setItem('theme', S.theme || 'dark');
-  localStorage.setItem('userLevel', S.level || 'A1');
+  setStorageKey('daz3',JSON.stringify(S));
+  setStorageKey('xp', String(S.xp));
+  setStorageKey('streak', String(S.streakCount || 0));
+  setStorageKey('streakCount', String(S.streakCount || 0));
+  setStorageKey('lastDate', S.lastStudyDate || '');
+  setStorageKey('lastStudyDate', S.lastStudyDate || '');
+  setStorageKey('achievements', JSON.stringify(S.achievements));
+  setStorageKey('favorites', JSON.stringify(S.favorites || []));
+  setStorageKey('readingWords', JSON.stringify(S.savedReadingWords || []));
+  setStorageKey('diary', JSON.stringify(S.diary || []));
+  setStorageKey('grammarPatterns', JSON.stringify(S.grammarPatterns || {}));
+  setStorageKey('weeklyReports', JSON.stringify(S.weeklyReports || []));
+  setStorageKey('articleHistory', JSON.stringify(S.articleHistory || []));
+  setStorageKey('xpLog', JSON.stringify(S.xpLog || []));
+  setStorageKey('cardProgress', JSON.stringify(S.cardProgress || {}));
+  setStorageKey('cardSessionCount', String(S.cardSessionCount || 0));
+  setStorageKey('errorHistory', JSON.stringify(S.errorHistory || []));
+  setStorageKey('theme', S.theme || 'dark');
+  setStorageKey('userLevel', S.level || 'A1');
   syncContentStorage();
 }
 
@@ -2630,6 +2851,89 @@ function finalizePlacementLevel() {
   return level;
 }
 
+function setOnboardingStep(step) {
+  S.onboardingStep = step || 'ob1';
+  saveS();
+}
+
+function captureLevelTestState(step = 'ob3b') {
+  return {
+    step,
+    ltIdx,
+    ltScore,
+    ltAnswered: false,
+    ltSession,
+    ltDifficulty,
+    ltStage,
+    ltPlacement,
+    writingText: document.getElementById('ltWriting')?.value || '',
+  };
+}
+
+function saveLevelTestState(step = 'ob3b') {
+  S.onboardingStep = step;
+  S.levelTestState = captureLevelTestState(step);
+  saveS();
+}
+
+function restoreLevelTestState(state) {
+  if (!state) return false;
+  ltIdx = Number(state.ltIdx || 0);
+  ltScore = Number(state.ltScore || 0);
+  ltAnswered = false;
+  ltSession = Array.isArray(state.ltSession) && state.ltSession.length ? state.ltSession : buildTestSession();
+  ltDifficulty = Number(state.ltDifficulty || 2);
+  ltStage = state.ltStage || 'grammar';
+  ltPlacement = state.ltPlacement && typeof state.ltPlacement === 'object' ? state.ltPlacement : {
+    grammarCorrect: ltScore,
+    difficulties: [],
+    stage1Avg: 0,
+    score: 0,
+    readingAnswers: [],
+    readingCorrect: 0,
+    writingChecks: null,
+    confirmed: false,
+  };
+  return true;
+}
+
+function showOnboardingStep(step) {
+  document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
+  document.getElementById(step)?.classList.add('on');
+}
+
+function resumeOnboarding() {
+  if (S.name && S.name !== 'Азамат') document.getElementById('nameInput').value = S.name;
+  const step = ['ob1', 'ob2', 'ob3', 'ob3b', 'ob4'].includes(S.onboardingStep) ? S.onboardingStep : 'ob1';
+  if (step === 'ob2') buildSpecGrid();
+  if (step === 'ob3b' || step === 'ob4') {
+    restoreLevelTestState(S.levelTestState);
+    const restoredStage = ltStage;
+    const restoredReadingAnswers = [...(ltPlacement.readingAnswers || [])];
+    showOnboardingStep('ob3b');
+    if (step === 'ob4') {
+      showLTResult();
+      return;
+    }
+    if (restoredStage === 'reading' || restoredStage === 'reading-reviewed') {
+      renderReadingStage();
+      restoredReadingAnswers.forEach((answer, index) => {
+        if (Number.isInteger(answer)) selectReadingAnswer(index, answer);
+      });
+      if (restoredStage === 'reading-reviewed') submitReadingStage();
+    } else if (restoredStage === 'writing' || restoredStage === 'writing-reviewed') {
+      renderWritingStage();
+      const input = document.getElementById('ltWriting');
+      if (input) input.value = S.levelTestState?.writingText || '';
+      if (restoredStage === 'writing-reviewed') submitWritingStage();
+    } else {
+      renderLTQ();
+    }
+    return;
+  }
+  showOnboardingStep(step);
+}
+
 function buildSpecGrid() {
   const grid = document.getElementById('specGrid');
   grid.innerHTML = '';
@@ -2647,6 +2951,7 @@ function buildSpecGrid() {
       if (S.specs.includes(spec.id)) S.specs = S.specs.filter((item) => item !== spec.id);
       else S.specs.push(spec.id);
       card.classList.toggle('sel', S.specs.includes(spec.id));
+      setOnboardingStep('ob2');
     };
     grid.appendChild(card);
   });
@@ -2659,6 +2964,7 @@ function obNext(step) {
   }
   if (step === 2) {
     S.name = document.getElementById('nameInput').value.trim() || 'Азамат';
+    S.onboardingStep = 'ob2';
     saveS();
   }
   if (step === 3 && S.specs.length === 0) {
@@ -2668,6 +2974,7 @@ function obNext(step) {
   document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
   document.getElementById(`ob${step}`).classList.add('on');
   if (step === 2) buildSpecGrid();
+  setOnboardingStep(`ob${step}`);
 }
 
 function startLevelTest() {
@@ -2690,6 +2997,7 @@ function startLevelTest() {
   document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
   document.getElementById('ob3b').classList.add('on');
   renderLTQ();
+  saveLevelTestState('ob3b');
 }
 
 function renderLTQ() {
@@ -2748,6 +3056,7 @@ function answerLT(selected) {
   ltPlacement.difficulties.push(question.difficulty);
   ltDifficulty = Math.max(1, Math.min(5, ltDifficulty + (correct ? 1 : -1)));
   document.getElementById('ltNext').style.display = 'inline-flex';
+  saveLevelTestState('ob3b');
 }
 
 function ltNextQ() {
@@ -2783,6 +3092,7 @@ function ltNextQ() {
     saveS();
   }
   renderLTQ();
+  saveLevelTestState('ob3b');
 }
 
 function renderReadingStage() {
@@ -2810,8 +3120,9 @@ function renderReadingStage() {
       </div>
     </div>
   `).join('');
-  document.getElementById('ltNext').textContent = 'Проверить понимание →';
+  document.getElementById('ltNext').textContent = 'Проверить →';
   document.getElementById('ltNext').style.display = 'inline-flex';
+  saveLevelTestState('ob3b');
 }
 
 function selectReadingAnswer(qIndex, optIndex) {
@@ -2820,6 +3131,7 @@ function selectReadingAnswer(qIndex, optIndex) {
   document.querySelectorAll(`[data-reading-q="${qIndex}"]`).forEach((button) => {
     button.classList.toggle('selected', Number(button.dataset.readingOpt) === optIndex);
   });
+  saveLevelTestState('ob3b');
 }
 
 function submitReadingStage() {
@@ -2857,7 +3169,8 @@ function submitReadingStage() {
 
   ltStage = 'reading-reviewed';
   document.getElementById('ltNum').textContent = `Понимание текста: ${correct}/3`;
-  document.getElementById('ltNext').textContent = 'К письменному ответу →';
+  document.getElementById('ltNext').textContent = 'К письму →';
+  saveLevelTestState('ob3b');
 }
 
 function renderWritingStage() {
@@ -2871,12 +3184,13 @@ function renderWritingStage() {
     <div class="lt-stage-copy">${ltEsc(getWritingPromptForCurrentLevel())}</div>
   `;
   document.getElementById('ltOpts').innerHTML = `
-    <textarea class="lt-writing" id="ltWriting" placeholder="Schreibe hier auf Deutsch..."></textarea>
+    <textarea class="lt-writing" id="ltWriting" placeholder="Schreibe hier auf Deutsch..." oninput="saveLevelTestState('ob3b')"></textarea>
     <div class="lt-checks" id="ltWritingChecks"></div>
   `;
   document.getElementById('ltNext').textContent = 'Проверить текст →';
   document.getElementById('ltNext').style.display = 'inline-flex';
   setTimeout(() => document.getElementById('ltWriting')?.focus(), 50);
+  saveLevelTestState('ob3b');
 }
 
 function analyzeWriting(text) {
@@ -2914,6 +3228,7 @@ function submitWritingStage() {
   ltStage = 'writing-reviewed';
   document.getElementById('ltNum').textContent = passed ? 'Письменный этап подтверждён' : 'Письменный этап понижает уровень на одну ступень';
   document.getElementById('ltNext').textContent = 'Показать результат →';
+  saveLevelTestState('ob3b');
 }
 
 function showLTResult() {
@@ -2937,7 +3252,8 @@ function showLTResult() {
     writingConfirmed: ltPlacement.confirmed,
     completedAt: new Date().toISOString(),
   };
-  localStorage.setItem('userLevel', level);
+  setStorageKey('userLevel', level);
+  S.onboardingStep = 'ob4';
   saveS();
 
   document.getElementById('resultScore').textContent = level;
@@ -2967,11 +3283,14 @@ function showLTResult() {
   `;
   document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
   document.getElementById('ob4').classList.add('on');
+  saveLevelTestState('ob4');
 }
 
 function finishOnboarding(openLessonId) {
   ltStage = 'done';
   S.onboardingDone = true;
+  S.onboardingStep = 'done';
+  S.levelTestState = null;
   saveS();
   document.getElementById('onboarding').classList.add('hidden');
   document.getElementById('appHdr').style.display = '';
@@ -3085,6 +3404,18 @@ function getWordLevel(word) {
   return 'A0';
 }
 
+function getTranslationLang() {
+  return S.translationLang === 'de' ? 'de' : 'ru';
+}
+
+function getMeaningText(item, level = 'A1') {
+  if (!item) return '';
+  if (getTranslationLang() === 'de') return item.definition || item.translation || item.ru || '';
+  return levelRank(level) <= levelRank('A2')
+    ? (item.translation || item.ru || item.definition || '')
+    : (item.definition || item.translation || item.ru || '');
+}
+
 function highlightText(text) {
   const userRank = levelRank(getUserLevel());
   return String(text || '')
@@ -3102,6 +3433,8 @@ function highlightText(text) {
 
 let activeReadingArticleId = null;
 let readingTranslationVisible = false;
+let readingParallelLang = 'de';
+let readingLevelFilter = 'all';
 let readingAudioRate = 1;
 let readingUtterance = null;
 let readingExercise = { articleId: null, idx: 0, score: 0, answered: false, answers: [] };
@@ -3283,6 +3616,45 @@ function renderReading() {
   else renderReadingSections();
 }
 
+function canOpenReadingArticle(article) {
+  return levelRank(article?.level || 'A1') <= levelRank(getUserLevel());
+}
+
+function readingArticleMatchesFilter(article) {
+  if (readingLevelFilter === 'all') return true;
+  if (readingLevelFilter === 'available') return canOpenReadingArticle(article);
+  return normalizeLevelName(article.level) === readingLevelFilter;
+}
+
+function setReadingLevelFilter(value) {
+  readingLevelFilter = value || 'all';
+  renderReadingSections();
+}
+
+function renderReadingFilters() {
+  const levels = ['all', 'available', ...CEFR_LEVELS.filter((level) => level !== 'A0' && READING_ARTICLES.some((article) => normalizeLevelName(article.level) === level))];
+  if (!levels.includes(readingLevelFilter)) readingLevelFilter = 'all';
+  const labels = {
+    all: 'Все',
+    available: 'Доступно',
+  };
+  return `
+    <div class="vocab-filter" aria-label="Фильтр статей по уровню">
+      ${renderVocabFilterGroup('Уровень', levels.map((value) => ({ value, label: labels[value] || value })), readingLevelFilter, 'setReadingLevelFilter')}
+    </div>
+  `;
+}
+
+function tryOpenReadingArticle(id) {
+  const article = getReadingArticle(id);
+  if (!article) return;
+  if (!canOpenReadingArticle(article)) {
+    toast(`Статья ${article.level} откроется после уровня ${article.level}`);
+    return;
+  }
+  openReadingArticle(id);
+}
+
 function renderReadingSections() {
   stopReadingAudio();
   const root = document.getElementById('readingRoot');
@@ -3292,9 +3664,12 @@ function renderReadingSections() {
   root.innerHTML = `
     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Чтение</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:28px;">Тематические статьи с переводом, словарём, озвучкой и упражнениями</div>
+    ${renderReadingFilters()}
     <div class="reading-section-grid">
       ${READING_SECTIONS.map((section) => {
-        const articles = READING_ARTICLES.filter((article) => article.sectionId === section.id);
+        const articles = READING_ARTICLES
+          .filter((article) => article.sectionId === section.id)
+          .filter(readingArticleMatchesFilter);
         return `
           <section class="reading-section ${completedSections.has(section.id) ? 'done' : ''}">
             <div class="reading-cover ${section.cover}">
@@ -3308,15 +3683,18 @@ function renderReadingSections() {
               <div class="reading-section-meta">${completedSections.has(section.id) ? '✓ раздел завершён · +50 XP' : 'прочитай 1 статью + упражнения'}</div>
               <div class="reading-section-desc">${esc(section.grammar)}</div>
               <div class="reading-article-list">
-                ${articles.map((article) => `
-                  <div class="reading-article-row" onclick="openReadingArticle('${article.id}')">
+                ${articles.length ? articles.map((article) => {
+                  const locked = !canOpenReadingArticle(article);
+                  return `
+                  <div class="reading-article-row ${locked ? 'locked' : ''}" onclick="tryOpenReadingArticle('${article.id}')">
                     <div>
                       <div class="reading-article-title">${esc(article.title)}</div>
                       <div class="reading-article-sub">${article.level} · ${readingMinutes(article.text)} мин</div>
                     </div>
-                    <div>${completedArticles.has(article.id) ? '<span class="reading-check">✓</span>' : '<span class="reading-badge">читать</span>'}</div>
+                    <div>${locked ? '<span class="reading-badge">закрыто</span>' : (completedArticles.has(article.id) ? '<span class="reading-check">✓</span>' : '<span class="reading-badge">читать</span>')}</div>
                   </div>
-                `).join('')}
+                `;
+                }).join('') : '<div class="reading-article-sub">Нет статей под выбранный фильтр.</div>'}
               </div>
             </div>
           </section>
@@ -3327,6 +3705,12 @@ function renderReadingSections() {
 }
 
 function openReadingArticle(id) {
+  const article = getReadingArticle(id);
+  if (!article) return renderReadingSections();
+  if (!canOpenReadingArticle(article)) {
+    toast(`Статья ${article.level} откроется после уровня ${article.level}`);
+    return;
+  }
   activeReadingArticleId = id;
   readingTranslationVisible = false;
   readingExercise = { articleId: id, idx: 0, score: 0, answered: false, answers: [] };
@@ -3365,9 +3749,13 @@ function renderParallelText(article) {
   const de = splitSentences(article.text);
   const ru = splitSentences(article.translation);
   return `
-    <div class="parallel-grid">
+    <div class="parallel-tabs">
+      <button class="parallel-tab ${readingParallelLang === 'de' ? 'on' : ''}" onclick="setParallelLang('de')">DE</button>
+      <button class="parallel-tab ${readingParallelLang === 'ru' ? 'on' : ''}" onclick="setParallelLang('ru')">RU</button>
+    </div>
+    <div class="parallel-grid lang-${readingParallelLang}">
       ${de.map((sentence, index) => `
-        <div class="parallel-cell">${highlightText(sentence)}</div>
+        <div class="parallel-cell de">${highlightText(sentence)}</div>
         <div class="parallel-cell ru">${esc(ru[index] || '')}</div>
       `).join('')}
     </div>
@@ -3399,8 +3787,7 @@ function renderReadingArticle(id) {
       </div>
     </div>
     <div class="article-meta">
-      <span class="reading-badge">${article.level}</span>
-      <span class="reading-badge">${readingMinutes(article.text)} мин чтения</span>
+      <span class="reading-badge">${article.level} · ${esc(section.title)} · ${readingMinutes(article.text)} мин</span>
       ${completed ? '<span class="reading-badge">✓ статья завершена</span>' : ''}
     </div>
     <details class="article-vocab">
@@ -3409,7 +3796,7 @@ function renderReadingArticle(id) {
         ${article.vocabulary.map((item) => `
           <div class="article-vocab-item">
             <div class="article-vocab-word">${esc(item.word)} · ${esc(item.wordClass)}</div>
-            <div class="article-vocab-def">${article.level.startsWith('A') ? esc(item.translation || item.definition) : esc(item.definition || item.translation)}</div>
+            <div class="article-vocab-def">${esc(getMeaningText(item, article.level))}</div>
             <div class="article-vocab-def">${(item.examples || []).map(esc).join(' · ')}</div>
           </div>
         `).join('')}
@@ -3418,16 +3805,17 @@ function renderReadingArticle(id) {
     <div class="article-text" id="articleText">${renderArticleText(article)}</div>
     ${wordLevelLegendHtml()}
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="toggleParallelTranslation()">${readingTranslationVisible ? 'Скрыть параллельный перевод' : 'Показать параллельный перевод'}</button>
+      <button class="btn btn-ghost" onclick="toggleParallelTranslation()">${readingTranslationVisible ? 'Скрыть перевод' : 'Перевод'}</button>
       <button class="btn btn-gold" onclick="scrollToReadingExercises()">Упражнения →</button>
-      <button class="btn btn-ghost" onclick="toggleReadingDiary()">📓 Написать дневник дня →</button>
+      <button class="btn btn-ghost" onclick="toggleReadingDiary()">📓 Дневник</button>
     </div>
     <div id="parallelWrap">${readingTranslationVisible ? renderParallelText(article) : ''}</div>
     <div class="exercise-panel" id="readingExercisePanel"></div>
     ${renderDiaryPanel(article, section)}
     <div class="audio-panel">
-      <button class="btn btn-gold btn-sm" onclick="playReadingAudio()">▶ Играть</button>
-      <button class="btn btn-ghost btn-sm" onclick="pauseReadingAudio()">⏸ Пауза</button>
+      <button class="btn btn-gold btn-sm" onclick="playReadingAudio()" aria-label="Играть">▶</button>
+      <button class="btn btn-ghost btn-sm" onclick="pauseReadingAudio()" aria-label="Пауза">⏸</button>
+      <div class="audio-progress"><div class="audio-progress-fill" id="readingAudioProgress"></div></div>
       <div class="audio-rate">
         ${[0.5, 1, 1.5, 2].map((rate) => `<button class="rate-btn ${readingAudioRate === rate ? 'on' : ''}" onclick="setReadingRate(${rate})">${rate}x</button>`).join('')}
       </div>
@@ -3439,6 +3827,11 @@ function renderReadingArticle(id) {
 
 function toggleParallelTranslation() {
   readingTranslationVisible = !readingTranslationVisible;
+  renderReadingArticle(activeReadingArticleId);
+}
+
+function setParallelLang(lang) {
+  readingParallelLang = lang === 'ru' ? 'ru' : 'de';
   renderReadingArticle(activeReadingArticleId);
 }
 
@@ -3490,7 +3883,9 @@ function toggleReadingDiary() {
 }
 
 function countDiarySentences(text) {
-  return (String(text || '').match(/[.!?]+/g) || []).length;
+  return (String(text || '').match(/[^.!?]+[.!?]+/g) || [])
+    .filter((sentence) => /[A-Za-zÄÖÜäöüßА-Яа-яЁё]/.test(sentence))
+    .length;
 }
 
 function diaryWords(text) {
@@ -3615,7 +4010,7 @@ function recomputeGrammarPatterns() {
     });
   });
   S.grammarPatterns = counts;
-  localStorage.setItem('grammarPatterns', JSON.stringify(S.grammarPatterns));
+  setStorageKey('grammarPatterns', JSON.stringify(S.grammarPatterns));
   return counts;
 }
 
@@ -3667,7 +4062,10 @@ function bindReadingArticleEvents() {
   });
   text.addEventListener('mouseup', () => setTimeout(showSelectionPopup, 20));
   text.addEventListener('touchend', () => setTimeout(showSelectionPopup, 80));
-  document.addEventListener('click', hideReadingPopupOnOutside, { once: true });
+  if (!window.__readingPopupOutsideBound) {
+    document.addEventListener('click', hideReadingPopupOnOutside);
+    window.__readingPopupOutsideBound = true;
+  }
 }
 
 function ensureReadingPopup() {
@@ -3699,8 +4097,8 @@ function readingWordClick(event, span) {
   popup.innerHTML = `
     <div class="reading-popup-title">${esc(item.word || word)}</div>
     <div class="reading-popup-sub">${esc(item.pronunciation || estimatePronunciation(word))}</div>
-    <div class="reading-popup-body">${esc(isEasy ? (item.translation || item.definition || '') : (item.definition || item.translation || ''))}</div>
-    <button class="btn btn-gold btn-sm" onclick="addReadingTerm('${esc((item.word || word).replace(/'/g, "\\'"))}','${article.id}')">+ В словарь</button>
+    <div class="reading-popup-body">${esc(getMeaningText(item, article.level))}</div>
+    <button class="btn btn-gold btn-sm" onclick='addReadingTerm(${jsString(item.word || word)},${jsString(article.id)})'>+ В словарь</button>
   `;
   popup.classList.add('on');
   positionReadingPopup(popup, span.getBoundingClientRect());
@@ -3718,7 +4116,7 @@ function showSelectionPopup() {
     <div class="reading-popup-title">${esc(text)}</div>
     <div class="reading-popup-sub">выражение</div>
     <div class="reading-popup-body">${esc(phraseTranslation(text))}</div>
-    <button class="btn btn-gold btn-sm" onclick="addReadingTerm('${esc(text.replace(/'/g, "\\'"))}','${activeReadingArticleId}',true)">+ В словарь как фраза</button>
+    <button class="btn btn-gold btn-sm" onclick='addReadingTerm(${jsString(text)},${jsString(activeReadingArticleId)},true)'>+ В словарь как фраза</button>
   `;
   popup.classList.add('on');
   positionReadingPopup(popup, rect);
@@ -3774,12 +4172,12 @@ function answerReadingExercise(optionIndex) {
   const exercise = article.exercises[readingExercise.idx];
   const isTF = exercise.type === 'tf';
   const correctIndex = isTF ? (exercise.answer ? 0 : 1) : exercise.answer;
+  const optionLabels = isTF ? ['Верно', 'Неверно'] : (exercise.options || []);
   readingExercise.answered = true;
   const correct = optionIndex === correctIndex;
   if (correct) readingExercise.score += 1;
   else {
     const section = getReadingSection(article.sectionId);
-    const optionLabels = options.map((option) => option.label);
     recordError({
       type: exercise.type === 'translation' ? 'translation' : (exercise.type === 'gap' ? 'vocabulary' : 'grammar'),
       topic: section?.grammar || detectErrorTopic(exercise.statement || exercise.sentence, 'Чтение'),
@@ -3791,7 +4189,8 @@ function answerReadingExercise(optionIndex) {
   }
   readingExercise.answers.push({ idx: readingExercise.idx, correct });
   document.querySelectorAll('.exercise-option').forEach((button, index) => {
-    button.classList.add(index === correctIndex ? 'correct' : (index === optionIndex ? 'wrong' : ''));
+    if (index === correctIndex) button.classList.add('correct');
+    else if (index === optionIndex) button.classList.add('wrong');
     button.disabled = true;
   });
   document.getElementById('readingExerciseFeedback').innerHTML = `
@@ -3827,7 +4226,9 @@ function renderReadingExerciseResult(article) {
     });
     S.articleHistory = S.articleHistory.slice(0, 300);
   }
-  if (!completedSections.has(article.sectionId)) {
+  const sectionArticles = READING_ARTICLES.filter((item) => item.sectionId === article.sectionId).map((item) => item.id);
+  const sectionDone = sectionArticles.every((articleId) => completedArticles.has(articleId));
+  if (sectionDone && !completedSections.has(article.sectionId)) {
     completedSections.add(article.sectionId);
     S.completedReadingSections = [...completedSections];
     xp += 50;
@@ -3840,8 +4241,8 @@ function renderReadingExerciseResult(article) {
       <span class="qz-score">${readingExercise.score}/${article.exercises.length}</span>
       <div class="qz-msg">СТАТЬЯ ЗАВЕРШЕНА · +${xp} XP</div>
       <div class="btn-row" style="justify-content:center;">
-        <button class="btn btn-ghost" onclick="readingExercise={articleId:'${article.id}',idx:0,score:0,answered:false,answers:[]};renderReadingExercise()">Повторить упражнения</button>
-        <button class="btn btn-teal" onclick="startArticleCards('${article.id}')">🃏 Закрепить слова</button>
+        <button class="btn btn-ghost" onclick="readingExercise={articleId:'${article.id}',idx:0,score:0,answered:false,answers:[]};renderReadingExercise()">Повторить</button>
+        <button class="btn btn-teal" onclick="startArticleCards('${article.id}')">🃏 Карточки</button>
         <button class="btn btn-gold" onclick="closeReadingArticle()">К разделам</button>
       </div>
     </div>
@@ -3879,6 +4280,11 @@ function clearReadingSpeaking() {
   document.querySelectorAll('.read-word.speaking').forEach((item) => item.classList.remove('speaking'));
 }
 
+function setReadingAudioProgress(percent = 0) {
+  const fill = document.getElementById('readingAudioProgress');
+  if (fill) fill.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+}
+
 function speakReadingSnippet(text) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
@@ -3891,20 +4297,26 @@ function speakReadingSnippet(text) {
 function playReadingAudio() {
   const article = getReadingArticle(activeReadingArticleId);
   if (!article || !('speechSynthesis' in window)) return toast('Озвучка не поддерживается в этом браузере');
+  if (readingUtterance && window.speechSynthesis.speaking && !window.speechSynthesis.paused) return;
   window.speechSynthesis.cancel();
   clearReadingSpeaking();
   readingUtterance = new SpeechSynthesisUtterance(article.text);
   readingUtterance.lang = 'de-DE';
   readingUtterance.rate = readingAudioRate;
   let wordIndex = 0;
+  const totalWords = document.querySelectorAll('.read-word').length || 1;
   readingUtterance.onboundary = (event) => {
     if (event.name && event.name !== 'word') return;
     clearReadingSpeaking();
     const word = document.querySelector(`.read-word[data-index="${wordIndex}"]`);
     if (word) word.classList.add('speaking');
     wordIndex += 1;
+    setReadingAudioProgress((wordIndex / totalWords) * 100);
   };
-  readingUtterance.onend = clearReadingSpeaking;
+  readingUtterance.onend = () => {
+    clearReadingSpeaking();
+    setReadingAudioProgress(100);
+  };
   window.speechSynthesis.speak(readingUtterance);
 }
 
@@ -3917,10 +4329,12 @@ function pauseReadingAudio() {
 function stopReadingAudio() {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   clearReadingSpeaking();
+  setReadingAudioProgress(0);
 }
 
 function setReadingRate(rate) {
   readingAudioRate = rate;
+  stopReadingAudio();
   renderReadingArticle(activeReadingArticleId);
 }
 
@@ -4039,8 +4453,15 @@ function getLearnedWordSet() {
   return learned;
 }
 
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function todayKey() {
-  return new Date().toISOString().split('T')[0];
+  return localDateKey();
 }
 
 function dayDiff(fromDate, toDate) {
@@ -4135,7 +4556,7 @@ function renderWeakBanner() {
     blocks.push(`
       <div class="weak-banner">
         <div class="weak-banner-copy">💡 Ты часто ошибаешься с ${esc(weak.topic)} — пройди короткую тренировку по этой теме.</div>
-        <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Потренировать слабые места</button>
+        <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Тренировать</button>
       </div>
     `);
   }
@@ -4212,7 +4633,8 @@ function answerWeakPractice(selected) {
   const item = weakPractice.items[weakPractice.idx];
   item.opts.forEach((_, index) => {
     const button = document.getElementById(`wpo${index}`);
-    button.classList.add(index === item.a ? 'ok' : (index === selected ? 'no' : ''));
+    if (index === item.a) button.classList.add('ok');
+    else if (index === selected) button.classList.add('no');
     button.disabled = true;
   });
   if (selected === item.a) weakPractice.score += 1;
@@ -4342,11 +4764,7 @@ function renderDailyGoal() {
   const lessonProgress = Math.min(100, (stats.lessons || 0) * 100);
   const progress = Math.max(wordProgress, lessonProgress);
   const done = progress >= 100;
-  const wordsLabel = stats.words ? `${stats.words}/10 слов` : 'слова ждут';
-  const lessonLabel = stats.lessons ? '1/1 урок' : 'урок ждёт';
-  const valueText = (stats.words || stats.lessons)
-    ? `${wordsLabel} · ${lessonLabel}`
-    : 'Начни урок или карточки 👇';
+  const valueText = `${Math.round(progress)}% · ${stats.words || 0}/10`;
   el.classList.toggle('done', done);
   el.innerHTML = `
     <div class="daily-head">
@@ -4354,7 +4772,6 @@ function renderDailyGoal() {
       <span class="daily-value">${valueText}</span>
     </div>
     <div class="daily-bar"><div class="daily-fill" style="width:${progress}%"></div></div>
-    <div class="daily-copy" style="margin-top:10px;">${done ? 'Цель выполнена. Отличный темп!' : 'Выучи 10 слов или заверши 1 урок, чтобы закрыть день.'}</div>
   `;
 }
 
@@ -4405,7 +4822,7 @@ function currentWeekKey(date = new Date()) {
   const day = copy.getDay();
   copy.setHours(0, 0, 0, 0);
   copy.setDate(copy.getDate() - day);
-  return copy.toISOString().slice(0, 10);
+  return localDateKey(copy);
 }
 
 function getTopErrorTopics(days = 7) {
@@ -4481,7 +4898,7 @@ function showWeeklyReportModal(report) {
       `).join('') || '<div class="profile-sub">Ошибок за неделю нет.</div>'}
     </div>
     <div class="btn-row" style="justify-content:center;margin-top:18px;">
-      <button class="btn btn-gold" onclick="closeModal();profileTab='reports';goPage('login')">Открыть отчёты</button>
+      <button class="btn btn-gold" onclick="closeModal();profileTab='reports';goPage('login')">Отчёты</button>
       <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
     </div>
   `;
@@ -4513,11 +4930,14 @@ async function initApp() {
     .filter((item) => S.specs.includes(item.id))
     .map((item) => `${item.icon} ${item.id.toUpperCase()}`)
     .join(' · ') || 'Общий';
-  document.getElementById('dMeta').textContent = `уровень ${S.level} · ${specLabel}`;
-  document.getElementById('planSpecLabel').textContent = SPECIALIZATIONS
-    .filter((item) => S.specs.includes(item.id))
-    .map((item) => item.name)
-    .join(' · ') || 'Общий немецкий';
+  document.getElementById('dMeta').textContent = `уровень ${S.level}`;
+  const planSpecLabel = document.getElementById('planSpecLabel');
+  if (planSpecLabel) {
+    planSpecLabel.textContent = SPECIALIZATIONS
+      .filter((item) => S.specs.includes(item.id))
+      .map((item) => item.name)
+      .join(' · ') || 'Общий немецкий';
+  }
 
   if (S.token && hasBackend()) {
     await syncFromBackend();
@@ -4540,15 +4960,18 @@ async function initApp() {
 }
 
 function goPage(name) {
+  if (name !== 'reading') {
+    stopReadingAudio();
+    hideReadingPopup();
+  }
   document.querySelectorAll('.page').forEach((page) => page.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach((btn) => btn.classList.remove('on'));
   document.getElementById(`page-${name}`).classList.add('on');
-
-  const pages = ['dashboard', 'plan', 'reading', 'homework', 'vocab', 'phrases', 'practice', 'repetition', 'login', 'settings'];
-  const idx = pages.indexOf(name);
-  if (idx >= 0) document.querySelectorAll('.nav-btn')[idx].classList.add('on');
+  document.querySelector(`.nav-btn[data-page="${name}"]`)?.classList.add('on');
+  document.getElementById('mobileMoreMenu')?.classList.remove('on');
 
   if (name === 'reading') renderReading();
+  if (name === 'plan') renderPlan();
   if (name === 'vocab') renderVocab();
   if (name === 'practice') renderScenarios();
   if (name === 'settings') renderSettings();
@@ -4557,16 +4980,20 @@ function goPage(name) {
   window.scrollTo(0, 0);
 }
 
+function toggleMobileMore() {
+  document.getElementById('mobileMoreMenu')?.classList.toggle('on');
+}
+
 function updateDash() {
   refreshStreakForMissedDay();
   const learnedWords = getLearnedWordSet().size;
   const completedLessons = S.completedLessons.length;
   const doneHW = Object.values(S.hwDone).filter(Boolean).length;
-  renderKPI('kpi-words', learnedWords, 'Начни первый урок, чтобы слова появились здесь 👇');
-  renderKPI('kpi-lessons', completedLessons, 'Открой урок ниже и заверши первый квиз 👇');
-  renderKPI('kpi-hw', doneHW, 'Сдай первое задание в разделе “Задания” 👇');
+  renderKPI('kpi-words', learnedWords, '0');
+  renderKPI('kpi-lessons', completedLessons, '0');
+  renderKPI('kpi-hw', doneHW, '0');
   const streakEl = document.getElementById('kpi-streak');
-  streakEl.textContent = (S.streakCount || 0) > 0 ? `🔥 ${S.streakCount} дней подряд` : 'Заверши урок сегодня, чтобы зажечь серию 👇';
+  streakEl.textContent = (S.streakCount || 0) > 0 ? `🔥 ${S.streakCount}` : '0';
   streakEl.classList.toggle('empty', !(S.streakCount > 0));
 
   const levelInfo = getXPLevelInfo();
@@ -4615,20 +5042,7 @@ function updateDash() {
     lt.appendChild(item);
   });
 
-  const nextLesson = getRecommendedLessonForLevel(getUserLevel());
-  const nextLessonEl = document.getElementById('nextLesson');
-  if (nextLesson && !S.completedLessons.includes(nextLesson.id)) {
-    nextLessonEl.innerHTML = `
-      <div class="plan-card ${nextLesson.color}" style="max-width:420px;cursor:pointer;" onclick="openLessonById('${nextLesson.id}')">
-        <div class="plan-type">${nextLesson.type}</div>
-        <div class="plan-title">${nextLesson.title}</div>
-        <div class="plan-sub">${nextLesson.de} · ${nextLesson.words.length} слов</div>
-        <div class="plan-status cur">● Текущий</div>
-      </div>
-    `;
-  } else {
-    nextLessonEl.innerHTML = `<div style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:12px;">✓ Все общие уроки пройдены</div>`;
-  }
+  renderDashboardNextModule();
 
   const pending = getHWList()
     .filter((item) => !S.hwDone[item.id])
@@ -4651,58 +5065,1575 @@ function updateDash() {
   }
 }
 
-function renderPlan() {
-  const generalGrid = document.getElementById('generalGrid');
-  generalGrid.innerHTML = '';
-  const userRank = levelRank(getUserLevel());
-  const planLessons = getAdaptiveLessons(APP_LESSONS);
+function moduleWords(raw) {
+  return String(raw || '')
+    .split(';')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const parts = item.split('=');
+      const de = (parts.shift() || '').trim();
+      const ru = parts.join('=').trim() || de;
+      return { de, ru };
+    })
+    .filter((item) => item.de);
+}
 
-  planLessons.forEach((lesson, index) => {
-    const done = S.completedLessons.includes(lesson.id);
-    const lessonRank = levelRank(getLessonLevel(lesson));
-    const unlocked = done || lessonRank <= userRank || index === 0 || S.completedLessons.includes(planLessons[index - 1]?.id);
-    const card = document.createElement('div');
-    card.className = `plan-card ${lesson.color}${unlocked ? '' : ' locked'}`;
-    card.innerHTML = `
-      <div class="plan-type">${lesson.type}</div>
-      <div class="plan-title">${lesson.title}</div>
-      <div class="plan-sub">${lesson.de}</div>
-      <div class="plan-chips">${lesson.words.slice(0, 3).map((word) => `<span class="chip">${word.de}</span>`).join('')}</div>
-      <div class="plan-status ${done ? 'done' : unlocked ? 'cur' : ''}">${done ? '✓ Готово' : unlocked ? '● Доступно' : 'Закрыто'}</div>
-    `;
-    if (unlocked) {
-      card.onclick = () => openLesson(lesson);
-    }
-    generalGrid.appendChild(card);
+function gapExercise(sentence, answer, accepts = []) {
+  return { sentence, answer, accepts: [...new Set([answer, ...accepts].map(String))] };
+}
+
+function moduleText(type, title, content) {
+  return { type, title, content };
+}
+
+function makeModule(data) {
+  const words = moduleWords(data.wordsRaw);
+  return {
+    coreWords: words.length,
+    texts: [],
+    patternMarkers: [],
+    patternExercises: [],
+    ...data,
+    words,
+  };
+}
+
+const modulesData = [
+  makeModule({
+    id: 1,
+    level: 'A1',
+    title: 'Первый день в Берлине',
+    grammarFocus: 'sein, heißen, kommen aus — в живых диалогах',
+    wordsRaw: 'ich=я; du=ты; heiße=называюсь; komme=прихожу; aus=из; bin=есть; bist=есть; ist=есть; Berlin=Берлин; Bahnhof=вокзал; neu=новый; hier=здесь; Student=студент; Arzt=врач; Programmierer=программист; Lehrerin=учительница; Name=имя; Land=страна; Stadt=город; arbeiten=работать; wohnen=жить; sprechen=говорить; gut=хорошо; Tag=день; willkommen=добро пожаловать',
+    texts: [
+      moduleText('dialogue', 'На вокзале', `Aziz: Guten Tag, ich heiße Aziz. Ich bin neu in Berlin.
+Mara: Willkommen! Ich heiße Mara. Kommst du aus Pakistan?
+Aziz: Ja, ich komme aus Lahore. Und du?
+Mara: Ich komme aus Köln, aber ich wohne jetzt in Berlin.
+Aziz: Bist du Studentin?
+Mara: Nein, ich bin Lehrerin. Was bist du von Beruf?
+Aziz: Ich bin Programmierer.
+Mara: Schön. Der Bahnhof ist groß, aber die Stadt ist freundlich.`),
+      moduleText('mini_story', 'Азиз в Берлине', `Ich heiße Aziz und ich bin heute in Berlin. Ich komme aus Lahore. Am Bahnhof sehe ich viele Menschen. Ich bin neu hier, aber ich bin ruhig. Mara ist Lehrerin und sie hilft mir. Wir sprechen langsam Deutsch. Berlin ist groß. Mein erster Tag ist gut.`),
+    ],
+    writingPrompt: 'Напиши 3 предложения о себе: как тебя зовут, откуда ты, кем работаешь.',
+    patternMarkers: ['heiße', 'bin', 'bist', 'ist', 'komme aus'],
+    patternInsight: 'Ты заметил(а): сначала человек, потом короткий глагол. В фразе komme aus после глагола сразу идёт страна или город.',
+    patternBrief: 'В немецком глагол часто стоит на втором месте: Ich bin Aziz. Ich komme aus Lahore. Так фраза быстро получает опору.',
+    patternExercises: [
+      gapExercise('Ich ___ Aziz.', 'heiße', ['heisse']),
+      gapExercise('Mara ___ Lehrerin.', 'ist'),
+      gapExercise('Ich komme ___ Lahore.', 'aus'),
+    ],
+  }),
+  makeModule({
+    id: 2,
+    level: 'A1',
+    title: 'Семья и люди вокруг',
+    grammarFocus: 'haben, притяжательные местоимения, Akkusativ',
+    wordsRaw: 'Familie=семья; Mutter=мама; Vater=папа; Bruder=брат; Schwester=сестра; Eltern=родители; Kind=ребёнок; Mann=мужчина; Frau=женщина; Freund=друг; Freundin=подруга; mein=мой; meine=моя; dein=твой; seine=его; ihre=её; habe=имею; hat=имеет; groß=большой; klein=маленький; nett=милый; ruhig=спокойный; lustig=весёлый; Foto=фото; besuchen=посещать',
+    texts: [
+      moduleText('letter', 'Письмо другу домой', `Lieber Omar, ich habe jetzt eine kleine Wohnung in Berlin. Meine Mutter ruft jeden Abend an. Mein Vater fragt oft: Hast du neue Freunde? Ja, ich habe einen Freund im Deutschkurs. Er heißt Lukas und er ist sehr nett. Meine Schwester schickt mir ein Foto von unserer Familie. Ich vermisse meine Eltern, aber ich bin nicht allein.`),
+      moduleText('description', 'Фото семьи — описание', `Auf dem Foto sehe ich meine Familie. Mein Vater ist groß und ruhig. Meine Mutter ist freundlich und lacht. Ich habe einen kleinen Bruder. Er ist lustig und spielt gern. Meine Schwester studiert in Köln. Wir besuchen uns im Sommer.`),
+    ],
+    writingPrompt: 'Опиши своего близкого человека — 3-4 предложения.',
+    patternMarkers: ['habe', 'hast', 'hat', 'mein', 'meine', 'einen'],
+    patternInsight: 'Ты заметил(а): haben показывает, что что-то есть у человека. После haben часто появляется ein/einen или mein/meine.',
+    patternBrief: 'Ich habe einen Freund. Meine Mutter ruft an. Сначала владелец, потом haben, потом человек или вещь.',
+    patternExercises: [
+      gapExercise('Ich ___ einen Bruder.', 'habe'),
+      gapExercise('Meine Mutter ___ freundlich.', 'ist'),
+      gapExercise('Aziz hat ___ Freund im Kurs.', 'einen'),
+    ],
+  }),
+  makeModule({
+    id: 3,
+    level: 'A1',
+    title: 'Город и дорога',
+    grammarFocus: 'предлоги места, Imperativ, числа и цены',
+    wordsRaw: 'Stadt=город; Straße=улица; Bahnhof=вокзал; Apotheke=аптека; Supermarkt=супермаркет; links=слева; rechts=справа; geradeaus=прямо; neben=рядом; vor=перед; hinter=за; an=на; in=в; Bus=автобус; Bahn=поезд; Haltestelle=остановка; Karte=карта; Ticket=билет; Euro=евро; billig=дешёвый; teuer=дорогой; gehen=идти; fahren=ехать; nehmen=брать; zahlen=платить',
+    texts: [
+      moduleText('map_dialogue', 'Где находится аптека?', `Aziz: Entschuldigung, wo ist die Apotheke?
+Frau: Gehen Sie geradeaus und dann links.
+Aziz: Ist sie neben dem Supermarkt?
+Frau: Ja, die Apotheke ist neben dem Supermarkt und vor der Haltestelle.
+Aziz: Danke. Wie viel kostet ein Ticket?
+Frau: Ein Ticket kostet drei Euro.
+Aziz: Nehme ich den Bus oder die Bahn?
+Frau: Nehmen Sie die Bahn. Sie ist schneller.`),
+      moduleText('mini_story', 'Азиз едет на работу', `Aziz fährt morgens mit der Bahn zur Arbeit. Die Haltestelle ist hinter dem Haus. Er geht fünf Minuten geradeaus. Dann kauft er ein Ticket. Die Bahn ist nicht teuer. Im Zentrum steigt er aus und geht nach rechts. Das Büro ist neben einer kleinen Apotheke.`),
+    ],
+    writingPrompt: 'Объясни как добраться от вокзала до твоего дома.',
+    patternMarkers: ['neben', 'vor', 'hinter', 'gehen Sie', 'nehmen Sie'],
+    patternInsight: 'Ты заметил(а): место часто строится вокруг коротких слов neben, vor, hinter. В просьбе или инструкции глагол выходит вперёд.',
+    patternBrief: 'Gehen Sie geradeaus. Nehmen Sie die Bahn. Для маршрута немецкий любит короткие команды и точные места.',
+    patternExercises: [
+      gapExercise('Die Apotheke ist ___ dem Supermarkt.', 'neben'),
+      gapExercise('___ Sie geradeaus.', 'Gehen', ['gehen']),
+      gapExercise('Das Büro ist ___ der Haltestelle.', 'hinter'),
+    ],
+  }),
+  makeModule({
+    id: 4,
+    level: 'A1',
+    title: 'Еда и кафе',
+    grammarFocus: 'mögen/essen/trinken + Akkusativ, kein',
+    wordsRaw: 'essen=есть; trinken=пить; mögen=любить; mag=люблю; Kaffee=кофе; Tee=чай; Wasser=вода; Suppe=суп; Brot=хлеб; Käse=сыр; Reis=рис; Fleisch=мясо; Fisch=рыба; Gemüse=овощи; Obst=фрукты; Menü=меню; Kellner=официант; Rechnung=счёт; bitte=пожалуйста; gern=охотно; kein=никакой; keinen=никакого; scharf=острый; süß=сладкий; kochen=готовить',
+    texts: [
+      moduleText('menu_dialogue', 'В турецком кафе', `Kellner: Guten Abend. Was möchten Sie essen?
+Aziz: Ich esse gern Suppe und Brot. Haben Sie Linsensuppe?
+Kellner: Ja, und wir haben auch Reis mit Gemüse.
+Aziz: Ich nehme die Suppe. Ich trinke keinen Kaffee.
+Kellner: Möchten Sie Tee?
+Aziz: Ja, ich mag schwarzen Tee.
+Kellner: Die Suppe ist ein bisschen scharf.
+Aziz: Das ist gut. Ich mag scharfes Essen.`),
+      moduleText('mini_story', 'Азиз готовит дома', `Am Sonntag kocht Aziz zu Hause. Er kauft Gemüse, Reis und Käse. Er mag kein Fleisch am Abend. Seine Freundin trinkt Tee und hilft in der Küche. Aziz macht eine Suppe. Die Suppe ist warm und nicht teuer. Danach essen sie Brot und Obst.`),
+    ],
+    writingPrompt: 'Напиши что ты любишь есть и что не любишь.',
+    patternMarkers: ['esse', 'trinke', 'mag', 'kein', 'keinen'],
+    patternInsight: 'Ты заметил(а): после essen, trinken и mögen часто стоит еда или напиток. Kein отрицает предмет, не действие.',
+    patternBrief: 'Ich esse Suppe. Ich trinke keinen Kaffee. Ich mag kein Fleisch. Так немецкий говорит о вкусах.',
+    patternExercises: [
+      gapExercise('Ich ___ gern Suppe.', 'esse'),
+      gapExercise('Aziz trinkt ___ Kaffee.', 'keinen'),
+      gapExercise('Ich ___ schwarzen Tee.', 'mag'),
+    ],
+  }),
+  makeModule({
+    id: 5,
+    level: 'A1',
+    title: 'Время и распорядок',
+    grammarFocus: 'Präteritum sein/haben, временные выражения',
+    wordsRaw: 'heute=сегодня; gestern=вчера; morgen=завтра; Woche=неделя; Montag=понедельник; Dienstag=вторник; Mittwoch=среда; Donnerstag=четверг; Freitag=пятница; Samstag=суббота; Sonntag=воскресенье; Uhr=час; früh=рано; spät=поздно; aufstehen=вставать; arbeiten=работать; lernen=учить; schlafen=спать; essen=есть; war=был; hatte=имел; Termin=встреча; schwierig=сложный; frei=свободный; Abend=вечер',
+    texts: [
+      moduleText('schedule', 'Расписание рабочей недели', `Am Montag steht Aziz um sieben Uhr auf. Um acht Uhr fährt er zur Arbeit. Am Dienstag hat er einen Deutschkurs. Am Mittwoch ist der Abend frei. Am Donnerstag arbeitet er lange. Am Freitag war er müde, aber der Tag war gut. Am Samstag hatte er Zeit für Freunde.`),
+      moduleText('mini_story', 'Вчера у Азиза был трудный день', `Gestern war ein schwieriger Tag. Aziz hatte am Morgen einen Termin. Die Bahn war spät. Im Büro hatte er viel Arbeit. Um zwölf Uhr hatte er nur wenig Zeit zum Essen. Am Abend war er müde. Trotzdem lernte er zehn Minuten Deutsch.`),
+    ],
+    writingPrompt: 'Напиши о своём вчерашнем дне — что делал, где был.',
+    patternMarkers: ['gestern', 'war', 'hatte', 'um', 'am'],
+    patternInsight: 'Ты заметил(а): вчерашний день часто держится на war и hatte. Время приходит короткими блоками: am Montag, um sieben Uhr.',
+    patternBrief: 'Gestern war ich müde. Ich hatte einen Termin. Для A1 этого хватает, чтобы рассказать о прошлом дне.',
+    patternExercises: [
+      gapExercise('Gestern ___ Aziz müde.', 'war'),
+      gapExercise('Ich ___ am Morgen einen Termin.', 'hatte'),
+      gapExercise('___ Montag steht er früh auf.', 'Am', ['am']),
+    ],
+  }),
+  makeModule({
+    id: 6,
+    level: 'A1',
+    title: 'Финал A1 — Мой мир',
+    grammarFocus: 'повторение всего A1 через живые тексты',
+    wordsRaw: 'Wohnung=квартира; Zimmer=комната; Miete=аренда; Anzeige=объявление; Café=кафе; Menü=меню; Adresse=адрес; Nummer=номер; frei=свободный; warm=тёплый; kalt=холодный; groß=большой; klein=маленький; ruhig=спокойный; zentral=центральный; bezahlen=платить; suchen=искать; finden=находить; schreiben=писать; lesen=читать; Freund=друг; Stadt=город; Familie=семья; Arbeit=работа; Deutsch=немецкий',
+    texts: [
+      moduleText('authentic', 'Реальное объявление об аренде квартиры', `Zimmer frei in Berlin-Neukölln. Das Zimmer ist klein, aber hell und ruhig. Die Wohnung hat eine Küche und ein Bad. Die Miete kostet 520 Euro warm. Die Bahn ist fünf Minuten zu Fuß entfernt. Schreib bitte kurz: Wer bist du, was machst du, wann kannst du kommen?`),
+      moduleText('authentic', 'Меню берлинского кафе', `Tagesmenü: Linsensuppe mit Brot 6 Euro. Reis mit Gemüse 8 Euro. Kaffee 3 Euro. Schwarzer Tee 2 Euro. Kuchen 4 Euro. Das Café ist von Montag bis Samstag geöffnet. Kartenzahlung ist möglich.`),
+    ],
+    writingPrompt: 'Напиши короткое описание себя для немецкого друга — 5-7 предложений, используй всё что знаешь.',
+    patternMarkers: ['ich', 'bin', 'habe', 'war', 'kostet', 'ist'],
+    patternInsight: 'Ты заметил(а): теперь знакомые куски складываются в цельное описание: кто ты, где живёшь, что есть вокруг, что было вчера.',
+    patternBrief: 'Финал A1 не добавляет правило. Он проверяет, можешь ли ты читать реальные короткие тексты и написать о себе.',
+    patternExercises: [
+      gapExercise('Das Zimmer ___ hell.', 'ist'),
+      gapExercise('Die Miete ___ 520 Euro.', 'kostet'),
+      gapExercise('Ich ___ in Berlin.', 'wohne'),
+    ],
+    finalTest: true,
+  }),
+  makeModule({
+    id: 7,
+    level: 'A2',
+    title: 'На работе',
+    grammarFocus: 'Perfekt — haben/sein + Partizip II',
+    wordsRaw: 'Arbeit=работа; Büro=офис; Kollege=коллега; Kollegin=коллега; Aufgabe=задача; Besprechung=совещание; Termin=встреча; Projekt=проект; Datei=файл; Nachricht=сообщение; E-Mail=электронное письмо; Kunde=клиент; gestern=вчера; erledigt=сделано; begonnen=начал; gearbeitet=работал; geschrieben=писал; gesprochen=говорил; gefahren=ехал; geblieben=оставался; Server=сервер; Fehler=ошибка; Lösung=решение; Team=команда; pünktlich=пунктуально',
+    texts: [
+      moduleText('dialogue', 'Первый день в офисе', `Lea: Wie war dein erster Tag im Büro?
+Aziz: Gut. Ich habe viele Kollegen kennengelernt.
+Lea: Hast du schon an einem Projekt gearbeitet?
+Aziz: Ja, ich habe eine kleine Aufgabe erledigt. Danach bin ich in eine Besprechung gegangen.
+Lea: Hast du dem Kunden geschrieben?
+Aziz: Noch nicht. Ich habe zuerst mit dem Team gesprochen.
+Lea: Klingt gut. Bist du lange geblieben?
+Aziz: Nein, ich bin um sechs Uhr nach Hause gefahren.`),
+      moduleText('email', 'Деловое письмо коллеге', `Hallo Frau Weber, gestern habe ich die Datei geprüft und zwei Fehler gefunden. Ich habe die Lösung im Projektordner gespeichert. Danach habe ich mit Herrn Klein gesprochen. Er ist heute im Homeoffice geblieben. Können wir morgen um zehn Uhr kurz telefonieren? Viele Grüße, Aziz`),
+    ],
+    writingPrompt: 'Напиши о своём рабочем дне вчера используя Perfekt.',
+    patternMarkers: ['habe', 'hat', 'bin', 'ist', 'gearbeitet', 'geschrieben', 'gefahren', 'gegangen'],
+    patternInsight: 'Ты заметил(а): haben или sein стоит рано, а главное действие часто уходит в конец.',
+    patternBrief: 'Ich habe gearbeitet. Ich bin gefahren. В живом рассказе о вчера немецкий держит рамку: помощник на втором месте, Partizip II в конце.',
+    patternExercises: [
+      gapExercise('Ich habe eine Aufgabe ___.', 'erledigt'),
+      gapExercise('Aziz ___ nach Hause gefahren.', 'ist'),
+      gapExercise('Wir haben mit dem Team ___.', 'gesprochen'),
+    ],
+  }),
+  makeModule({
+    id: 8,
+    level: 'A2',
+    title: 'Дом и квартира',
+    grammarFocus: 'Dativ с предлогами in/an/auf/neben/über/unter',
+    wordsRaw: 'Wohnung=квартира; Zimmer=комната; Küche=кухня; Bad=ванная; Flur=коридор; Tisch=стол; Stuhl=стул; Bett=кровать; Schrank=шкаф; Lampe=лампа; Fenster=окно; Wand=стена; Boden=пол; neben=рядом; unter=под; über=над; auf=на; an=у; in=в; Miete=аренда; Vermieter=арендодатель; Vertrag=договор; Kaution=залог; hell=светлый; ruhig=тихий',
+    texts: [
+      moduleText('ad', 'Объявление об аренде квартиры', `Helle Zwei-Zimmer-Wohnung in Leipzig. In der Küche steht ein kleiner Tisch. Neben dem Fenster ist ein Schrank. Im Bad gibt es eine neue Dusche. Auf dem Boden liegt helles Holz. Die Miete beträgt 740 Euro warm. Die Kaution muss vor dem Einzug bezahlt werden.`),
+      moduleText('dialogue', 'Разговор с хозяином квартиры', `Aziz: Guten Tag, ich interessiere mich für die Wohnung.
+Vermieter: Gern. Im Wohnzimmer steht ein Sofa an der Wand.
+Aziz: Gibt es einen Schreibtisch?
+Vermieter: Ja, er steht neben dem Fenster. Unter dem Tisch ist eine Steckdose.
+Aziz: Das ist praktisch. Wann kann ich den Vertrag sehen?
+Vermieter: Morgen. Die Wohnung ist ab Juli frei.`),
+    ],
+    writingPrompt: 'Опиши свою комнату или квартиру — где что стоит.',
+    patternMarkers: ['im', 'in der', 'auf dem', 'neben dem', 'unter dem', 'an der'],
+    patternInsight: 'Ты заметил(а): когда предмет просто находится на месте, после предлога часто появляется dem или der.',
+    patternBrief: 'Der Tisch steht in der Küche. Die Lampe ist auf dem Tisch. Мы описываем место, поэтому немецкий выбирает Dativ.',
+    patternExercises: [
+      gapExercise('Der Tisch steht in ___ Küche.', 'der'),
+      gapExercise('Die Lampe ist auf ___ Tisch.', 'dem'),
+      gapExercise('Der Schrank steht neben ___ Fenster.', 'dem'),
+    ],
+  }),
+  makeModule({
+    id: 9,
+    level: 'A2',
+    title: 'Здоровье и тело',
+    grammarFocus: 'Modalverben: müssen/dürfen/sollen/können',
+    wordsRaw: 'Körper=тело; Kopf=голова; Hals=горло; Bauch=живот; Rücken=спина; Schmerz=боль; Fieber=температура; Husten=кашель; Arzt=врач; Ärztin=врач; Praxis=практика; Termin=приём; Rezept=рецепт; Apotheke=аптека; Tablette=таблетка; Wasser=вода; schlafen=спать; ausruhen=отдыхать; müssen=должен; dürfen=можно; sollen=следует; können=мочь; krank=больной; gesund=здоровый; Hilfe=помощь',
+    texts: [
+      moduleText('dialogue', 'У врача', `Ärztin: Was fehlt Ihnen?
+Mara: Ich habe Kopfschmerzen und Fieber.
+Ärztin: Sie müssen heute zu Hause bleiben. Sie sollen viel Wasser trinken.
+Mara: Darf ich arbeiten?
+Ärztin: Nein, Sie dürfen heute nicht arbeiten. Sie können morgen anrufen, wenn es besser ist.
+Mara: Brauche ich Tabletten?
+Ärztin: Ja, ich schreibe Ihnen ein Rezept.`),
+      moduleText('advice', 'Советы для здорового образа жизни', `Wer gesund bleiben möchte, sollte regelmäßig schlafen. Man muss nicht jeden Tag Sport machen, aber Bewegung kann helfen. Bei Fieber darf man nicht ins Büro gehen. Viel Wasser und ruhige Pausen können den Körper stärken. Wenn die Schmerzen bleiben, sollte man einen Arzttermin machen.`),
+    ],
+    writingPrompt: 'Напиши совет другу который плохо себя чувствует.',
+    patternMarkers: ['muss', 'müssen', 'darf', 'dürfen', 'soll', 'sollen', 'kann', 'können'],
+    patternInsight: 'Ты заметил(а): после müssen, dürfen, sollen, können второе действие часто стоит в конце как простой инфинитив.',
+    patternBrief: 'Du musst schlafen. Du sollst Wasser trinken. Modalverb показывает отношение, инфинитив в конце показывает действие.',
+    patternExercises: [
+      gapExercise('Du ___ viel Wasser trinken.', 'sollst', ['sollen']),
+      gapExercise('Mara ___ heute nicht arbeiten.', 'darf'),
+      gapExercise('Bewegung kann dem Körper ___.', 'helfen'),
+    ],
+  }),
+  makeModule({
+    id: 10,
+    level: 'A2',
+    title: 'Путешествия',
+    grammarFocus: 'Komparativ и Superlativ',
+    wordsRaw: 'Reise=поездка; Urlaub=отпуск; Hotel=отель; Zimmer=номер; Bahnhof=вокзал; Flughafen=аэропорт; Zug=поезд; Flug=рейс; Stadt=город; Sehenswürdigkeit=достопримечательность; Museum=музей; Park=парк; billig=дешёвый; teuer=дорогой; schnell=быстрый; langsam=медленный; schön=красивый; besser=лучше; größer=больше; kleiner=меньше; am besten=лучше всего; am schönsten=красивее всего; buchen=бронировать; vergleichen=сравнивать; Karte=карта',
+    texts: [
+      moduleText('postcard', 'Открытка из Вены', `Liebe Sara, Wien ist wunderschön. Unser Hotel ist kleiner als das Hotel in Berlin, aber es ist ruhiger. Das Museum ist größer, als ich gedacht habe. Der Zug war schneller als der Bus. Am schönsten finde ich den Park am Abend. Morgen besuchen wir noch ein Café. Viele Grüße, Aziz`),
+      moduleText('comparison', 'Берлин или Мюнхен — что лучше?', `Berlin ist größer und oft billiger als München. München wirkt ruhiger und sauberer. Für Museen ist Berlin vielleicht interessanter. Für Berge und Seen ist München besser. Am besten ist es, beide Städte zu besuchen und selbst zu vergleichen.`),
+    ],
+    writingPrompt: 'Сравни два города или две страны которые знаешь.',
+    patternMarkers: ['als', 'größer', 'kleiner', 'besser', 'am besten', 'am schönsten'],
+    patternInsight: 'Ты заметил(а): сравнение часто получает -er, а после него появляется als. Самая сильная оценка начинается с am.',
+    patternBrief: 'Berlin ist größer als München. Am schönsten ist der Park. Так немецкий сравнивает без длинного правила.',
+    patternExercises: [
+      gapExercise('Berlin ist größer ___ München.', 'als'),
+      gapExercise('Der Zug ist ___ als der Bus.', 'schneller'),
+      gapExercise('Am ___ finde ich den Park.', 'schönsten'),
+    ],
+  }),
+  makeModule({
+    id: 11,
+    level: 'A2',
+    title: 'Чувства и причины',
+    grammarFocus: 'союзы weil/dass/wenn/obwohl',
+    wordsRaw: 'Gefühl=чувство; Freude=радость; Angst=страх; Ärger=злость; traurig=грустный; glücklich=счастливый; müde=уставший; nervös=нервный; Grund=причина; Streit=спор; Nachricht=сообщение; Entschuldigung=извинение; erklären=объяснять; glauben=верить; denken=думать; hoffen=надеяться; weil=потому что; dass=что; wenn=если; obwohl=хотя; trotzdem=несмотря на это; wichtig=важный; schwierig=сложный; ehrlich=честный; ruhig=спокойный',
+    texts: [
+      moduleText('dialogue', 'Азиз и друг поспорили', `Lukas: Warum bist du gestern so schnell gegangen?
+Aziz: Ich war müde, weil der Arbeitstag lang war.
+Lukas: Ich dachte, dass du böse bist.
+Aziz: Nein. Obwohl ich müde war, wollte ich nicht unfreundlich sein.
+Lukas: Wenn du Hilfe brauchst, sag bitte Bescheid.
+Aziz: Danke. Ich hoffe, dass wir ruhig sprechen können.`),
+      moduleText('message', 'СМС — извинение и объяснение', `Hallo Lukas, entschuldige bitte. Ich war gestern nervös, weil ich ein Problem im Büro hatte. Ich glaube, dass ich zu schnell reagiert habe. Obwohl der Tag schwierig war, hätte ich ruhiger bleiben sollen. Wenn du Zeit hast, trinken wir morgen einen Kaffee.`),
+    ],
+    writingPrompt: 'Объясни почему ты любишь или не любишь что-то — используй weil и obwohl.',
+    patternMarkers: ['weil', 'dass', 'wenn', 'obwohl'],
+    patternInsight: 'Ты заметил(а): после weil, dass, wenn, obwohl глагол часто уходит в конец маленькой части фразы.',
+    patternBrief: 'Ich bin müde, weil der Tag lang war. Obwohl ich müde war, spreche ich ruhig. Союз открывает причину или условие.',
+    patternExercises: [
+      gapExercise('Ich war müde, ___ der Tag lang war.', 'weil'),
+      gapExercise('Ich glaube, ___ du recht hast.', 'dass'),
+      gapExercise('___ ich müde war, blieb ich freundlich.', 'Obwohl', ['obwohl']),
+    ],
+  }),
+  makeModule({
+    id: 12,
+    level: 'A2',
+    title: 'Финал A2',
+    grammarFocus: 'повторение A2 через аутентичные тексты',
+    wordsRaw: 'Monat=месяц; Erfahrung=опыт; Veränderung=изменение; Arbeit=работа; Wohnung=квартира; Gesundheit=здоровье; Reise=путешествие; Nachricht=новость; Gespräch=разговор; Entscheidung=решение; gelernt=выучил; gemacht=сделал; gefahren=поехал; geblieben=остался; verglichen=сравнил; trotzdem=тем не менее; obwohl=хотя; weil=потому что; sollte=следовало бы; konnte=мог; musste=должен был; durfte=мог по разрешению; besser=лучше; wichtiger=важнее; am Ende=в конце',
+    texts: [
+      moduleText('authentic', 'Реальная статья из немецкой газеты A2', `Immer mehr Menschen arbeiten teilweise von zu Hause. Viele sagen, dass sie ruhiger arbeiten können, weil der Weg ins Büro wegfällt. Andere vermissen das Team, obwohl Online-Besprechungen praktisch sind. Experten meinen, dass klare Regeln wichtig sind. Am Ende hängt viel davon ab, welche Aufgaben eine Person hat.`),
+      moduleText('authentic', 'Диалог из немецкого сериала', `Nina: Du bist lange nicht gekommen.
+Tom: Ich musste länger arbeiten, weil der Kunde spät angerufen hat.
+Nina: Trotzdem hättest du schreiben können.
+Tom: Du hast recht. Obwohl ich Stress hatte, war das nicht fair.
+Nina: Wenn wir ehrlich sprechen, ist alles leichter.
+Tom: Dann erkläre ich dir jetzt den ganzen Monat.`),
+    ],
+    writingPrompt: 'Напиши письмо другу о последнем месяце своей жизни — 8-10 предложений.',
+    patternMarkers: ['habe', 'bin', 'weil', 'obwohl', 'musste', 'konnte', 'besser'],
+    patternInsight: 'Ты заметил(а): A2 связывает прошлое, причины, советы и сравнения в один рассказ.',
+    patternBrief: 'Финал A2 начинается с текста. Грамматика появляется как знакомый узор внутри письма, диалога и объяснения.',
+    patternExercises: [
+      gapExercise('Ich habe viel ___.', 'gelernt'),
+      gapExercise('Ich war müde, ___ ich viel gearbeitet habe.', 'weil'),
+      gapExercise('Der neue Plan ist ___ als der alte.', 'besser'),
+    ],
+    finalTest: true,
+  }),
+  makeModule({
+    id: 13,
+    level: 'B1',
+    title: 'Медиа и мнения',
+    grammarFocus: 'Konjunktiv II: würde/könnte/sollte',
+    wordsRaw: 'Medien=медиа; Internet=интернет; Meinung=мнение; Vorteil=плюс; Nachteil=минус; Argument=аргумент; Diskussion=дискуссия; Beitrag=пост; Kommentar=комментарий; Quelle=источник; Nachricht=новость; Nutzer=пользователь; Datenschutz=защита данных; abhängig=зависимый; kritisch=критичный; öffentlich=публичный; privat=частный; teilen=делиться; prüfen=проверять; behaupten=утверждать; zustimmen=соглашаться; widersprechen=возражать; würde=бы; könnte=мог бы; sollte=следовало бы; Möglichkeit=возможность; Verantwortung=ответственность; Plattform=платформа; Algorithmus=алгоритм; Aufmerksamkeit=внимание',
+    texts: [
+      moduleText('article', 'Социальные сети: плюсы и минусы', `Soziale Netzwerke verbinden Menschen schnell und direkt. Man könnte dort neue Ideen finden, aber man sollte Quellen genauer prüfen. Viele Nutzer würden weniger Zeit online verbringen, wenn die Plattformen ruhiger gestaltet wären. Ein Vorteil ist die schnelle Hilfe in Gruppen. Ein Nachteil ist, dass falsche Informationen sehr weit reisen können.`),
+      moduleText('forum', 'Дискуссия в немецком форуме', `Ich finde soziale Medien nützlich, schrieb Jana. Ohne sie würde ich viele Veranstaltungen nicht entdecken. Ein anderer Nutzer antwortete, man könnte auch lokale Webseiten lesen. Wieder jemand meinte, Jugendliche sollten früher lernen, wie Algorithmen Aufmerksamkeit steuern. Die Diskussion blieb sachlich, obwohl die Meinungen verschieden waren.`),
+    ],
+    writingPrompt: 'Напиши своё мнение о социальных сетях — используй würde и könnte.',
+    patternMarkers: ['würde', 'könnte', 'sollte', 'wären'],
+    patternInsight: 'Ты заметил(а): мнение звучит мягче, когда würde, könnte или sollte открывают возможный мир, а не приказ.',
+    patternBrief: 'Ich würde weniger posten. Man könnte Quellen prüfen. На B1 так строятся осторожные аргументы.',
+    patternExercises: [
+      gapExercise('Ich ___ soziale Medien bewusster nutzen.', 'würde'),
+      gapExercise('Man ___ Quellen genauer prüfen.', 'könnte'),
+      gapExercise('Jugendliche ___ Medienkritik lernen.', 'sollten', ['sollte']),
+    ],
+  }),
+  makeModule({
+    id: 14,
+    level: 'B1',
+    title: 'Карьера и деловой мир',
+    grammarFocus: 'Passiv Präsens и Präteritum',
+    wordsRaw: 'Karriere=карьера; Bewerbung=заявка; Lebenslauf=резюме; Vorstellungsgespräch=собеседование; Vertrag=договор; Gehalt=зарплата; Abteilung=отдел; Unternehmen=компания; Markt=рынок; Kunde=клиент; Angebot=предложение; Nachfrage=спрос; verhandeln=вести переговоры; entscheiden=решать; entwickeln=разрабатывать; produzieren=производить; veröffentlicht=опубликован; angeboten=предложен; geprüft=проверен; wurde=был; wird=будет; werden=становиться; offiziell=официальный; zuverlässig=надёжный; Zusammenarbeit=сотрудничество; Termin=встреча; Anfrage=запрос; Bestätigung=подтверждение; Ziel=цель; Strategie=стратегия',
+    texts: [
+      moduleText('business_email', 'Официальное деловое письмо', `Sehr geehrte Frau Stein, vielen Dank für Ihre Anfrage. Das Angebot wird derzeit von unserer Abteilung geprüft. Die Unterlagen wurden gestern an die Geschäftsleitung weitergeleitet. Ein Termin kann nächste Woche vereinbart werden. Bitte senden Sie uns noch die aktuelle Preisliste. Mit freundlichen Grüßen, Aziz Khan`),
+      moduleText('article', 'Рынок труда в Германии', `In vielen Branchen werden Fachkräfte gesucht. Neue Stellen werden oft zuerst online veröffentlicht. Bewerbungen werden digital geprüft, bevor Gespräche geplant werden. Vor einigen Jahren wurden Lebensläufe noch häufiger per Post geschickt. Heute wird von Bewerbern erwartet, dass sie flexibel und gut vorbereitet sind.`),
+    ],
+    writingPrompt: 'Напиши деловое письмо с просьбой о встрече.',
+    patternMarkers: ['wird', 'werden', 'wurde', 'wurden', 'geprüft', 'gesucht', 'veröffentlicht'],
+    patternInsight: 'Ты заметил(а): в Passiv важен процесс. Кто сделал действие, часто исчезает, а на первый план выходит результат.',
+    patternBrief: 'Das Angebot wird geprüft. Die Unterlagen wurden geschickt. Деловой стиль любит такую нейтральность.',
+    patternExercises: [
+      gapExercise('Das Angebot wird ___.', 'geprüft'),
+      gapExercise('Neue Stellen ___ online veröffentlicht.', 'werden'),
+      gapExercise('Die Unterlagen ___ gestern geschickt.', 'wurden'),
+    ],
+  }),
+  makeModule({
+    id: 15,
+    level: 'B1',
+    title: 'Природа и будущее',
+    grammarFocus: 'Infinitivkonstruktionen: um zu / ohne zu / anstatt zu',
+    wordsRaw: 'Natur=природа; Zukunft=будущее; Klima=климат; Umwelt=окружающая среда; Energie=энергия; Strom=электричество; Verkehr=транспорт; Müll=мусор; Recycling=переработка; Temperatur=температура; Forschung=исследование; Technologie=технология; Lösung=решение; Verantwortung=ответственность; schützen=защищать; sparen=экономить; vermeiden=избегать; ersetzen=заменять; reduzieren=сокращать; verursachen=вызывать; um zu=чтобы; ohne zu=не делая; anstatt zu=вместо того чтобы; nachhaltig=устойчивый; erneuerbar=возобновляемый; Bevölkerung=население; Gefahr=опасность; Maßnahme=мера; Veränderung=изменение; Entscheidung=решение',
+    texts: [
+      moduleText('scientific', 'Климатические изменения — факты', `Die Durchschnittstemperatur steigt, weil mehr Treibhausgase in die Atmosphäre gelangen. Viele Städte planen neue Verkehrskonzepte, um Emissionen zu reduzieren. Haushalte können Strom sparen, ohne auf Komfort zu verzichten. Einige Firmen investieren in erneuerbare Energie, anstatt alte Systeme weiter zu nutzen.`),
+      moduleText('opinion', 'Что может сделать каждый?', `Niemand kann allein das Klima retten. Trotzdem kann jeder handeln, um Ressourcen zu schützen. Man kann öfter reparieren, anstatt Dinge sofort zu kaufen. Man kann Wege zu Fuß gehen, ohne das Auto zu benutzen. Wichtig ist, dass kleine Entscheidungen regelmäßig werden.`),
+    ],
+    writingPrompt: 'Напиши что можно сделать чтобы помочь природе — используй um zu конструкции.',
+    patternMarkers: ['um zu', 'ohne zu', 'anstatt zu'],
+    patternInsight: 'Ты заметил(а): эти конструкции отвечают на вопрос зачем или как именно человек действует.',
+    patternBrief: 'Wir sparen Strom, um Energie zu schützen. Ohne zu verzichten klingt действие мягче и точнее.',
+    patternExercises: [
+      gapExercise('Wir sparen Strom, ___ Energie zu schützen.', 'um'),
+      gapExercise('Man kann helfen, ohne viel Geld zu ___.', 'zahlen'),
+      gapExercise('Repariere Dinge, anstatt sie neu zu ___.', 'kaufen'),
+    ],
+  }),
+  makeModule({
+    id: 16,
+    level: 'B1',
+    title: 'История и культура',
+    grammarFocus: 'Plusquamperfekt — последовательность событий',
+    wordsRaw: 'Geschichte=история; Kultur=культура; Kunst=искусство; Erinnerung=память; Grenze=граница; Mauer=стена; Krieg=война; Frieden=мир; Ausstellung=выставка; Museum=музей; Film=фильм; Regisseur=режиссёр; Szene=сцена; Rezension=рецензия; Ereignis=событие; erzählen=рассказывать; erinnern=помнить; beeinflussen=влиять; nachdem=после того как; bevor=прежде чем; hatte=имел; war=был; gewesen=был; gemacht=сделал; gesehen=видел; gebaut=построил; geöffnet=открыл; geschlossen=закрыл; beeindruckend=впечатляющий; historisch=исторический',
+    texts: [
+      moduleText('historical', 'Берлинская стена — история и память', `Bevor die Berliner Mauer fiel, hatte sie die Stadt fast drei Jahrzehnte geteilt. Viele Familien waren getrennt gewesen. Nachdem die Grenze geöffnet worden war, feierten Menschen auf den Straßen. Heute erinnern Museen daran, wie stark Politik den Alltag beeinflusst hatte. Die Geschichte bleibt sichtbar, obwohl die Mauer verschwunden ist.`),
+      moduleText('review', 'Рецензия на немецкий фильм', `Der Film zeigt eine Familie, die lange geschwiegen hatte. Erst nachdem der Sohn alte Briefe gefunden hatte, begann ein Gespräch über die Vergangenheit. Die Bilder sind ruhig, aber stark. Besonders beeindruckend ist die letzte Szene, weil sie zeigt, wie Erinnerung Kultur lebendig macht.`),
+    ],
+    writingPrompt: 'Перескажи историческое событие которое тебя впечатлило — используй Plusquamperfekt.',
+    patternMarkers: ['hatte', 'war', 'gewesen', 'gemacht', 'nachdem', 'bevor'],
+    patternInsight: 'Ты заметил(а): если одно прошлое ещё раньше другого, появляется hatte или war plus Partizip.',
+    patternBrief: 'Nachdem die Grenze geöffnet worden war, feierten die Menschen. Plusquamperfekt помогает выстроить порядок событий.',
+    patternExercises: [
+      gapExercise('Die Stadt hatte lange getrennt ___.', 'gewesen'),
+      gapExercise('Nachdem er Briefe gefunden ___, begann ein Gespräch.', 'hatte'),
+      gapExercise('Viele Familien ___ getrennt gewesen.', 'waren'),
+    ],
+  }),
+  makeModule({
+    id: 17,
+    level: 'B1',
+    title: 'Общество и ценности',
+    grammarFocus: 'Konjunktiv I — косвенная речь в СМИ',
+    wordsRaw: 'Gesellschaft=общество; Wert=ценность; Politik=политика; Recht=право; Freiheit=свобода; Verantwortung=ответственность; Wahl=выборы; Bürger=гражданин; Expertin=эксперт; Interview=интервью; Aussage=высказывание; Bericht=отчёт; Zeitung=газета; Regierung=правительство; Opposition=оппозиция; behaupten=утверждать; erklären=объяснять; fordern=требовать; berichten=сообщать; sei=якобы является; habe=якобы имеет; könne=якобы может; müsse=якобы должен; solle=якобы следует; demokratisch=демократический; sozial=социальный; öffentlich=публичный; privat=частный; Debatte=дебаты; Kompromiss=компромисс',
+    texts: [
+      moduleText('news', 'Новостная статья с цитатами', `Die Ministerin erklärte, Bildung sei die wichtigste Aufgabe der nächsten Jahre. Ein Experte sagte, die Gesellschaft brauche mehr Orte für offene Debatten. Die Opposition kritisierte, der Plan habe noch keine klare Finanzierung. Bürgerinitiativen forderten, die Regierung müsse schneller handeln.`),
+      moduleText('interview', 'Интервью с экспертом', `Im Interview sagte die Soziologin, Vertrauen entstehe nicht durch Werbung, sondern durch Erfahrung. Sie betonte, Politik könne nur funktionieren, wenn Bürger echte Beteiligung erlebten. Außerdem solle man Konflikte nicht verstecken, sondern fair austragen.`),
+    ],
+    writingPrompt: 'Перескажи интервью используя косвенную речь.',
+    patternMarkers: ['sei', 'habe', 'könne', 'müsse', 'solle'],
+    patternInsight: 'Ты заметил(а): новость пересказывает чужие слова через особые формы, чтобы дистанция была видна.',
+    patternBrief: 'Die Expertin sagt, Bildung sei wichtig. Так СМИ показывают: это не голос автора, а пересказ источника.',
+    patternExercises: [
+      gapExercise('Die Ministerin sagt, Bildung ___ wichtig.', 'sei'),
+      gapExercise('Der Experte meint, Politik ___ Vertrauen.', 'brauche', ['braucht']),
+      gapExercise('Sie sagt, man ___ fair streiten.', 'solle'),
+    ],
+  }),
+  makeModule({
+    id: 18,
+    level: 'B1',
+    title: 'Финал B1',
+    grammarFocus: 'повторение B1 через сложные аутентичные тексты',
+    wordsRaw: 'Wandel=изменение; Jahrzehnt=десятилетие; Digitalisierung=цифровизация; Öffentlichkeit=общественность; Arbeitswelt=рабочий мир; Umweltpolitik=экополитика; Erinnerungskultur=культура памяти; Verantwortung=ответственность; Debatte=дебаты; Meinung=мнение; Analyse=анализ; Quelle=источник; Entwicklung=развитие; Herausforderung=вызов; Möglichkeit=возможность; behauptet=утверждает; berichtet=сообщает; wurde=был; wird=будет; könnte=мог бы; sollte=следовало бы; hatte=имел; gewesen=был; um zu=чтобы; ohne zu=не делая; obwohl=хотя; nachdem=после того как; kritisch=критичный; sachlich=деловой; überzeugend=убедительный',
+    texts: [
+      moduleText('authentic', 'Статья из Der Spiegel (адаптированная)', `Die letzten zehn Jahre haben gezeigt, wie schnell technische Veränderungen den Alltag prägen. Arbeit wurde flexibler, Kommunikation wurde dichter, und öffentliche Debatten wurden lauter. Einige Fachleute sagen, die Gesellschaft müsse lernen, Informationen langsamer zu prüfen. Andere meinen, neue Technologien könnten Beteiligung erleichtern, wenn Regeln transparent seien.`),
+      moduleText('authentic', 'Подкаст с транскриптом', `Moderatorin: Was hat sich am stärksten verändert?
+Gast: Ich würde sagen, die Arbeitswelt. Viele Menschen hatten früher weniger Freiheit beim Ort der Arbeit.
+Moderatorin: Und was sollte besser werden?
+Gast: Wir sollten digitaler handeln, ohne menschliche Nähe zu verlieren. Nachdem viele Prozesse online gegangen waren, wurde auch klar, wie wichtig Vertrauen bleibt.`),
+    ],
+    writingPrompt: 'Напиши эссе на тему: Что изменилось в мире за последние 10 лет — 150-200 слов.',
+    patternMarkers: ['würde', 'könnte', 'sollte', 'wurde', 'hatte', 'nachdem', 'um zu'],
+    patternInsight: 'Ты заметил(а): B1 соединяет мнение, пассив, порядок событий и цель в длинный аргумент.',
+    patternBrief: 'Финал B1 проверяет не правило, а способность читать, связывать мысли и писать позицию.',
+    patternExercises: [
+      gapExercise('Die Arbeitswelt ___ flexibler.', 'wurde'),
+      gapExercise('Man ___ Informationen langsamer prüfen.', 'sollte'),
+      gapExercise('Wir handeln digitaler, ___ Zeit zu sparen.', 'um'),
+    ],
+    finalTest: true,
+  }),
+  makeModule({
+    id: 19,
+    level: 'B2',
+    title: 'Политика',
+    grammarFocus: 'наблюдение паттернов аргументации в оригинальных политических текстах',
+    wordsRaw: 'Legitimität=легитимность; Institution=институт; Parlament=парламент; Verfassung=конституция; Mehrheit=большинство; Minderheit=меньшинство; Reform=реформа; Verwaltung=администрация; Transparenz=прозрачность; Beteiligung=участие; Verantwortung=ответственность; Kommission=комиссия; Entwurf=проект; Abstimmung=голосование; Verfahren=процедура; Opposition=оппозиция; Koalition=коалиция; Interessen=интересы; Kompromiss=компромисс; Stabilität=стабильность; Vertrauen=доверие; Öffentlichkeit=общественность; Maßnahme=мера; umsetzen=реализовать; begründen=обосновывать; ablehnen=отклонять; zustimmen=соглашаться; voraussetzen=предполагать; dennoch=тем не менее; hingegen=напротив',
+    texts: [
+      moduleText('authentic_original', 'Парламентская речь: Vertrauen und Verfahren', `Demokratische Politik lebt nicht nur von schnellen Entscheidungen, sondern von nachvollziehbaren Verfahren. Wer eine Reform verlangt, muss erklären, welche Interessen berührt werden und welche Folgen eine Maßnahme haben kann. Eine Mehrheit darf handeln, doch sie verliert Legitimität, wenn sie Minderheiten nur als Hindernis betrachtet. Vertrauen entsteht dort, wo Konflikte sichtbar bleiben und Kompromisse begründet werden.`),
+      moduleText('authentic_original', 'Kommentar: Warum Transparenz nicht genügt', `Transparenz ist ein Anfang, aber kein Ersatz für Beteiligung. Viele Dokumente online zu stellen bedeutet noch nicht, dass Bürger Einfluss nehmen können. Entscheidend ist, ob Verwaltung und Parlament auf Einwände reagieren. Gerade komplexe Reformen brauchen Zeit, damit Zustimmung mehr ist als ein formaler Akt.`),
+    ],
+    writingPrompt: 'Напиши аргументированный ответ: делает ли прозрачность политику лучше?',
+    patternMarkers: ['nicht nur', 'sondern', 'doch', 'wenn', 'ob', 'damit'],
+    patternInsight: 'Ты заметил(а): B2-аргумент строится через противопоставление, ограничение и условие, а не через объяснение правила.',
+    patternBrief: 'Наблюдай связки: nicht nur ... sondern, doch, hingegen, damit. Они управляют логикой текста.',
+    patternExercises: [
+      gapExercise('Politik lebt nicht nur von Tempo, ___ von Verfahren.', 'sondern'),
+      gapExercise('Eine Mehrheit darf handeln, ___ sie muss begründen.', 'doch'),
+      gapExercise('Reformen brauchen Zeit, ___ Zustimmung wachsen kann.', 'damit'),
+    ],
+  }),
+  makeModule({
+    id: 20,
+    level: 'B2',
+    title: 'Экономика',
+    grammarFocus: 'наблюдение причинно-следственных и оценочных паттернов',
+    wordsRaw: 'Konjunktur=конъюнктура; Inflation=инфляция; Wachstum=рост; Nachfrage=спрос; Angebot=предложение; Investition=инвестиция; Produktivität=производительность; Wettbewerb=конкуренция; Regulierung=регулирование; Haushalt=бюджет; Subvention=субсидия; Steuer=налог; Zins=процент; Risiko=риск; Rendite=доходность; Lieferkette=цепочка поставок; Fachkräftemangel=нехватка кадров; Standort=локация; Branche=отрасль; Unternehmen=предприятие; Verbraucher=потребитель; Prognose=прогноз; Rückgang=спад; Anstieg=рост; stabilisieren=стабилизировать; belasten=нагружать; fördern=поддерживать; dagegen=напротив; folglich=следовательно; sofern=если',
+    texts: [
+      moduleText('authentic_original', 'Analyse: Wachstum unter Druck', `Die Wirtschaft wächst nicht allein durch höhere Nachfrage. Entscheidend ist, ob Unternehmen investieren, obwohl Zinsen und Energiepreise belasten. Wenn Lieferketten stabiler werden, kann Produktivität steigen; sofern Fachkräfte fehlen, bleibt der Effekt begrenzt. Subventionen können helfen, doch sie ersetzen keine langfristige Standortpolitik.`),
+      moduleText('authentic_original', 'Marktkommentar: Preise und Vertrauen', `Inflation verändert nicht nur Preise, sondern Erwartungen. Verbraucher verschieben größere Käufe, wenn sie unsicher sind. Unternehmen reagieren mit vorsichtigeren Prognosen. Folglich wird Vertrauen selbst zu einem wirtschaftlichen Faktor, der weder vollständig messbar noch kurzfristig planbar ist.`),
+    ],
+    writingPrompt: 'Напиши аналитический текст: что сильнее влияет на экономику — доверие или инвестиции?',
+    patternMarkers: ['obwohl', 'sofern', 'folglich', 'weder', 'noch', 'nicht nur'],
+    patternInsight: 'Ты заметил(а): экономический текст часто связывает условие, ограничение и вывод.',
+    patternBrief: 'Sofern, folglich, dagegen, weder ... noch показывают структуру аргумента без отдельной грамматической лекции.',
+    patternExercises: [
+      gapExercise('Der Effekt bleibt begrenzt, ___ Fachkräfte fehlen.', 'sofern'),
+      gapExercise('Inflation verändert nicht nur Preise, ___ Erwartungen.', 'sondern'),
+      gapExercise('Vertrauen ist weder messbar ___ kurzfristig planbar.', 'noch'),
+    ],
+  }),
+  makeModule({
+    id: 21,
+    level: 'B2',
+    title: 'Наука',
+    grammarFocus: 'наблюдение научного стиля: данные, ограничения, выводы',
+    wordsRaw: 'Hypothese=гипотеза; Studie=исследование; Datensatz=набор данных; Methode=метод; Ergebnis=результат; Nachweis=доказательство; Zusammenhang=связь; Korrelation=корреляция; Ursache=причина; Stichprobe=выборка; Messung=измерение; Abweichung=отклонение; Wahrscheinlichkeit=вероятность; These=тезис; Befund=вывод; Forschung=наука; Experiment=эксперимент; überprüfen=проверять; widerlegen=опровергать; bestätigen=подтверждать; nahelegen=указывать; einschränken=ограничивать; voraussetzen=предполагать; allerdings=однако; daher=поэтому; insofern=в этом смысле; während=в то время как; anhand=на основе; bislang=до сих пор; künftig=в будущем',
+    texts: [
+      moduleText('authentic_original', 'Studienauszug: Schlaf und Konzentration', `Die Studie untersucht den Zusammenhang zwischen Schlafdauer und Konzentration anhand von drei Messungen pro Woche. Die Daten legen nahe, dass regelmäßiger Schlaf wichtiger ist als einzelne lange Nächte. Allerdings bleibt die Stichprobe klein, sodass keine allgemeine Ursache behauptet werden kann. Künftig sollen weitere Altersgruppen einbezogen werden.`),
+      moduleText('authentic_original', 'Forschungsnotiz: Was Daten nicht zeigen', `Ein Datensatz bestätigt selten eine einfache Geschichte. Während Korrelationen Muster sichtbar machen, erklären sie nicht automatisch Ursachen. Insofern braucht Forschung Geduld: Eine Hypothese wird geprüft, eingeschränkt oder widerlegt. Gerade negative Befunde können nützlich sein, weil sie falsche Wege schließen.`),
+    ],
+    writingPrompt: 'Напиши краткий научный комментарий: почему данные не всегда доказывают причину?',
+    patternMarkers: ['anhand', 'allerdings', 'sodass', 'während', 'insofern'],
+    patternInsight: 'Ты заметил(а): научный стиль осторожен. Он показывает данные и сразу ограничивает вывод.',
+    patternBrief: 'Allerdings, sodass, während, insofern создают точность: что видно, что не доказано, что следует дальше.',
+    patternExercises: [
+      gapExercise('Die Studie arbeitet ___ von Messungen.', 'anhand'),
+      gapExercise('Die Stichprobe ist klein, ___ keine Ursache behauptet wird.', 'sodass'),
+      gapExercise('___ Korrelationen Muster zeigen, erklären sie keine Ursachen.', 'Während', ['während']),
+    ],
+  }),
+  makeModule({
+    id: 22,
+    level: 'B2',
+    title: 'Философия',
+    grammarFocus: 'наблюдение абстрактных дефиниций и контраргументов',
+    wordsRaw: 'Begriff=понятие; Bewusstsein=сознание; Erkenntnis=познание; Wahrheit=истина; Freiheit=свобода; Verantwortung=ответственность; Handlung=действие; Absicht=намерение; Urteil=суждение; Widerspruch=противоречие; Voraussetzung=предпосылка; Schlussfolgerung=вывод; Erfahrung=опыт; Vernunft=разум; Zweifel=сомнение; Identität=идентичность; deuten=толковать; begründen=обосновывать; voraussetzen=предполагать; unterscheiden=различать; folgern=выводить; insofern=постольку; sofern=если; allerdings=однако; vielmehr=скорее; dennoch=тем не менее; einerseits=с одной стороны; andererseits=с другой стороны; gerade=именно; letztlich=в конечном счёте',
+    texts: [
+      moduleText('authentic_original', 'Essay: Freiheit und Absicht', `Freiheit bedeutet nicht, ohne Gründe zu handeln. Vielmehr setzt freie Handlung voraus, dass eine Person ihre Gründe prüfen kann. Einerseits formen Erfahrung und Sprache unsere Urteile; andererseits bleibt Verantwortung möglich, sofern wir Alternativen erkennen. Der Begriff der Freiheit enthält daher immer eine Spannung.`),
+      moduleText('authentic_original', 'Notiz: Zweifel als Methode', `Zweifel zerstört Erkenntnis nicht notwendig. Er kann vielmehr zeigen, welche Voraussetzungen ein Urteil trägt. Wer alles bezweifelt, verliert Orientierung; wer nie zweifelt, verwechselt Gewohnheit mit Wahrheit. Insofern ist Zweifel keine Schwäche, sondern eine Form geistiger Aufmerksamkeit.`),
+    ],
+    writingPrompt: 'Напиши философский ответ: свобода — это отсутствие причин или умение их проверять?',
+    patternMarkers: ['nicht', 'vielmehr', 'einerseits', 'andererseits', 'sofern', 'insofern'],
+    patternInsight: 'Ты заметил(а): философский текст часто сначала отрицает простую мысль, затем уточняет понятие.',
+    patternBrief: 'Nicht ... vielmehr, einerseits ... andererseits помогают вести абстрактный спор без списка правил.',
+    patternExercises: [
+      gapExercise('Freiheit bedeutet nicht Grundlosigkeit, ___ Prüfung.', 'sondern', ['vielmehr']),
+      gapExercise('___ formen Erfahrungen uns, andererseits bleiben Alternativen.', 'Einerseits', ['einerseits']),
+      gapExercise('Verantwortung bleibt möglich, ___ wir Alternativen erkennen.', 'sofern'),
+    ],
+  }),
+  makeModule({
+    id: 23,
+    level: 'B2',
+    title: 'Право',
+    grammarFocus: 'наблюдение юридических условий, исключений и точности',
+    wordsRaw: 'Gesetz=закон; Vertrag=договор; Anspruch=требование; Pflicht=обязанность; Haftung=ответственность; Frist=срок; Klage=иск; Urteil=решение суда; Behörde=орган власти; Genehmigung=разрешение; Verstoß=нарушение; Voraussetzung=условие; Ausnahme=исключение; Regelung=норма; Verfahren=процесс; Nachweis=доказательство; wirksam=действительный; rechtswidrig=противоправный; zuständig=компетентный; sofern=если; soweit=поскольку; es sei denn=если только не; gemäß=согласно; hinsichtlich=относительно; erforderlich=необходимый; unzulässig=недопустимый; beantragen=запрашивать; widerrufen=отозвать; geltend machen=заявлять; einhalten=соблюдать',
+    texts: [
+      moduleText('authentic_original', 'Vertragstext: Frist und Nachweis', `Der Anspruch kann geltend gemacht werden, sofern die vereinbarte Frist eingehalten wurde. Ein Nachweis ist erforderlich, soweit die Leistung nicht eindeutig dokumentiert ist. Die Haftung ist ausgeschlossen, es sei denn, der Schaden wurde vorsätzlich verursacht. Zuständig ist die Behörde am Wohnsitz der Antragstellerin.`),
+      moduleText('authentic_original', 'Kommentar: Warum Recht langsam spricht', `Juristische Sprache wirkt schwer, weil sie Ausnahmen sichtbar machen muss. Ein Satz soll nicht nur einen Normalfall beschreiben, sondern auch Grenzen ziehen. Wörter wie sofern, soweit und gemäß verhindern Missverständnisse, können aber Leser ausschließen. Gute Rechtskommunikation erklärt daher, ohne Genauigkeit zu verlieren.`),
+    ],
+    writingPrompt: 'Напиши аргументированный ответ: должна ли юридическая речь быть проще?',
+    patternMarkers: ['sofern', 'soweit', 'es sei denn', 'gemäß', 'hinsichtlich'],
+    patternInsight: 'Ты заметил(а): юридический текст строится на условиях и исключениях. Маленькое слово меняет действие нормы.',
+    patternBrief: 'Sofern, soweit, es sei denn, gemäß — это не украшение, а механизм точности.',
+    patternExercises: [
+      gapExercise('Der Anspruch gilt, ___ die Frist eingehalten wurde.', 'sofern'),
+      gapExercise('Die Haftung ist ausgeschlossen, ___ der Schaden vorsätzlich war.', 'es sei denn', ['es sei denn,']),
+      gapExercise('Die Behörde entscheidet ___ dem Gesetz.', 'gemäß'),
+    ],
+  }),
+  makeModule({
+    id: 24,
+    level: 'B2',
+    title: 'Искусство',
+    grammarFocus: 'наблюдение эстетической аргументации и интерпретации',
+    wordsRaw: 'Kunst=искусство; Werk=произведение; Ausstellung=выставка; Kurator=куратор; Perspektive=перспектива; Interpretation=интерпретация; Ästhetik=эстетика; Wahrnehmung=восприятие; Material=материал; Form=форма; Farbe=цвет; Raum=пространство; Bewegung=движение; Klang=звук; Publikum=публика; Kritik=критика; Rezeption=восприятие; Ausdruck=выражение; Spannung=напряжение; Mehrdeutigkeit=многозначность; darstellen=изображать; verweisen=отсылать; irritieren=раздражать; entfalten=разворачивать; betrachten=рассматривать; zugleich=одновременно; während=в то время как; indem=тем что; dadurch=благодаря этому; dennoch=тем не менее',
+    texts: [
+      moduleText('authentic_original', 'Ausstellungstext: Raum und Blick', `Die Installation verändert den Raum, indem sie den Blick des Publikums verlangsamt. Während die Materialien schlicht wirken, entfaltet sich ihre Bedeutung durch Bewegung und Licht. Das Werk verweist nicht auf eine eindeutige Geschichte; vielmehr öffnet es eine Spannung zwischen Nähe und Distanz. Gerade diese Mehrdeutigkeit macht die Arbeit stark.`),
+      moduleText('authentic_original', 'Kritik: Warum Irritation produktiv ist', `Gute Kunst bestätigt nicht nur, was wir ohnehin sehen. Sie irritiert, verschiebt Perspektiven und zwingt zur langsameren Wahrnehmung. Dadurch entsteht ein Gespräch zwischen Werk und Publikum. Dennoch braucht Irritation Form; ohne ästhetische Entscheidung bleibt sie bloßer Effekt.`),
+    ],
+    writingPrompt: 'Напиши аналитический текст: должна ли искусство объяснять себя зрителю?',
+    patternMarkers: ['indem', 'während', 'dadurch', 'dennoch', 'vielmehr'],
+    patternInsight: 'Ты заметил(а): искусствоведческий текст не доказывает прямо, а раскрывает восприятие через форму и эффект.',
+    patternBrief: 'Indem, während, dadurch, dennoch связывают наблюдение, интерпретацию и оценку.',
+    patternExercises: [
+      gapExercise('Die Installation verändert den Raum, ___ sie den Blick verlangsamt.', 'indem'),
+      gapExercise('___ die Materialien schlicht wirken, entsteht Spannung.', 'Während', ['während']),
+      gapExercise('Das Werk irritiert. ___ entsteht ein Gespräch.', 'Dadurch', ['dadurch']),
+    ],
+    finalTest: true,
+  }),
+];
+
+const MODULE_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+const MODULE_LEVEL_NAMES = { A1: 'Начало', A2: 'База+', B1: 'Самостоятельность', B2: 'Оригинальные тексты' };
+const MODULE_DAY_CONFIG = {
+  1: { title: 'Погружение', xp: 10, label: 'Input день' },
+  2: { title: 'Паттерны', xp: 10, label: 'Грамматика через наблюдение' },
+  3: { title: 'Второй текст + производство', xp: 15, label: 'Input + output' },
+  4: { title: 'Карточки + повторение', xp: 10, label: 'Leitner' },
+  5: { title: 'Свободное письмо', xp: 15, label: 'Дневник' },
+};
+
+let modulePlanScreen = { mode: 'main', moduleId: null, day: null };
+let moduleFlashSession = { moduleId: null, cards: [], idx: 0, startX: 0 };
+
+function getModuleById(id) {
+  return modulesData.find((item) => item.id === Number(id)) || modulesData[0];
+}
+
+function getModulesByLevel(level) {
+  return modulesData.filter((item) => item.level === level);
+}
+
+function firstModuleForLevel(level) {
+  return getModulesByLevel(normalizeLevelName(level))[0]?.id || 1;
+}
+
+function normalizePlanObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function getPlanState() {
+  const completedModules = normalizePlanObject(readJSONKey('completedModules', {}));
+  const completedDays = normalizePlanObject(readJSONKey('completedDays', {}));
+  const moduleWordsState = normalizePlanObject(readJSONKey('moduleWords', {}));
+  const storedModule = Number(localStorage.getItem('currentModule'));
+  const fallbackModule = firstModuleForLevel(getUserLevel());
+  const currentModule = modulesData.some((item) => item.id === storedModule) ? storedModule : fallbackModule;
+  const storedDay = Number(localStorage.getItem('currentDay'));
+  const currentDay = Math.max(1, Math.min(5, Number.isFinite(storedDay) && storedDay ? storedDay : 1));
+  return { currentModule, currentDay, completedModules, completedDays, moduleWords: moduleWordsState };
+}
+
+function savePlanState(state) {
+  setStorageKey('currentModule', String(state.currentModule || 1));
+  setStorageKey('currentDay', String(Math.max(1, Math.min(5, Number(state.currentDay || 1)))));
+  setStorageKey('completedModules', JSON.stringify(normalizePlanObject(state.completedModules)));
+  setStorageKey('completedDays', JSON.stringify(normalizePlanObject(state.completedDays)));
+  setStorageKey('moduleWords', JSON.stringify(normalizePlanObject(state.moduleWords)));
+}
+
+function getCompletedDaysFor(moduleId, state = getPlanState()) {
+  return Array.isArray(state.completedDays[moduleId]) ? state.completedDays[moduleId].map(Number) : [];
+}
+
+function getModuleStep(moduleId, state = getPlanState()) {
+  const module = getModuleById(moduleId);
+  const days = getCompletedDaysFor(moduleId, state);
+  const isDone = !!state.completedModules[moduleId];
+  if (isDone) return { kind: 'done', day: 5, label: 'Завершён' };
+  if (days.length >= 5) return { kind: 'test', day: 5, label: module.finalTest ? 'Финал уровня' : 'Тест модуля' };
+  const day = [1, 2, 3, 4, 5].find((item) => !days.includes(item)) || 5;
+  return { kind: 'day', day, label: `День ${day}/5` };
+}
+
+function cleanModuleToken(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/ß/g, 'ss')
+    .replace(/[.,!?;:()"„“”«»]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizePlanAnswer(value) {
+  return cleanModuleToken(value).replace(/\.$/, '');
+}
+
+function jsPlanArg(value) {
+  return encodeURIComponent(String(value || ''));
+}
+
+function countModuleSentences(text) {
+  return String(text || '')
+    .split(/[.!?]+|\n+/)
+    .map((item) => item.trim())
+    .filter((item) => item.split(/\s+/).filter(Boolean).length >= 2)
+    .length;
+}
+
+function countModuleWords(text) {
+  return (String(text || '').match(/[\p{L}]+/gu) || []).length;
+}
+
+function moduleSentences(text) {
+  return String(text || '')
+    .replace(/\s+/g, ' ')
+    .match(/[^.!?]+[.!?]+/g) || [];
+}
+
+function moduleWordInfo(term, module) {
+  const key = cleanModuleToken(term);
+  const direct = module.words.find((word) => cleanModuleToken(word.de) === key);
+  if (direct) return { ...direct, level: module.level };
+  const partial = module.words.find((word) => cleanModuleToken(word.de).split(' ')[0] === key);
+  return partial ? { ...partial, level: module.level } : { de: term, ru: 'Нажми «+ В словарь», если слово новое для тебя.', level: module.level };
+}
+
+function moduleLevelClass(level) {
+  return String(level || 'A1').toLowerCase();
+}
+
+function renderModuleInteractiveText(text, module, markers = []) {
+  const markerSet = new Set(markers.map(cleanModuleToken));
+  return String(text || '')
+    .split(/(\p{L}[\p{L}ÄÖÜäöüß-]*|\d+)/gu)
+    .map((part) => {
+      if (!part) return '';
+      if (/^\p{L}[\p{L}ÄÖÜäöüß-]*$/u.test(part)) {
+        const clean = cleanModuleToken(part);
+        const mark = markerSet.has(clean) ? ' mark' : '';
+        return `<button class="module-word ${moduleLevelClass(module.level)}${mark}" onclick="showModuleWord('${jsPlanArg(part)}',event,${module.id})">${esc(part)}</button>`;
+      }
+      return esc(part).replace(/\n/g, '<br>');
+    })
+    .join('');
+}
+
+function showModuleWord(encoded, event, moduleId) {
+  const term = decodeURIComponent(encoded);
+  const module = getModuleById(moduleId);
+  const info = moduleWordInfo(term, module);
+  let pop = document.getElementById('moduleWordPop');
+  if (!pop) {
+    pop = document.createElement('div');
+    pop.id = 'moduleWordPop';
+    pop.className = 'module-word-pop';
+    document.body.appendChild(pop);
+  }
+  pop.innerHTML = `
+    <div class="module-word-pop-title">${esc(info.de)}</div>
+    <div class="module-word-pop-def">${esc(module.level)} · ${esc(info.ru)}</div>
+    <button class="btn btn-gold btn-sm" onclick="addSingleModuleWord(${moduleId},'${jsPlanArg(info.de)}')">+ В словарь</button>
+  `;
+  const x = Math.min(window.innerWidth - 340, Math.max(12, event.clientX + 10));
+  const y = Math.min(window.innerHeight - 160, Math.max(12, event.clientY + 10));
+  pop.style.left = `${x}px`;
+  pop.style.top = `${y}px`;
+  pop.classList.add('on');
+}
+
+document.addEventListener('click', (event) => {
+  const pop = document.getElementById('moduleWordPop');
+  if (pop && !event.target.closest('.module-word') && !event.target.closest('.module-word-pop')) pop.classList.remove('on');
+});
+
+function rememberModuleWord(module, word) {
+  S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
+  const id = `module_${module.id}_${cleanModuleToken(word.de).replace(/\s+/g, '-')}`;
+  if (!S.savedReadingWords.some((item) => item.id === id)) {
+    S.savedReadingWords.unshift({
+      id,
+      word: word.de,
+      de: word.de,
+      ru: word.ru,
+      translation: word.ru,
+      definition: word.ru,
+      level: module.level,
+      tags: [`Модуль ${module.id}`],
+      context: { articleId: `module_${module.id}`, articleTitle: module.title, sentence: module.grammarFocus },
+      addedDate: Date.now(),
+      leitnerLevel: 1,
+      cat: 'Module plan',
+    });
+    S.savedReadingWords = S.savedReadingWords.slice(0, 400);
+    saveS();
+  }
+}
+
+function addSingleModuleWord(moduleId, encoded) {
+  const module = getModuleById(moduleId);
+  const term = decodeURIComponent(encoded);
+  const info = moduleWordInfo(term, module);
+  const state = getPlanState();
+  state.moduleWords[moduleId] = state.moduleWords[moduleId] || { added: [], cards: {} };
+  state.moduleWords[moduleId].added = Array.isArray(state.moduleWords[moduleId].added) ? state.moduleWords[moduleId].added : [];
+  if (!state.moduleWords[moduleId].added.includes(info.de)) state.moduleWords[moduleId].added.push(info.de);
+  savePlanState(state);
+  rememberModuleWord(module, info);
+  toast('✓ Добавлено в словарь');
+  renderVocab();
+}
+
+function addAllModuleWords(moduleId) {
+  const module = getModuleById(moduleId);
+  const state = getPlanState();
+  state.moduleWords[moduleId] = state.moduleWords[moduleId] || { added: [], cards: {} };
+  const current = new Set(Array.isArray(state.moduleWords[moduleId].added) ? state.moduleWords[moduleId].added : []);
+  module.words.forEach((word) => {
+    current.add(word.de);
+    rememberModuleWord(module, word);
   });
+  state.moduleWords[moduleId].added = [...current];
+  savePlanState(state);
+  renderVocab();
+  toast(`✓ Слова модуля добавлены: ${module.words.length}`);
+}
 
-  const specGrid = document.getElementById('specPlanGrid');
-  const specLabel = document.getElementById('specGridLabel');
-  const specLessons = getAllSpecLessons();
-  specGrid.innerHTML = '';
+function getUsedModuleWords(text, module) {
+  const value = ` ${cleanModuleToken(text)} `;
+  return module.words.filter((word) => {
+    const key = cleanModuleToken(word.de);
+    if (!key) return false;
+    const first = key.split(' ')[0];
+    return value.includes(` ${key} `) || value.includes(` ${first} `);
+  });
+}
 
-  if (!specLessons.length) {
-    specLabel.style.display = 'none';
+function moduleGrammarUsed(text, module) {
+  const value = cleanModuleToken(text);
+  return module.patternMarkers.some((marker) => value.includes(cleanModuleToken(marker)));
+}
+
+function renderDashboardNextModule() {
+  const el = document.getElementById('nextLesson');
+  if (!el) return;
+  const state = getPlanState();
+  const module = getModuleById(state.currentModule);
+  const step = getModuleStep(module.id, state);
+  const pct = step.kind === 'done' ? 100 : Math.round((step.day / 5) * 100);
+  el.innerHTML = `
+    <div class="module-next-card" onclick="continueModulePlan()">
+      <div class="module-eyebrow">Следующий урок</div>
+      <div class="module-row-title" style="margin-top:6px;">Модуль ${module.id}: ${esc(module.title)}</div>
+      <div class="module-row-sub">${esc(step.label)} · ${esc(module.grammarFocus)}</div>
+      <div class="module-progress-row">
+        <div class="module-progress"><div class="module-progress-fill" style="width:${pct}%"></div></div>
+        <span class="module-meta">${pct}%</span>
+      </div>
+      <button class="btn btn-gold btn-sm" style="margin-top:14px;">Продолжить →</button>
+    </div>
+  `;
+}
+
+function renderPlan() {
+  const root = document.getElementById('planRoot');
+  if (!root) return;
+  if (modulePlanScreen.mode === 'module') return renderModulePage(modulePlanScreen.moduleId);
+  if (modulePlanScreen.mode === 'day') return renderModuleDay(modulePlanScreen.moduleId, modulePlanScreen.day);
+  if (modulePlanScreen.mode === 'test') return renderModuleTest(modulePlanScreen.moduleId);
+  renderPlanMain();
+}
+
+function continueModulePlan() {
+  goPage('plan');
+  const state = getPlanState();
+  const step = getModuleStep(state.currentModule, state);
+  if (step.kind === 'test') {
+    modulePlanScreen = { mode: 'test', moduleId: state.currentModule, day: null };
+  } else {
+    modulePlanScreen = { mode: 'day', moduleId: state.currentModule, day: step.day };
+  }
+  renderPlan();
+}
+
+function renderPlanMain() {
+  modulePlanScreen = { mode: 'main', moduleId: null, day: null };
+  const root = document.getElementById('planRoot');
+  const state = getPlanState();
+  const current = getModuleById(state.currentModule);
+  const step = getModuleStep(current.id, state);
+  const days = getCompletedDaysFor(current.id, state);
+  const pct = step.kind === 'done' ? 100 : Math.round((step.day / 5) * 100);
+  const levelIndex = MODULE_LEVELS.indexOf(current.level);
+  const visibleLevels = MODULE_LEVELS.filter((_, index) => index === levelIndex || index === levelIndex + 1);
+  const levelModules = getModulesByLevel(current.level);
+  root.innerHTML = `
+    <div class="module-plan">
+      <div>
+        <div class="module-eyebrow">Мой план</div>
+        <div class="module-hero-title">Модульный маршрут немецкого</div>
+        <div class="module-hero-sub">70% живой input, 30% письмо и фразы. Грамматика появляется только после примеров из текста.</div>
+      </div>
+      <section class="module-hero">
+        <div>
+          <div class="module-eyebrow">Текущий модуль</div>
+          <div class="module-hero-title">Модуль ${current.id}: ${esc(current.title)}</div>
+          <div class="module-hero-sub">${esc(step.label)} · ${esc(current.grammarFocus)}</div>
+          <div class="module-progress-row">
+            <div class="module-progress"><div class="module-progress-fill" style="width:${pct}%"></div></div>
+            <span class="module-meta">${pct}%</span>
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="continueModulePlan()">Продолжить →</button>
+      </section>
+      <div class="module-level-tabs">
+        ${visibleLevels.map((level) => `
+          <button class="module-level-tab ${level === current.level ? 'active' : 'locked'}" ${level === current.level ? 'onclick="renderPlanMain()"' : 'disabled'}>
+            ${level} <span class="module-meta">${MODULE_LEVEL_NAMES[level]}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div>
+        <div class="section-label">Модули уровня ${current.level}</div>
+        <div class="module-list">
+          ${levelModules.map((module) => {
+            const done = !!state.completedModules[module.id];
+            const isCurrent = module.id === current.id && !done;
+            const unlocked = done || isCurrent || !!state.completedModules[module.id - 1] || module.id === firstModuleForLevel(current.level);
+            const moduleStep = getModuleStep(module.id, state);
+            const dot = done ? '✓' : isCurrent ? '●' : module.finalTest ? '★' : '○';
+            const status = done ? 'Завершён' : isCurrent ? `В процессе · ${moduleStep.label}` : unlocked ? 'Доступен' : 'Заблокирован';
+            return `
+              <div class="module-row ${done ? 'done' : ''} ${isCurrent ? 'current' : ''} ${unlocked ? '' : 'locked'} ${module.finalTest ? 'final' : ''}" ${unlocked ? `onclick="openModulePage(${module.id})"` : ''}>
+                <div class="module-dot">${dot}</div>
+                <div>
+                  <div class="module-row-title">Модуль ${module.id}: ${esc(module.title)}</div>
+                  <div class="module-row-sub">${esc(module.grammarFocus)} · ${module.words.length} слов</div>
+                </div>
+                <div class="module-status">${status}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openModulePage(moduleId) {
+  modulePlanScreen = { mode: 'module', moduleId, day: null };
+  renderPlan();
+}
+
+function renderModulePage(moduleId) {
+  const module = getModuleById(moduleId);
+  const state = getPlanState();
+  const days = getCompletedDaysFor(module.id, state);
+  const step = getModuleStep(module.id, state);
+  const root = document.getElementById('planRoot');
+  root.innerHTML = `
+    <div class="module-plan">
+      <div class="module-page-head">
+        <div>
+          <button class="module-back" onclick="renderPlanMain()">← Назад к плану</button>
+          <div class="module-title-line" style="margin-top:14px;">Модуль ${module.id}: ${esc(module.title)}</div>
+          <div class="module-topic-line">Тема: ${esc(module.title)} · Грамматика: ${esc(module.grammarFocus)}</div>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="${step.kind === 'test' ? `modulePlanScreen={mode:'test',moduleId:${module.id},day:null};renderPlan()` : `modulePlanScreen={mode:'day',moduleId:${module.id},day:${step.day}};renderPlan()`}">
+          ${step.kind === 'test' ? 'Открыть тест' : 'Начать'}
+        </button>
+      </div>
+      <div class="module-day-track">
+        ${[1, 2, 3, 4, 5].map((day) => {
+          const done = days.includes(day);
+          const current = step.kind === 'day' && step.day === day;
+          const unlocked = done || current || day === 1 || days.includes(day - 1);
+          return `<button class="module-day-pill ${done ? 'done' : ''} ${current ? 'current' : ''} ${unlocked ? '' : 'locked'}" ${unlocked ? `onclick="modulePlanScreen={mode:'day',moduleId:${module.id},day:${day}};renderPlan()"` : 'disabled'}>${done ? '✓' : current ? '●' : '○'} День ${day}</button>`;
+        }).join('')}
+        <button class="module-day-pill ${step.kind === 'test' ? 'current' : ''} ${days.length >= 5 ? '' : 'locked'}" ${days.length >= 5 ? `onclick="modulePlanScreen={mode:'test',moduleId:${module.id},day:null};renderPlan()"` : 'disabled'}>${days.length >= 5 ? '●' : '○'} Тест</button>
+      </div>
+      <div class="module-day-layout">
+        <div class="module-day-card big">
+          <div class="module-day-label">${step.kind === 'test' ? 'После дня 5' : `День ${step.day} из 5`}</div>
+          <div class="module-day-title">${step.kind === 'test' ? (module.finalTest ? 'Финал уровня' : 'Тест модуля') : MODULE_DAY_CONFIG[step.day].title}</div>
+          <div class="module-day-copy">${step.kind === 'test' ? '7 заданий через чтение и ввод текста. После успешной сдачи откроется следующий модуль.' : MODULE_DAY_CONFIG[step.day].label}</div>
+          <button class="btn btn-gold" onclick="${step.kind === 'test' ? `modulePlanScreen={mode:'test',moduleId:${module.id},day:null};renderPlan()` : `modulePlanScreen={mode:'day',moduleId:${module.id},day:${step.day}};renderPlan()`}">${step.kind === 'test' ? 'Начать тест' : 'Начать день'}</button>
+        </div>
+        <aside class="module-side-card">
+          <div class="section-label">Можно повторить</div>
+          <div class="module-small-days">
+            ${days.length ? days.map((day) => `
+              <button class="module-small-day" onclick="modulePlanScreen={mode:'day',moduleId:${module.id},day:${day}};renderPlan()">✓ День ${day}: ${MODULE_DAY_CONFIG[day].title}</button>
+            `).join('') : '<div class="module-row-sub">Пройденные дни появятся здесь.</div>'}
+          </div>
+          ${days.length >= 5 ? `<div class="module-test-card"><div class="module-test-meta">Разблокировано</div><button class="btn btn-gold btn-sm" onclick="modulePlanScreen={mode:'test',moduleId:${module.id},day:null};renderPlan()">Тест модуля →</button></div>` : ''}
+        </aside>
+      </div>
+    </div>
+  `;
+}
+
+function renderModuleDay(moduleId, day) {
+  const module = getModuleById(moduleId);
+  const root = document.getElementById('planRoot');
+  const renderer = {
+    1: renderDayOne,
+    2: renderDayTwo,
+    3: renderDayThree,
+    4: renderDayFour,
+    5: renderDayFive,
+  }[day] || renderDayOne;
+  root.innerHTML = `
+    <div class="module-plan">
+      <div class="module-page-head">
+        <div>
+          <button class="module-back" onclick="openModulePage(${module.id})">← Назад к плану</button>
+          <div class="module-eyebrow" style="margin-top:14px;">День ${day} из 5 · Модуль ${module.id}</div>
+          <div class="module-title-line">${MODULE_DAY_CONFIG[day].title}</div>
+          <div class="module-topic-line">${esc(module.title)} · ${esc(module.grammarFocus)}</div>
+        </div>
+      </div>
+      ${renderer(module)}
+    </div>
+  `;
+  if (day === 3) updateModuleWriting(module.id);
+  if (day === 4) initModuleFlash(module.id);
+  if (day === 5) updateModuleDiary(module.id);
+}
+
+function renderDayOne(module) {
+  const text = module.texts[0];
+  return `
+    <section class="module-panel">
+      <div class="module-eyebrow">${esc(text.type)} · ${esc(text.title)}</div>
+      <div class="module-speaker">
+        <button class="btn btn-ghost btn-sm" onclick="speak(decodeURIComponent('${jsPlanArg(text.content)}'))">Слушать весь текст</button>
+        <button class="btn btn-ghost btn-sm" onclick="addAllModuleWords(${module.id})">+ Все новые слова в карточки</button>
+      </div>
+      <div class="module-text">${renderModuleInteractiveText(text.content, module, module.patternMarkers)}</div>
+    </section>
+    <section class="module-panel">
+      <div class="module-day-title">Рефлексия после текста</div>
+      <div class="module-day-copy">О чём этот текст? Выбери общий смысл, не переводя каждое слово.</div>
+      <input type="hidden" id="day1-reflection-${module.id}" value="">
+      <div class="module-options">
+        ${[module.title, 'Покупка автомобиля', 'Спор о политике'].map((option, index) => `<button class="module-option" onclick="selectModuleOption('day1-reflection-${module.id}',${index},this)">${esc(option)}</button>`).join('')}
+      </div>
+      <div class="module-day-copy" style="margin-top:16px;">Слова, которые могли встретиться впервые:</div>
+      <div class="module-word-list">${module.words.slice(0, 12).map((word) => `<span class="module-word-chip">${esc(word.de)} · ${esc(word.ru)}</span>`).join('')}</div>
+      <div id="moduleDayActions" class="btn-row">
+        <button class="btn btn-gold" onclick="addAllModuleWords(${module.id});completeModuleDayFromButton(${module.id},1,10)">День 1 завершён · +10 XP</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderPatternSentence(sentence, module) {
+  return renderModuleInteractiveText(sentence, module, module.patternMarkers);
+}
+
+function renderDayTwo(module) {
+  const examples = moduleSentences(module.texts[0].content).slice(0, 6);
+  return `
+    <section class="module-panel">
+      <div class="module-eyebrow">Примеры из текста дня 1</div>
+      <div class="module-pattern-list">
+        ${examples.map((sentence) => `<div class="module-pattern-sentence">${renderPatternSentence(sentence, module)}</div>`).join('')}
+      </div>
+      <label class="module-day-copy" for="pattern-note-${module.id}">Что общего в этих предложениях?</label>
+      <textarea class="module-textarea" id="pattern-note-${module.id}" placeholder="Напиши своё наблюдение. Это поле не оценивается."></textarea>
+    </section>
+    <section class="module-panel">
+      <div class="module-day-title">Ты заметил(а)</div>
+      <div class="module-day-copy">${esc(module.patternInsight)}</div>
+      <div class="module-pattern-sentence">${esc(module.patternBrief)}</div>
+      <div class="module-day-title" style="font-size:20px;margin-top:18px;">Восстанови фразы</div>
+      ${module.patternExercises.slice(0, 3).map((exercise, index) => `
+        <div class="module-gap-row">
+          <div>${esc(exercise.sentence)}</div>
+          <input class="module-input" id="pattern-${module.id}-${index}" placeholder="введи слово">
+        </div>
+      `).join('')}
+      <div id="pattern-checks-${module.id}" class="module-checks"></div>
+      <div id="moduleDayActions" class="btn-row">
+        <button class="btn btn-ghost" onclick="checkPatternExercises(${module.id})">Проверить паттерн</button>
+        <button class="btn btn-gold" onclick="completeModuleDayFromButton(${module.id},2,10)">День 2 завершён · +10 XP</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderDayThree(module) {
+  const text = module.texts[1] || module.texts[0];
+  return `
+    <section class="module-panel">
+      <div class="module-eyebrow">${esc(text.type)} · ${esc(text.title)}</div>
+      <div class="module-speaker">
+        <button class="btn btn-ghost btn-sm" onclick="speak(decodeURIComponent('${jsPlanArg(text.content)}'))">Слушать весь текст</button>
+        <button class="btn btn-ghost btn-sm" onclick="addAllModuleWords(${module.id})">+ Слова в карточки</button>
+      </div>
+      <div class="module-text">${renderModuleInteractiveText(text.content, module, module.patternMarkers)}</div>
+    </section>
+    <section class="module-panel">
+      <div class="module-day-title">Письмо</div>
+      <div class="module-day-copy">${esc(module.writingPrompt)} Напиши 3-5 предложений, используя то, что видел(а) в текстах.</div>
+      <textarea class="module-textarea" id="module-writing-${module.id}" oninput="updateModuleWriting(${module.id})" placeholder="Пиши по-немецки здесь..."></textarea>
+      <div class="module-meta" id="module-writing-count-${module.id}">Предложений: 0 / минимум 3</div>
+      <details style="margin-top:12px;">
+        <summary class="module-day-copy" style="cursor:pointer;">Слова модуля</summary>
+        <div class="module-word-list">${module.words.map((word) => `<span class="module-word-chip">${esc(word.de)}</span>`).join('')}</div>
+      </details>
+      <div id="module-writing-checks-${module.id}" class="module-checks"></div>
+      <div id="moduleDayActions" class="btn-row">
+        <button class="btn btn-ghost" onclick="checkModuleProduction(${module.id},3)">Проверить</button>
+        <button class="btn btn-gold" onclick="completeModuleDayFromButton(${module.id},3,15)">День 3 завершён · +15 XP</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderDayFour(module) {
+  const gaps = buildVocabGaps(module, 5);
+  return `
+    <section class="module-panel">
+      <div class="module-day-title">Свайп-карточки</div>
+      <div class="module-day-copy">Знаю → вправо, не знаю → влево. Кнопки делают то же самое и обновляют уровень Leitner.</div>
+      <div class="module-flash-card" id="moduleFlashCard" onpointerdown="moduleSwipeStart(event)" onpointerup="moduleSwipeEnd(event)"></div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-ghost" onclick="answerModuleFlash(false)">Не знаю</button>
+        <button class="btn btn-gold" onclick="answerModuleFlash(true)">Знаю</button>
+      </div>
+    </section>
+    <section class="module-panel">
+      <div class="module-day-title">Мини-тест на понимание</div>
+      ${gaps.map((gap, index) => `
+        <div class="module-gap-row">
+          <div>${esc(gap.sentence)}</div>
+          <input class="module-input" id="mini-${module.id}-${index}" placeholder="слово из модуля">
+        </div>
+      `).join('')}
+      <div id="mini-checks-${module.id}" class="module-checks"></div>
+      <div id="moduleDayActions" class="btn-row">
+        <button class="btn btn-ghost" onclick="checkModuleMiniGaps(${module.id})">Проверить 5 заданий</button>
+        <button class="btn btn-gold" onclick="completeModuleDayFromButton(${module.id},4,10)">День 4 завершён · +10 XP</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderDayFive(module) {
+  return `
+    <section class="module-panel">
+      <div class="module-eyebrow">Эта неделя: ${esc(module.title)} · Грамматика: ${esc(module.grammarFocus)}</div>
+      <div class="module-day-title">Дневник</div>
+      <div class="module-day-copy">Напиши о своём дне или неделе. Постарайся использовать слова из этого модуля. Минимум 4 предложения.</div>
+      <textarea class="module-textarea" id="module-diary-${module.id}" oninput="updateModuleDiary(${module.id})" placeholder="Heute..."></textarea>
+      <div class="module-meta" id="module-diary-count-${module.id}">Предложений: 0 / минимум 4</div>
+      <div id="module-diary-usage-${module.id}" class="module-word-list"></div>
+      <div id="moduleDayActions" class="btn-row">
+        <button class="btn btn-gold" onclick="saveModuleDiary(${module.id})">Сохранить дневник · +15 XP</button>
+      </div>
+    </section>
+  `;
+}
+
+function selectModuleOption(inputId, value, button) {
+  const input = document.getElementById(inputId);
+  if (input) input.value = String(value);
+  button.parentElement.querySelectorAll('.module-option').forEach((item) => item.classList.remove('selected'));
+  button.classList.add('selected');
+}
+
+function checkPatternExercises(moduleId) {
+  const module = getModuleById(moduleId);
+  const checks = module.patternExercises.slice(0, 3).map((exercise, index) => {
+    const value = normalizePlanAnswer(document.getElementById(`pattern-${moduleId}-${index}`)?.value || '');
+    const accepts = exercise.accepts.map(normalizePlanAnswer);
+    return { ok: accepts.includes(value), label: exercise.sentence.replace('___', exercise.answer) };
+  });
+  renderModuleChecks(`pattern-checks-${moduleId}`, checks);
+}
+
+function renderModuleChecks(id, checks) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = checks.map((check) => `<div class="module-check ${check.ok ? 'ok' : 'warn'}">${check.ok ? '✓' : '⚠'} ${esc(check.label)}</div>`).join('');
+}
+
+function updateModuleWriting(moduleId) {
+  const text = document.getElementById(`module-writing-${moduleId}`)?.value || '';
+  const count = countModuleSentences(text);
+  const el = document.getElementById(`module-writing-count-${moduleId}`);
+  if (el) el.textContent = `Предложений: ${count} / минимум 3`;
+}
+
+function checkModuleProduction(moduleId, minimumSentences = 3) {
+  const module = getModuleById(moduleId);
+  const text = document.getElementById(`module-writing-${moduleId}`)?.value || document.getElementById(`module-test-writing-${moduleId}`)?.value || '';
+  const sentenceCount = countModuleSentences(text);
+  const used = getUsedModuleWords(text, module);
+  const grammarUsed = moduleGrammarUsed(text, module);
+  const checks = [
+    { ok: sentenceCount >= minimumSentences, label: `Предложения: ${sentenceCount}/${minimumSentences}` },
+    { ok: used.length >= 3, label: `Слова модуля: ${used.length}/3` },
+    { ok: grammarUsed, label: `Паттерн недели найден: ${module.patternMarkers.slice(0, 3).join(', ')}` },
+  ];
+  renderModuleChecks(`module-writing-checks-${moduleId}`, checks);
+  return checks;
+}
+
+function buildVocabGaps(module, count) {
+  const allText = module.texts.map((text) => text.content).join(' ');
+  const gaps = [];
+  for (const word of module.words) {
+    const token = word.de.split(' ')[0];
+    const re = new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    if (re.test(allText)) {
+      gaps.push({ sentence: allText.replace(re, '___').split(/[.!?]/).find((part) => part.includes('___'))?.trim() + '.', answer: token, accepts: [token] });
+    }
+    if (gaps.length >= count) break;
+  }
+  while (gaps.length < count) {
+    const word = module.words[gaps.length % module.words.length];
+    gaps.push({ sentence: `Im Thema "${module.title}" ist ___ ein wichtiges Wort.`, answer: word.de.split(' ')[0], accepts: [word.de.split(' ')[0]] });
+  }
+  return gaps.slice(0, count);
+}
+
+function initModuleFlash(moduleId) {
+  const module = getModuleById(moduleId);
+  moduleFlashSession = { moduleId, cards: module.words, idx: 0, startX: 0 };
+  renderModuleFlash();
+}
+
+function renderModuleFlash() {
+  const card = document.getElementById('moduleFlashCard');
+  if (!card) return;
+  const word = moduleFlashSession.cards[moduleFlashSession.idx];
+  if (!word) {
+    card.innerHTML = '<div><div class="module-flash-word">Готово</div><div class="module-flash-ru">Карточки модуля повторены.</div></div>';
     return;
   }
+  const state = getPlanState();
+  const level = state.moduleWords[moduleFlashSession.moduleId]?.cards?.[word.de] || 1;
+  card.innerHTML = `<div><div class="module-flash-word">${esc(word.de)}</div><div class="module-flash-ru">${esc(word.ru)} · Leitner ${level}/3</div></div>`;
+}
 
-  specLabel.style.display = '';
-  specLabel.textContent = `Профессиональные темы: ${SPECIALIZATIONS.filter((item) => S.specs.includes(item.id)).map((item) => item.name).join(', ')}`;
+function moduleSwipeStart(event) {
+  moduleFlashSession.startX = event.clientX;
+}
 
-  specLessons.forEach((lesson) => {
-    const done = S.completedLessons.includes(lesson.id);
-    const card = document.createElement('div');
-    card.className = `plan-card ${lesson.color}`;
-    card.innerHTML = `
-      <div class="plan-type">${lesson.type}</div>
-      <div class="plan-title">${lesson.title}</div>
-      <div class="plan-sub">${lesson.de}</div>
-      <div class="plan-chips">${lesson.words.slice(0, 3).map((word) => `<span class="chip">${word.de}</span>`).join('')}</div>
-      <div class="plan-status ${done ? 'done' : 'cur'}">${done ? '✓ Готово' : '● Доступно'}</div>
-    `;
-    card.onclick = () => openLesson(lesson);
-    specGrid.appendChild(card);
+function moduleSwipeEnd(event) {
+  const diff = event.clientX - moduleFlashSession.startX;
+  if (Math.abs(diff) > 70) answerModuleFlash(diff > 0);
+}
+
+function answerModuleFlash(known) {
+  const word = moduleFlashSession.cards[moduleFlashSession.idx];
+  if (!word) return;
+  const state = getPlanState();
+  const moduleId = moduleFlashSession.moduleId;
+  state.moduleWords[moduleId] = state.moduleWords[moduleId] || { added: [], cards: {} };
+  state.moduleWords[moduleId].cards = state.moduleWords[moduleId].cards || {};
+  const oldLevel = Number(state.moduleWords[moduleId].cards[word.de] || 1);
+  state.moduleWords[moduleId].cards[word.de] = known ? Math.min(3, oldLevel + 1) : 1;
+  savePlanState(state);
+  moduleFlashSession.idx += 1;
+  renderModuleFlash();
+}
+
+function checkModuleMiniGaps(moduleId) {
+  const module = getModuleById(moduleId);
+  const gaps = buildVocabGaps(module, 5);
+  const checks = gaps.map((gap, index) => {
+    const value = normalizePlanAnswer(document.getElementById(`mini-${moduleId}-${index}`)?.value || '');
+    const accepts = (gap.accepts || [gap.answer]).map(normalizePlanAnswer);
+    return { ok: accepts.includes(value), label: gap.sentence.replace('___', gap.answer) };
   });
+  renderModuleChecks(`mini-checks-${moduleId}`, checks);
+}
+
+function updateModuleDiary(moduleId) {
+  const module = getModuleById(moduleId);
+  const text = document.getElementById(`module-diary-${moduleId}`)?.value || '';
+  const count = countModuleSentences(text);
+  const used = getUsedModuleWords(text, module);
+  const grammarUsed = moduleGrammarUsed(text, module);
+  const countEl = document.getElementById(`module-diary-count-${moduleId}`);
+  if (countEl) countEl.textContent = `Предложений: ${count} / минимум 4`;
+  const usage = document.getElementById(`module-diary-usage-${moduleId}`);
+  if (usage) {
+    usage.innerHTML = [
+      ...used.slice(0, 12).map((word) => `<span class="module-word-chip used">${esc(word.de)}</span>`),
+      grammarUsed ? `<span class="module-word-chip gold">Грамматика модуля</span>` : '',
+    ].join('') || '<span class="module-word-chip">Слова модуля подсветятся здесь</span>';
+  }
+}
+
+function saveModuleDiary(moduleId) {
+  const module = getModuleById(moduleId);
+  const text = document.getElementById(`module-diary-${moduleId}`)?.value || '';
+  const grammarUsed = moduleGrammarUsed(text, module);
+  const used = getUsedModuleWords(text, module);
+  S.diary = Array.isArray(S.diary) ? S.diary : [];
+  S.diary.unshift({
+    id: `module_diary_${moduleId}_${Date.now()}`,
+    articleId: `module_${moduleId}`,
+    title: `Модуль ${moduleId}: ${module.title}`,
+    text,
+    date: todayKey(),
+    ok: countModuleSentences(text) >= 4,
+    localReview: [
+      { ok: countModuleSentences(text) >= 4, text: 'Минимум 4 предложения' },
+      { ok: used.length > 0, text: `Слова модуля использованы: ${used.length}` },
+      { ok: grammarUsed, text: 'Паттерн модуля использован' },
+    ],
+  });
+  S.diary = S.diary.slice(0, 200);
+  saveS();
+  completeModuleDayFromButton(moduleId, 5, 15 + (grammarUsed ? 10 : 0));
+}
+
+function completeModuleDay(moduleId, day, xp) {
+  const state = getPlanState();
+  const days = new Set(getCompletedDaysFor(moduleId, state));
+  const isNew = !days.has(day);
+  days.add(day);
+  state.completedDays[moduleId] = [...days].sort((a, b) => a - b);
+  state.currentModule = moduleId;
+  state.currentDay = day < 5 ? day + 1 : 5;
+  savePlanState(state);
+  if (isNew) {
+    recordStudyActivity();
+    if (typeof updateDailyGoal === 'function') updateDailyGoal('lesson');
+    addXP(xp, `module-day-${day}`);
+    showModuleCompletionAnimation(xp);
+  }
+  return isNew;
+}
+
+function completeModuleDayFromButton(moduleId, day, xp) {
+  completeModuleDay(moduleId, day, xp);
+  const actions = document.getElementById('moduleDayActions');
+  if (!actions) return;
+  const next = day < 5
+    ? `<button class="btn btn-gold" onclick="modulePlanScreen={mode:'day',moduleId:${moduleId},day:${day + 1}};renderPlan()">Следующий день →</button>`
+    : `<button class="btn btn-gold" onclick="modulePlanScreen={mode:'test',moduleId:${moduleId},day:null};renderPlan()">Тест модуля →</button>`;
+  actions.innerHTML = `
+    <div class="module-check ok">✓ День сохранён. XP начислен, если это первое прохождение.</div>
+    ${next}
+    <button class="btn btn-ghost" onclick="openModulePage(${moduleId})">К модулю</button>
+  `;
+  renderDashboardNextModule();
+  updateDash();
+}
+
+function showModuleCompletionAnimation(xp) {
+  const flash = document.createElement('div');
+  flash.className = 'module-flash';
+  document.body.appendChild(flash);
+  const bubble = document.createElement('div');
+  bubble.className = 'module-xp-float';
+  bubble.textContent = `+${xp} XP`;
+  document.body.appendChild(bubble);
+  setTimeout(() => flash.remove(), 750);
+  setTimeout(() => bubble.remove(), 1200);
+}
+
+function renderModuleTest(moduleId) {
+  const module = getModuleById(moduleId);
+  if (module.finalTest) return renderLevelFinalTest(moduleId);
+  const root = document.getElementById('planRoot');
+  const questions = buildModuleReadingQuestions(module);
+  const vocabGaps = buildVocabGaps(module, 2);
+  const grammarGaps = module.patternExercises.slice(0, 2);
+  root.innerHTML = `
+    <div class="module-plan">
+      <button class="module-back" onclick="openModulePage(${module.id})">← Назад к плану</button>
+      <div>
+        <div class="module-eyebrow">Тест модуля · 7 заданий</div>
+        <div class="module-title-line">Модуль ${module.id}: ${esc(module.title)}</div>
+      </div>
+      <section class="module-panel">
+        <div class="module-day-title">Новый короткий текст</div>
+        <div class="module-text">${renderModuleInteractiveText(getModuleTestText(module), module, module.patternMarkers)}</div>
+        ${questions.map((q, qi) => `
+          <div class="module-day-copy" style="margin-top:16px;">${qi + 1}. ${esc(q.q)}</div>
+          <input type="hidden" id="mt-${module.id}-q${qi}" value="">
+          <div class="module-options">${q.options.map((option, oi) => `<button class="module-option mt-${module.id}-q${qi}" onclick="selectModuleTestOption('mt-${module.id}-q${qi}',${oi},this)">${esc(option)}</button>`).join('')}</div>
+        `).join('')}
+      </section>
+      <section class="module-panel">
+        <div class="module-day-title">Ввод слов и конструкций</div>
+        ${vocabGaps.map((gap, index) => `
+          <div class="module-gap-row"><div>${esc(gap.sentence)}</div><input class="module-input" id="mt-vocab-${module.id}-${index}" placeholder="слово"></div>
+        `).join('')}
+        ${grammarGaps.map((gap, index) => `
+          <div class="module-gap-row"><div>${esc(gap.sentence)}</div><input class="module-input" id="mt-grammar-${module.id}-${index}" placeholder="форма"></div>
+        `).join('')}
+      </section>
+      <section class="module-panel">
+        <div class="module-day-title">Письмо</div>
+        <div class="module-day-copy">Напиши 2-3 предложения по теме модуля.</div>
+        <textarea class="module-textarea" id="module-test-writing-${module.id}"></textarea>
+        <div id="module-test-result-${module.id}" class="module-checks"></div>
+        <button class="btn btn-gold" onclick="submitModuleTest(${module.id})">Проверить тест</button>
+      </section>
+    </div>
+  `;
+}
+
+function getModuleTestText(module) {
+  const second = module.texts[1]?.content || module.texts[0]?.content || '';
+  return moduleSentences(second).slice(0, 5).join(' ') || second;
+}
+
+function buildModuleReadingQuestions(module) {
+  return [
+    { q: 'Какая главная тема текста?', options: [module.title, 'Спортивный матч', 'Покупка машины', 'Погода на выходных'], answer: 0 },
+    { q: 'Что здесь важнее всего для понимания?', options: ['общий смысл и ситуация', 'только таблица правил', 'случайные буквы', 'номер страницы'], answer: 0 },
+  ];
+}
+
+function selectModuleTestOption(inputId, value, button) {
+  selectModuleOption(inputId, value, button);
+}
+
+function submitModuleTest(moduleId) {
+  const module = getModuleById(moduleId);
+  const questions = buildModuleReadingQuestions(module);
+  const vocabGaps = buildVocabGaps(module, 2);
+  const grammarGaps = module.patternExercises.slice(0, 2);
+  let score = 0;
+  questions.forEach((q, index) => {
+    if (Number(document.getElementById(`mt-${module.id}-q${index}`)?.value) === q.answer) score += 1;
+  });
+  vocabGaps.forEach((gap, index) => {
+    const value = normalizePlanAnswer(document.getElementById(`mt-vocab-${module.id}-${index}`)?.value || '');
+    if ((gap.accepts || [gap.answer]).map(normalizePlanAnswer).includes(value)) score += 1;
+  });
+  grammarGaps.forEach((gap, index) => {
+    const value = normalizePlanAnswer(document.getElementById(`mt-grammar-${module.id}-${index}`)?.value || '');
+    if (gap.accepts.map(normalizePlanAnswer).includes(value)) score += 1;
+  });
+  const text = document.getElementById(`module-test-writing-${module.id}`)?.value || '';
+  const writingOk = countModuleSentences(text) >= 2 && getUsedModuleWords(text, module).length >= 2;
+  if (writingOk) score += 1;
+  const passed = score >= 5;
+  const result = document.getElementById(`module-test-result-${module.id}`);
+  result.innerHTML = `
+    <div class="module-check ${passed ? 'ok' : 'warn'}">${passed ? '✓' : '⚠'} Результат: ${score}/7</div>
+    <div class="module-check ${writingOk ? 'ok' : 'warn'}">${writingOk ? '✓' : '⚠'} Письмо: минимум 2 предложения и 2 слова модуля</div>
+    ${passed ? `<button class="btn btn-gold" onclick="completeModuleAfterTest(${module.id},50)">Завершить модуль · +50 XP</button>` : '<div class="module-check warn">Повтори дни 2 и 4. Пересдачу можно открыть снова из модуля.</div>'}
+  `;
+}
+
+function completeModuleAfterTest(moduleId, xp) {
+  const state = getPlanState();
+  const module = getModuleById(moduleId);
+  const already = !!state.completedModules[moduleId];
+  state.completedModules[moduleId] = true;
+  const next = modulesData.find((item) => item.id === moduleId + 1);
+  if (next) {
+    state.currentModule = next.id;
+    state.currentDay = 1;
+    if (next.level !== S.level) {
+      S.level = next.level;
+      setStorageKey('userLevel', next.level);
+    }
+  } else {
+    state.currentModule = moduleId;
+    state.currentDay = 5;
+  }
+  savePlanState(state);
+  if (!already) {
+    recordStudyActivity();
+    addXP(xp, module.finalTest ? 'level-final' : 'module-test');
+    if (typeof updateDailyGoal === 'function') updateDailyGoal('lesson');
+  }
+  saveS();
+  fireModuleConfetti();
+  showModuleVictory(`Модуль ${module.id} завершён`, `Открыт следующий шаг. ${already ? 'XP уже был начислен раньше.' : `+${xp} XP`}`, 'К плану', 'closeModuleVictory();renderPlanMain();updateDash();');
+}
+
+function buildFinalGrammar(level) {
+  const exercises = getModulesByLevel(level).flatMap((module) => module.patternExercises.map((exercise) => ({ ...exercise, moduleTitle: module.title })));
+  while (exercises.length < 10) exercises.push(...exercises);
+  return exercises.slice(0, 10);
+}
+
+function buildFinalQuestions(module) {
+  return [
+    { q: 'Какой тип текста ты читаешь?', options: ['аутентичный текст уровня', 'таблица умножения', 'рекламный слоган без контекста', 'список случайных слов'], answer: 0 },
+    { q: 'Что нужно понять сначала?', options: ['главную мысль', 'каждое правило до чтения', 'все исключения', 'только перевод заголовка'], answer: 0 },
+    { q: 'Какой навык проверяется?', options: ['чтение с общим пониманием', 'угадывание без текста', 'только произношение', 'только алфавит'], answer: 0 },
+    { q: 'Как лучше работать с незнакомыми словами?', options: ['смотреть контекст и добавлять важные', 'останавливаться на каждом', 'игнорировать весь текст', 'сразу закрыть урок'], answer: 0 },
+    { q: 'Что делает финал уровня?', options: ['соединяет чтение, письмо и ввод форм', 'показывает только правило', 'сбрасывает прогресс', 'заменяет дневник'], answer: 0 },
+  ];
+}
+
+function renderLevelFinalTest(moduleId) {
+  const module = getModuleById(moduleId);
+  const grammar = buildFinalGrammar(module.level);
+  const questions = buildFinalQuestions(module);
+  const minWords = ['A1', 'A2'].includes(module.level) ? 80 : 150;
+  const maxWords = ['A1', 'A2'].includes(module.level) ? 120 : 200;
+  const root = document.getElementById('planRoot');
+  root.innerHTML = `
+    <div class="module-plan">
+      <button class="module-back" onclick="openModulePage(${module.id})">← Назад к плану</button>
+      <div>
+        <div class="module-eyebrow">Финал уровня ${module.level} · без ограничения времени</div>
+        <div class="module-title-line">${esc(module.title)}</div>
+      </div>
+      <section class="module-panel">
+        <div class="module-day-title">Часть 1 — чтение</div>
+        <div class="module-text">${renderModuleInteractiveText(module.texts[0].content, module, module.patternMarkers)}</div>
+        ${questions.map((q, qi) => `
+          <div class="module-day-copy" style="margin-top:16px;">${qi + 1}. ${esc(q.q)}</div>
+          <input type="hidden" id="final-${module.id}-q${qi}" value="">
+          <div class="module-options">${q.options.map((option, oi) => `<button class="module-option final-${module.id}-q${qi}" onclick="selectModuleTestOption('final-${module.id}-q${qi}',${oi},this)">${esc(option)}</button>`).join('')}</div>
+        `).join('')}
+      </section>
+      <section class="module-panel">
+        <div class="module-day-title">Часть 2 — письмо</div>
+        <div class="module-day-copy">${esc(module.writingPrompt)} Объём: ${minWords}-${maxWords} слов.</div>
+        <textarea class="module-textarea" id="final-essay-${module.id}" oninput="updateFinalEssayCount(${module.id})"></textarea>
+        <div class="module-meta" id="final-essay-count-${module.id}">0 слов</div>
+      </section>
+      <section class="module-panel">
+        <div class="module-day-title">Часть 3 — грамматика вводом</div>
+        ${grammar.map((gap, index) => `
+          <div class="module-gap-row"><div>${index + 1}. ${esc(gap.sentence)} <span class="module-meta">${esc(gap.moduleTitle)}</span></div><input class="module-input" id="final-grammar-${module.id}-${index}" placeholder="ответ"></div>
+        `).join('')}
+        <div id="final-result-${module.id}" class="module-checks"></div>
+        <button class="btn btn-gold" onclick="submitLevelFinal(${module.id})">Завершить финал</button>
+      </section>
+    </div>
+  `;
+}
+
+function updateFinalEssayCount(moduleId) {
+  const text = document.getElementById(`final-essay-${moduleId}`)?.value || '';
+  const el = document.getElementById(`final-essay-count-${moduleId}`);
+  if (el) el.textContent = `${countModuleWords(text)} слов`;
+}
+
+function submitLevelFinal(moduleId) {
+  const module = getModuleById(moduleId);
+  const questions = buildFinalQuestions(module);
+  const grammar = buildFinalGrammar(module.level);
+  let readingScore = 0;
+  questions.forEach((q, index) => {
+    if (Number(document.getElementById(`final-${module.id}-q${index}`)?.value) === q.answer) readingScore += 1;
+  });
+  let grammarScore = 0;
+  grammar.forEach((gap, index) => {
+    const value = normalizePlanAnswer(document.getElementById(`final-grammar-${module.id}-${index}`)?.value || '');
+    if (gap.accepts.map(normalizePlanAnswer).includes(value)) grammarScore += 1;
+  });
+  const words = countModuleWords(document.getElementById(`final-essay-${module.id}`)?.value || '');
+  const minWords = ['A1', 'A2'].includes(module.level) ? 80 : 150;
+  const maxWords = ['A1', 'A2'].includes(module.level) ? 120 : 200;
+  const essayOk = words >= minWords && words <= maxWords;
+  const passed = readingScore >= 3 && grammarScore >= 6 && essayOk;
+  const result = document.getElementById(`final-result-${module.id}`);
+  result.innerHTML = `
+    <div class="module-check ${readingScore >= 3 ? 'ok' : 'warn'}">Чтение: ${readingScore}/5</div>
+    <div class="module-check ${essayOk ? 'ok' : 'warn'}">Письмо: ${words}/${minWords}-${maxWords} слов</div>
+    <div class="module-check ${grammarScore >= 6 ? 'ok' : 'warn'}">Грамматика: ${grammarScore}/10</div>
+    ${passed ? `<button class="btn btn-gold" onclick="completeLevelFinal(${module.id})">Уровень ${module.level} завершён · +200 XP</button>` : `<div class="module-check warn">Повтори слабые модули уровня ${module.level}: дни 2, 4 и дневник.</div>`}
+  `;
+}
+
+function completeLevelFinal(moduleId) {
+  const module = getModuleById(moduleId);
+  const achievementId = `level_${module.level}_complete`;
+  S.achievements = Array.isArray(S.achievements) ? S.achievements : [];
+  if (!S.achievements.includes(achievementId)) S.achievements.push(achievementId);
+  completeModuleAfterTest(moduleId, 200);
+  showModuleVictory(`Уровень ${module.level} завершён 🎓`, '+200 XP · следующий уровень открыт', 'Продолжить', 'closeModuleVictory();renderPlanMain();updateDash();');
+}
+
+function fireModuleConfetti() {
+  fireConfetti();
+  const wrap = document.createElement('div');
+  wrap.className = 'module-confetti';
+  const colors = ['var(--gold)', 'var(--green)', 'var(--blue)', 'var(--purple)', 'var(--red)'];
+  for (let i = 0; i < 80; i += 1) {
+    const piece = document.createElement('i');
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.animationDelay = `${Math.random() * 0.35}s`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+    wrap.appendChild(piece);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 2300);
+}
+
+function showModuleVictory(title, copy, buttonLabel, action) {
+  closeModuleVictory();
+  const el = document.createElement('div');
+  el.className = 'module-victory';
+  el.id = 'moduleVictory';
+  el.innerHTML = `
+    <div class="module-victory-box">
+      <div class="module-victory-title">${esc(title)}</div>
+      <div class="module-day-copy">${esc(copy)}</div>
+      <button class="btn btn-gold" onclick="${action}">${esc(buttonLabel)}</button>
+    </div>
+  `;
+  document.body.appendChild(el);
+}
+
+function closeModuleVictory() {
+  document.getElementById('moduleVictory')?.remove();
 }
 
 const TODAY = new Date();
@@ -4995,6 +6926,22 @@ function openVocabDetail(id) {
   renderVocab();
 }
 
+function canRemoveVocabWord(word) {
+  return !!word && (S.savedReadingWords || []).some((item) => item.id === word.id);
+}
+
+function removeVocabWord(id) {
+  const before = (S.savedReadingWords || []).length;
+  S.savedReadingWords = (S.savedReadingWords || []).filter((item) => item.id !== id);
+  if (S.savedReadingWords.length !== before) {
+    selectedVocabId = null;
+    saveS();
+    toast('Слово удалено из словаря');
+    renderVocab();
+    updateDash();
+  }
+}
+
 function renderVocabDetail(words) {
   const wrap = document.getElementById('vocabDetail');
   if (!wrap) return;
@@ -5006,9 +6953,7 @@ function renderVocabDetail(words) {
   const context = word.context || {};
   const articleTitle = context.articleTitle || word.cat || 'Словарь';
   const sentence = context.sentence || word.ex || '';
-  const meaning = levelRank(word.level) <= levelRank('A2')
-    ? (word.translation || word.ru || word.definition)
-    : (word.definition || word.translation || word.ru);
+  const meaning = getMeaningText(word, word.level);
   wrap.innerHTML = `
     <div class="vocab-detail">
       <div class="vocab-detail-head">
@@ -5020,7 +6965,10 @@ function renderVocabDetail(words) {
             ${(word.tags || []).slice(0, 3).map((tag) => `<span class="reading-badge">${esc(tag)}</span>`).join('')}
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="selectedVocabId=null;renderVocab()">Закрыть</button>
+        <div class="btn-row" style="margin-top:0;">
+          ${canRemoveVocabWord(word) ? `<button class="btn btn-red btn-sm" onclick="removeVocabWord(${jsString(word.id)})">Удалить</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="selectedVocabId=null;renderVocab()">Закрыть</button>
+        </div>
       </div>
       <div style="font-size:14px;line-height:1.7;">${esc(meaning || 'Нет значения')}</div>
       <div class="vocab-context">
@@ -5064,9 +7012,7 @@ function renderVocab(filter) {
     const row = document.createElement('tr');
     row.className = `vocab-row${word.id === selectedVocabId ? ' active' : ''}`;
     row.onclick = () => openVocabDetail(word.id);
-    const meaning = levelRank(word.level) <= levelRank('A2')
-      ? (word.translation || word.ru || word.definition)
-      : (word.definition || word.translation || word.ru);
+    const meaning = getMeaningText(word, word.level);
     const contextTitle = word.context?.articleTitle || word.cat;
     const tags = (word.tags || [word.cat]).slice(0, 3);
     row.innerHTML = `
@@ -5098,6 +7044,10 @@ function renderPhrases() {
 function renderSettings() {
   document.getElementById('settingsName').value = S.name || '';
   document.getElementById('settingsLevel').textContent = S.level || 'A1';
+  const levelSelect = document.getElementById('settingsLevelSelect');
+  if (levelSelect) levelSelect.value = normalizeLevelName(S.level || 'A1');
+  const translationSelect = document.getElementById('translationLangSelect');
+  if (translationSelect) translationSelect.value = getTranslationLang();
   const grid = document.getElementById('settingsSpecGrid');
   grid.innerHTML = '';
 
@@ -5123,6 +7073,12 @@ function renderSettings() {
 function saveSettings() {
   const newName = document.getElementById('settingsName').value.trim();
   if (newName) S.name = newName;
+  const selectedLevel = document.getElementById('settingsLevelSelect')?.value;
+  if (selectedLevel) {
+    S.level = normalizeLevelName(selectedLevel);
+    setStorageKey('userLevel', S.level);
+  }
+  S.translationLang = document.getElementById('translationLangSelect')?.value === 'de' ? 'de' : 'ru';
   S.specs = SPECIALIZATIONS
     .filter((spec) => document.getElementById(`spec-${spec.id}`).checked)
     .map((spec) => spec.id);
@@ -5134,7 +7090,7 @@ function saveSettings() {
 }
 
 function retakeTest() {
-  if (!confirm('Перепройти тест уровня? Прогресс уроков сохранится, но уровень будет пересчитан.')) return;
+  if (!confirm('Пройти тест заново?')) return;
   S.level = 'A1';
   S.levelScore = 0;
   S.onboardingDone = false;
@@ -5383,13 +7339,13 @@ function cardBackHtml(word) {
   const sentence = word.context?.sentence || word.ex || '';
   if (isEasy) {
     return `
-      <div class="rep-word" style="color:var(--green);font-size:34px;">${esc(word.translation || word.ru || word.definition || '')}</div>
+      <div class="rep-word" style="color:var(--green);font-size:34px;">${esc(getMeaningText(word, word.level))}</div>
       <div class="rep-context">${highlightContextSentence(sentence, word.word || word.de)}</div>
     `;
   }
   const examples = (word.examples?.length ? word.examples : [sentence]).slice(0, 2);
   return `
-    <div style="font-size:15px;line-height:1.7;color:var(--text);">${esc(word.definition || word.translation || word.ru || '')}</div>
+    <div style="font-size:15px;line-height:1.7;color:var(--text);">${esc(getMeaningText(word, word.level))}</div>
     <div class="rep-context">${examples.map((item) => `<div>${highlightText(item)}</div>`).join('')}</div>
   `;
 }
@@ -5631,7 +7587,7 @@ function profileErrorsHtml() {
             </div>
           `).join('')}
         </div>
-        <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Потренировать слабые места</button>
+        <button class="btn btn-gold btn-sm" onclick="startWeakPractice()">Тренировать</button>
       ` : '<div class="profile-sub">Ошибок пока нет. Какой приятный пустой график.</div>'}
       <div class="error-list">
         ${errors.map((item) => `
@@ -5772,8 +7728,8 @@ function renderLogin() {
         </div>
         ${profileTabsHtml(summary, 'Статус', 'Аккаунт подключён')}
         <div class="btn-row" style="margin-top:20px;">
-          <button class="btn btn-ghost" onclick="goPage('settings')">Открыть настройки</button>
-          <button class="btn btn-gold" onclick="goPage('dashboard')">На главную</button>
+          <button class="btn btn-ghost" onclick="goPage('settings')">Настройки</button>
+          <button class="btn btn-gold" onclick="goPage('dashboard')">Главная</button>
           <button class="btn btn-red" onclick="logoutUser()">Выйти</button>
         </div>
       </div>
@@ -6376,13 +8332,12 @@ if(S.onboardingDone){
   document.getElementById('appMain').style.display='';
   initApp();
 } else {
-  // prefill name if saved
-  if(S.name && S.name!=='Азамат') document.getElementById('nameInput').value=S.name;
+  resumeOnboarding();
 }
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js')
+  navigator.serviceWorker.register('./sw.js?v=6-index-fixes')
     .then(reg => console.log('SW registered'))
     .catch(err => console.log('SW registration failed'));
 }
