@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deutsch-app-v5-placement-test';
+const CACHE_NAME = 'deutsch-app-v6-finexa-ui';
 const urlsToCache = [
   './',
   './index.html',
@@ -39,6 +39,22 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
   if (url.pathname.includes('/api/')) return;
+
+  const isNavigation = event.request.mode === 'navigate';
+  const isHtml = event.request.destination === 'document' || url.pathname.endsWith('/') || url.pathname.endsWith('/index.html');
+
+  if (isNavigation || isHtml) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          return response;
+        })
+        .catch(() => caches.match(event.request).then(response => response || caches.match('./index.html')))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request)
