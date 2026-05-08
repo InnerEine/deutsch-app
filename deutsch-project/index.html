@@ -29,15 +29,24 @@
 - Внешние Google Fonts/CDN-скрипт блокировали load/offline-сценарий -> удалены блокирующие внешние ресурсы, confetti сделан опциональным.
 */
 :root {
-  --bg: #f7f4ef;
-  --bg2: #ffffff;
-  --bg3: #ece8df;
-  --border: #ded6c9;
-  --border2: #c9bfaf;
-  --text: #1f2430;
-  --muted: #677084;
-  --gold: #f0c060;
-  --gold2: #c8950a;
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #111111;
+  --bg-card: #1A1A1A;
+  --bg-hover: #222222;
+  --accent-primary: #F5C518;
+  --accent-secondary: #D4A017;
+  --text-primary: #FFFFFF;
+  --text-secondary: #AAAAAA;
+  --text-muted: #666666;
+  --bg: var(--bg-primary);
+  --bg2: var(--bg-secondary);
+  --bg3: var(--bg-card);
+  --border: #2A2A2A;
+  --border2: #3A3A3A;
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --gold: var(--accent-primary);
+  --gold2: var(--accent-secondary);
   --green: #3dd68c;
   --red: #f05555;
   --blue: #5b9ef0;
@@ -47,6 +56,60 @@
   --brown: #b88968;
   --gray: #9aa3b2;
   --pink: #f472b6;
+  --hdr-bg: rgba(10,10,10,0.95);
+  --wl-a1: rgba(154,163,178,.18);
+  --wl-a2: rgba(167,139,250,.22);
+  --wl-b1: rgba(91,158,240,.22);
+  --wl-b2: rgba(61,214,140,.2);
+  --wl-c1: rgba(245,197,24,.28);
+  --wl-c2: rgba(240,85,85,.26);
+}
+body.dark {
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #111111;
+  --bg-card: #1A1A1A;
+  --bg-hover: #222222;
+  --accent-primary: #F5C518;
+  --accent-secondary: #D4A017;
+  --text-primary: #FFFFFF;
+  --text-secondary: #AAAAAA;
+  --text-muted: #666666;
+  --bg: var(--bg-primary);
+  --bg2: var(--bg-secondary);
+  --bg3: var(--bg-card);
+  --border: #2A2A2A;
+  --border2: #3A3A3A;
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --gold: var(--accent-primary);
+  --gold2: var(--accent-secondary);
+  --hdr-bg: rgba(10,10,10,0.95);
+  --wl-a1: rgba(154,163,178,.18);
+  --wl-a2: rgba(167,139,250,.22);
+  --wl-b1: rgba(91,158,240,.22);
+  --wl-b2: rgba(61,214,140,.2);
+  --wl-c1: rgba(245,197,24,.28);
+  --wl-c2: rgba(240,85,85,.26);
+}
+body.light {
+  --bg-primary: #f7f4ef;
+  --bg-secondary: #ffffff;
+  --bg-card: #ece8df;
+  --bg-hover: #e2dbcf;
+  --accent-primary: #c8950a;
+  --accent-secondary: #f0c060;
+  --text-primary: #1f2430;
+  --text-secondary: #677084;
+  --text-muted: #7c8494;
+  --bg: var(--bg-primary);
+  --bg2: var(--bg-secondary);
+  --bg3: var(--bg-card);
+  --border: #ded6c9;
+  --border2: #c9bfaf;
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --gold: var(--accent-secondary);
+  --gold2: var(--accent-primary);
   --hdr-bg: rgba(247,244,239,0.94);
   --wl-a1: rgba(154,163,178,.28);
   --wl-a2: rgba(167,139,250,.28);
@@ -54,22 +117,6 @@
   --wl-b2: rgba(61,214,140,.28);
   --wl-c1: rgba(240,192,96,.34);
   --wl-c2: rgba(240,85,85,.32);
-}
-body.dark {
-  --bg: #07080a;
-  --bg2: #0e1014;
-  --bg3: #15171d;
-  --border: #1e2128;
-  --border2: #2a2e38;
-  --text: #e8eaf0;
-  --muted: #8a91a3;
-  --hdr-bg: rgba(7,8,10,0.95);
-  --wl-a1: rgba(154,163,178,.18);
-  --wl-a2: rgba(167,139,250,.22);
-  --wl-b1: rgba(91,158,240,.22);
-  --wl-b2: rgba(61,214,140,.2);
-  --wl-c1: rgba(240,192,96,.28);
-  --wl-c2: rgba(240,85,85,.26);
 }
 *{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;}
 html{overflow-x:hidden;}
@@ -347,31 +394,38 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 
 /* COMMUNITY CHAT */
 .community-chat-shell{height:min(760px,calc(100vh - 170px));min-height:560px;border:1px solid var(--border);background:var(--bg2);border-radius:8px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;}
-.community-chat-head{padding:18px 20px;border-bottom:1px solid var(--border);background:var(--bg2);display:grid;gap:12px;}
-.community-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
-.community-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(26px,4vw,36px);letter-spacing:0;line-height:1.05;}
-.community-online{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--green);border:1px solid rgba(61,214,140,.35);background:rgba(61,214,140,.08);border-radius:999px;padding:7px 11px;white-space:nowrap;}
+.community-chat-head{padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:grid;gap:10px;}
+.community-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.community-title-main{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap;}
+.community-title{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:0;line-height:1.05;}
+.community-online{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0;text-transform:none;color:var(--green);border:1px solid rgba(61,214,140,.35);background:rgba(61,214,140,.08);border-radius:999px;padding:5px 9px;white-space:nowrap;}
+.community-clear-btn{min-height:36px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);border-radius:999px;padding:7px 11px;font-size:12px;font-weight:800;cursor:pointer;}
+.community-clear-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary);background:rgba(var(--accent-rgb),.08);}
 .community-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
 .community-tabs::-webkit-scrollbar{display:none;}
-.community-tab{min-height:42px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:8px;padding:9px 14px;font-weight:800;cursor:pointer;white-space:nowrap;}
-.community-tab.on{border-color:var(--gold);background:rgba(240,192,96,.1);color:var(--gold);}
+.community-tab{min-height:34px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);border-radius:999px;padding:7px 12px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.community-tab.on{border-color:var(--accent-primary);background:var(--accent-primary);color:#111;}
 .community-room-hint{font-size:13px;color:var(--muted);line-height:1.45;}
-.community-pin{border:1px solid rgba(240,192,96,.32);background:rgba(240,192,96,.08);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;color:var(--text);}
+.community-pin{border:1px solid rgba(var(--accent-rgb),.32);background:rgba(var(--accent-rgb),.08);border-radius:10px;padding:9px 11px;font-size:13px;line-height:1.4;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.community-pin-toggle{border:0;background:transparent;color:var(--accent-primary);font-weight:800;cursor:pointer;white-space:nowrap;}
 .community-offline{display:none;border:1px solid rgba(240,85,85,.42);background:rgba(240,85,85,.08);color:var(--red);border-radius:8px;padding:10px 12px;font-size:13px;}
 .community-offline.on{display:block;}
 .community-messages{overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,rgba(154,163,178,.04),transparent);}
 .community-empty{margin:auto;text-align:center;color:var(--muted);font-size:14px;line-height:1.5;max-width:360px;}
-.community-msg{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:end;max-width:min(78%,720px);position:relative;}
-.community-msg.mine{grid-template-columns:minmax(0,1fr) 38px;align-self:flex-end;}
-.community-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;box-shadow:0 8px 22px rgba(0,0,0,.16);}
+.community-msg{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:end;width:min(75vw,620px);max-width:75%;position:relative;}
+.community-msg.mine{grid-template-columns:minmax(0,1fr) 28px;align-self:flex-end;}
+.community-msg.grouped{margin-top:-8px;}
+.community-msg.grouped .community-avatar{visibility:hidden;}
+.community-msg.grouped .community-meta{display:none;}
+.community-avatar{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;box-shadow:0 8px 22px rgba(0,0,0,.16);}
 .community-bubble-wrap{min-width:0;}
-.community-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:5px;}
+.community-meta{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;font-size:10px;color:var(--muted);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .community-msg.mine .community-meta{justify-content:flex-end;}
 .community-name{font-weight:800;color:var(--text);}
-.community-level{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold);border:1px solid rgba(240,192,96,.3);background:rgba(240,192,96,.08);border-radius:999px;padding:2px 7px;}
+.community-level{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold);}
 .community-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
-.community-bubble{border:1px solid var(--border);background:var(--bg3);border-radius:8px 8px 8px 2px;padding:11px 13px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}
-.community-msg.mine .community-bubble{background:linear-gradient(135deg,rgba(240,192,96,.92),rgba(200,149,10,.82));color:#111;border-color:rgba(240,192,96,.65);border-radius:8px 8px 2px 8px;}
+.community-bubble{border:1px solid var(--border);background:var(--bg-card);border-radius:4px 16px 16px 16px;padding:10px 12px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+.community-msg.mine .community-bubble{background:var(--accent-primary);color:#111;border-color:var(--accent-primary);border-radius:16px 4px 16px 16px;}
 .community-reactor{display:none;position:absolute;left:48px;top:-22px;z-index:5;border:1px solid var(--border2);background:var(--bg2);box-shadow:0 10px 34px rgba(0,0,0,.22);border-radius:999px;padding:4px;gap:2px;}
 .community-msg.mine .community-reactor{left:auto;right:48px;}
 .community-msg:hover .community-reactor,.community-msg.react-open .community-reactor{display:flex;}
@@ -379,13 +433,15 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .community-reaction-btn:hover{background:var(--bg3);}
 .community-reactions{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
 .community-reaction-pill{border:1px solid var(--border2);background:var(--bg2);border-radius:999px;padding:3px 8px;font-size:12px;}
-.community-composer{border-top:1px solid var(--border);background:var(--bg2);padding:12px 20px;display:grid;gap:8px;}
+.community-composer{border-top:1px solid var(--border);background:var(--bg2);padding:10px 16px;display:grid;gap:6px;}
 .community-input-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;}
-.community-input{width:100%;min-height:46px;max-height:130px;resize:none;border:1px solid var(--border2);background:var(--bg3);color:var(--text);border-radius:8px;padding:12px 13px;outline:none;line-height:1.45;}
+.community-input{width:100%;min-height:46px;max-height:104px;resize:none;border:1px solid var(--border2);background:var(--bg3);color:var(--text);border-radius:14px;padding:12px 13px;outline:none;line-height:1.45;}
 .community-input:focus{border-color:var(--gold);}
-.community-send{min-height:46px;border:0;border-radius:8px;background:var(--gold);color:#111;font-family:'Syne',sans-serif;font-weight:800;padding:0 18px;cursor:pointer;}
+.community-send{width:46px;min-width:46px;min-height:46px;border:0;border-radius:50%;background:var(--gold);color:#111;font-family:'Syne',sans-serif;font-weight:800;padding:0;cursor:pointer;font-size:22px;line-height:1;}
 .community-send:disabled{opacity:.55;cursor:not-allowed;}
-.community-composer-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.community-composer-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0;text-transform:none;color:var(--muted);}
+.community-count{display:none;}
+.community-count.on{display:inline;}
 .community-error{color:var(--red);}
 @media(max-width:640px){
   .module-hero,.module-day-layout,.module-page-head{grid-template-columns:1fr;display:grid;}
@@ -399,13 +455,13 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
   .module-day-card.big,.module-day-card,.module-side-card,.module-panel{padding:14px;}
   .community-chat-shell{height:calc(100vh - 132px);min-height:0;border-radius:0;border-left:0;border-right:0;margin:0 -12px;}
   .community-chat-head{padding:12px;}
-  .community-messages{padding:14px 12px 96px;}
-  .community-msg{max-width:92%;grid-template-columns:34px minmax(0,1fr);}
-  .community-msg.mine{grid-template-columns:minmax(0,1fr) 34px;}
-  .community-avatar{width:34px;height:34px;}
-  .community-composer{position:sticky;bottom:78px;z-index:40;padding:10px 12px calc(10px + env(safe-area-inset-bottom));}
-  .community-input-row{grid-template-columns:minmax(0,1fr) 92px;}
-  .community-send{padding:0 10px;}
+  .community-messages{padding:14px 12px 124px;}
+  .community-msg{width:75vw;max-width:75%;grid-template-columns:28px minmax(0,1fr);}
+  .community-msg.mine{grid-template-columns:minmax(0,1fr) 28px;}
+  .community-avatar{width:28px;height:28px;}
+  .community-composer{position:fixed;left:12px;right:12px;bottom:72px;z-index:170;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border:1px solid var(--border);border-radius:16px;background:var(--bg-secondary);box-shadow:0 12px 46px rgba(0,0,0,.35);}
+  .community-input-row{grid-template-columns:minmax(0,1fr) 46px;}
+  .community-send{padding:0;}
 }
 
 /* LEVEL BAR */
@@ -450,7 +506,6 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .hw-list{display:flex;flex-direction:column;gap:10px;}
 .hw-card{background:var(--bg2);border:1px solid var(--border);padding:18px 20px;border-radius:12px;transition:all .2s;}
 .hw-card.hw-ok{border-left:3px solid var(--green);opacity:.75;}
-.hw-card.hw-late{border-left:3px solid var(--red);}
 .hw-card.hw-today{border-left:3px solid var(--gold);}
 .hw-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
 .hw-meta{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
@@ -461,7 +516,6 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .hw-b-grammar{background:#251a08;color:#fb923c;border:1px solid #4a3010;}
 .hw-b-reading{background:#251010;color:#f05555;border:1px solid #4a2020;}
 .hw-due{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
-.hw-due.late{color:var(--red);}
 .hw-due.today{color:var(--gold);}
 .hw-ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:4px;}
 .hw-dsc{font-size:12px;color:var(--muted);line-height:1.6;}
@@ -859,28 +913,89 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 
 /* Finexa-style UI rebuild */
 :root{
-  --bg-card:var(--bg2);
-  --bg-hover:var(--bg3);
-  --text-primary:var(--text);
-  --text-secondary:#4c5568;
-  --text-muted:var(--muted);
-  --accent-primary:var(--gold2);
-  --accent-secondary:var(--gold);
-  --accent-rgb:200,149,10;
+  --bg-primary:#0A0A0A;
+  --bg-secondary:#111111;
+  --bg-card:#1A1A1A;
+  --bg-hover:#222222;
+  --accent-primary:#F5C518;
+  --accent-secondary:#D4A017;
+  --text-primary:#FFFFFF;
+  --text-secondary:#AAAAAA;
+  --text-muted:#666666;
+  --bg:var(--bg-primary);
+  --bg2:var(--bg-secondary);
+  --bg3:var(--bg-card);
+  --border:#2A2A2A;
+  --border2:#3A3A3A;
+  --text:var(--text-primary);
+  --muted:var(--text-secondary);
+  --gold:var(--accent-primary);
+  --gold2:var(--accent-secondary);
+  --hdr-bg:rgba(10,10,10,.95);
+  --accent-rgb:245,197,24;
   --sidebar-w:200px;
   --topbar-h:76px;
-  --card-shadow:0 2px 12px rgba(0,0,0,.15);
-  --card-shadow-hover:0 14px 36px rgba(0,0,0,.22);
-}
-body.dark{
-  --text-secondary:#bac0ce;
-  --accent-primary:var(--gold);
-  --accent-secondary:var(--gold2);
-  --accent-rgb:240,192,96;
   --card-shadow:0 2px 12px rgba(0,0,0,.28);
   --card-shadow-hover:0 16px 42px rgba(0,0,0,.38);
 }
+body.dark{
+  --bg-primary:#0A0A0A;
+  --bg-secondary:#111111;
+  --bg-card:#1A1A1A;
+  --bg-hover:#222222;
+  --accent-primary:#F5C518;
+  --accent-secondary:#D4A017;
+  --text-primary:#FFFFFF;
+  --text-secondary:#AAAAAA;
+  --text-muted:#666666;
+  --bg:var(--bg-primary);
+  --bg2:var(--bg-secondary);
+  --bg3:var(--bg-card);
+  --border:#2A2A2A;
+  --border2:#3A3A3A;
+  --text:var(--text-primary);
+  --muted:var(--text-secondary);
+  --gold:var(--accent-primary);
+  --gold2:var(--accent-secondary);
+  --hdr-bg:rgba(10,10,10,.95);
+  --accent-rgb:245,197,24;
+  --card-shadow:0 2px 12px rgba(0,0,0,.28);
+  --card-shadow-hover:0 16px 42px rgba(0,0,0,.38);
+}
+body.light{
+  --bg-primary:#f7f4ef;
+  --bg-secondary:#ffffff;
+  --bg-card:#ece8df;
+  --bg-hover:#e2dbcf;
+  --accent-primary:#c8950a;
+  --accent-secondary:#f0c060;
+  --text-primary:#1f2430;
+  --text-secondary:#677084;
+  --text-muted:#7c8494;
+  --bg:var(--bg-primary);
+  --bg2:var(--bg-secondary);
+  --bg3:var(--bg-card);
+  --border:#ded6c9;
+  --border2:#c9bfaf;
+  --text:var(--text-primary);
+  --muted:var(--text-secondary);
+  --gold:var(--accent-secondary);
+  --gold2:var(--accent-primary);
+  --hdr-bg:rgba(247,244,239,.94);
+  --accent-rgb:200,149,10;
+  --card-shadow:0 2px 12px rgba(0,0,0,.15);
+  --card-shadow-hover:0 14px 36px rgba(0,0,0,.22);
+}
 body.purple{
+  --bg-primary:#130a1f;
+  --bg-secondary:#1b102b;
+  --bg-card:#1b102b;
+  --bg-hover:#26183b;
+  --accent-primary:#a78bfa;
+  --accent-secondary:#7c3aed;
+  --text-primary:#f4efff;
+  --text-secondary:#ddd4f4;
+  --text-muted:#b8aad7;
   --bg:#130a1f;
   --bg2:#1b102b;
   --bg3:#26183b;
@@ -971,6 +1086,7 @@ a,button,input,textarea,select{font-family:inherit;}
   box-shadow:0 1px 4px rgba(0,0,0,.08);
 }
 .topbar-xp{color:var(--accent-primary);}
+.mobile-streak{display:none;}
 .theme-toggle,.mobile-more-btn,.mobile-chat-btn{
   min-width:44px;
   min-height:44px;
@@ -1467,7 +1583,7 @@ a,button,input,textarea,select{font-family:inherit;}
 }
 .community-msg.mine .community-bubble{
   background:var(--accent-primary);
-  color:#fff;
+  color:#111;
   border-color:var(--accent-primary);
 }
 .modal{
@@ -1593,15 +1709,15 @@ a,button,input,textarea,select{font-family:inherit;}
 }
 
 @media(max-width:767px){
-  body{padding-bottom:76px;}
+  body{padding-bottom:60px;}
   .hdr{
     position:fixed;
     top:0;
     left:0;
     right:0;
-    min-height:64px;
-    height:64px;
-    padding:0 16px;
+    min-height:52px;
+    height:52px;
+    padding:0 12px;
     z-index:150;
     display:flex;
     align-items:center;
@@ -1610,53 +1726,97 @@ a,button,input,textarea,select{font-family:inherit;}
     position:static;
     font-size:18px;
   }
-  .topbar-title,.topbar-stats,.theme-toggle,.hdr-name,.hdr-level{
+  .topbar-stats,.theme-toggle,.hdr-name,.hdr-level,.mobile-chat-btn{
     display:none!important;
   }
+  .topbar-title{
+    display:block!important;
+    position:fixed;
+    left:0;
+    right:0;
+    top:52px;
+    z-index:120;
+    min-height:44px;
+    padding:8px 12px;
+    background:var(--bg);
+    color:var(--text-primary);
+    border-bottom:1px solid var(--border);
+    font-size:24px;
+    font-weight:800;
+    line-height:1.15;
+  }
   .hdr{background:var(--hdr-bg);border-bottom:1px solid var(--border);}
-  .mobile-chat-btn,
   .mobile-more-btn{display:flex!important;}
-  .mobile-chat-btn,
+  .mobile-streak{
+    display:inline-flex;
+    align-items:center;
+    min-height:34px;
+    padding:0 8px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--bg-secondary);
+    color:var(--accent-primary);
+    font-size:13px;
+    font-weight:800;
+    white-space:nowrap;
+  }
   .mobile-more-btn{
     align-items:center;
     justify-content:center;
-    background:var(--bg3);
-    color:var(--text);
-    border-color:var(--border2);
+    min-width:38px;
+    min-height:38px;
+    background:var(--bg-secondary);
+    color:var(--text-primary);
+    border-color:var(--border);
     box-shadow:none;
   }
-  .mobile-chat-btn:hover,
   .mobile-more-btn:hover{
-    background:var(--bg2);
-    color:var(--gold);
-    border-color:var(--gold);
-  }
-  .mobile-chat-btn svg{width:18px;height:18px;stroke:currentColor;}
-  .mobile-chat-btn .chat-nav-badge{
-    right:-4px;
-    top:-4px;
-    box-shadow:0 0 0 2px var(--hdr-bg);
+    background:var(--bg-hover);
+    color:var(--accent-primary);
+    border-color:var(--accent-primary);
   }
   .mobile-more-menu{
-    top:72px;
-    right:14px;
-    z-index:220;
-    background:var(--bg2);
-    border-color:var(--border2);
+    position:fixed;
+    left:0;
+    right:0;
+    top:auto;
+    bottom:0;
+    z-index:260;
+    height:60vh;
+    min-width:0;
+    padding:16px 14px calc(16px + env(safe-area-inset-bottom));
+    background:var(--bg-secondary);
+    border:1px solid var(--border);
+    border-bottom:0;
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -18px 70px rgba(0,0,0,.42);
+    overflow-y:auto;
   }
+  .mobile-more-menu.on{display:grid;align-content:start;gap:8px;}
   .mobile-menu-item{
-    color:var(--text);
-    background:transparent;
+    min-height:48px;
+    color:var(--text-primary);
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
   }
   .mobile-menu-item:hover{
-    background:var(--bg3);
-    color:var(--gold);
+    background:var(--bg-hover);
+    color:var(--accent-primary);
   }
   .hdr-actions{
     width:auto;
     margin-left:auto;
     display:flex;
+    align-items:center;
+    gap:8px;
   }
+  .mobile-streak{order:1;}
+  .hdr-user{order:2;}
+  .mobile-more-btn{order:3;}
+  .mobile-more-menu{order:4;}
   .hdr-user{
     display:flex!important;
     width:auto;
@@ -1673,62 +1833,71 @@ a,button,input,textarea,select{font-family:inherit;}
     bottom:0;
     top:auto;
     z-index:160;
-    height:76px;
-    display:flex!important;
+    height:60px;
+    display:grid!important;
+    grid-template-columns:repeat(5,1fr);
     gap:4px;
-    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    padding:4px 6px calc(4px + env(safe-area-inset-bottom));
     border-right:0;
     border-top:1px solid var(--border);
-    background:var(--hdr-bg);
+    background:var(--bg-secondary);
     backdrop-filter:blur(18px);
-    overflow-x:auto;
+    overflow-x:hidden;
     overflow-y:hidden;
     scrollbar-width:none;
-    scroll-snap-type:x proximity;
   }
   .nav::-webkit-scrollbar{display:none;}
   .nav-btn{
-    display:flex;
-    flex:0 0 76px;
+    display:none;
+    width:auto;
+    min-width:0;
+    flex:initial;
     flex-direction:column;
-    min-height:56px;
-    padding:6px 2px;
+    min-height:52px;
+    padding:4px 2px;
     justify-content:center;
     gap:4px;
-    border-radius:12px;
-    font-size:11px;
+    border-radius:10px;
+    font-size:10px;
+    font-weight:800;
     line-height:1.1;
     text-align:center;
-    scroll-snap-align:start;
     background:transparent;
-    color:var(--muted);
+    color:var(--text-muted);
   }
-  .nav-btn:hover{background:var(--bg3);color:var(--text);}
-  .nav-btn.on{background:rgba(var(--accent-rgb),.14);color:var(--gold);border-bottom-color:transparent;}
+  .nav-btn:hover{background:var(--bg-hover);color:var(--text-primary);}
+  .nav-btn.on{background:transparent;color:var(--accent-primary);border-bottom-color:transparent;}
   .nav-btn.mobile-tab{
     display:flex;
     flex-direction:column;
   }
-  .nav-icon{font-size:20px;width:auto;min-width:0;}
+  .nav-icon{font-size:20px;width:auto;min-width:0;color:inherit;}
   .nav-text{display:block;max-width:100%;}
   .nav .chat-nav-badge{display:none!important;}
-  #appMain{padding-top:64px;}
-  .container{padding:18px 14px 98px;}
+  #appMain{padding-top:96px;}
+  .container{padding:12px 12px 80px;}
   .dashboard-grid{grid-template-columns:1fr;gap:16px;}
   .dashboard-col{gap:16px;}
   .dash-card,.xp-panel,.daily-goal,.achievements-panel,.module-next-card,.module-row,.hw-card,.ph-card,.pr-card,.profile-panel,.exercise-panel,.diary-panel,.vocab-detail{padding:18px;}
   .dash-greeting{font-size:25px;}
-  .kpi-row,.ach-grid,.level-track,.hw-stats,.profile-grid,.rep-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .kpi-row,.ach-grid,.level-track,.hw-stats,.profile-grid,.rep-stat-grid,.spec-grid,.plan-grid,.reading-section-grid,.phrases-grid,.pr-scenarios,.module-day-track{grid-template-columns:1fr!important;}
   .kpi{min-height:98px;padding:14px;}
   .kpi-val,.hw-sn,.rep-stat-value,.profile-metric-value{font-size:28px;}
   .xp-route{grid-template-columns:auto minmax(0,1fr) auto;}
+  .btn,.btn-sm,.hw-ans-btn,.hw-chk,.community-send,.pr-send,.module-back,.module-option,.module-day-pill,.module-level-tab,.vf-btn,.hw-fb,.profile-tab,.rate-btn,.parallel-tab,.favorite-btn,.community-tab{
+    min-height:48px;
+    font-size:15px;
+  }
+  .dash-card,.xp-panel,.daily-goal,.achievements-panel,.module-next-card,.module-row,.hw-card,.ph-card,.pr-card,.profile-panel,.exercise-panel,.diary-panel,.vocab-detail,.reading-section,.article-vocab,.pattern-card,.report-card{
+    width:100%;
+  }
   .community-chat-shell{
     height:calc(100vh - 156px);
     min-height:0;
     margin:0;
     border-radius:16px;
   }
-  .community-composer{bottom:0;}
+  .community-composer{bottom:72px;}
   .vocab-wrap{overflow-x:auto;}
 }
 
@@ -1814,6 +1983,7 @@ window.initDeutschFirebaseChat();
   (function initBodyThemeClass() {
     const theme = localStorage.getItem('theme') || 'dark';
     document.body.classList.toggle('dark', theme === 'dark');
+    document.body.classList.toggle('light', theme === 'light');
     document.body.classList.toggle('purple', theme === 'purple');
   })();
 </script>
@@ -1858,7 +2028,8 @@ window.initDeutschFirebaseChat();
     <div class="ob-sub">Быстрый тест подстроит старт.</div>
     <div class="btn-row">
       <button class="btn btn-ghost" onclick="obNext(2)">← Назад</button>
-      <button class="btn btn-gold" onclick="startLevelTest()">Начать тест →</button>
+      <button class="btn btn-gold" onclick="startLevelTest()">Пройти тест и узнать уровень</button>
+      <button class="btn btn-ghost" onclick="skipLevelTest()">Начать с нуля (A1)</button>
     </div>
   </div>
 
@@ -1904,19 +2075,12 @@ window.initDeutschFirebaseChat();
       <div class="topbar-pill topbar-xp" id="topbarXp">0 XP</div>
     </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
-    <button class="mobile-chat-btn" id="mobileChatBtn" onclick="toggleChatFromHeader()" aria-label="Чат">
-      <i data-lucide="message-circle" aria-hidden="true"></i>
-      <span class="chat-nav-badge" id="chatHeaderBadge">0</span>
-    </button>
+    <div class="mobile-streak" id="mobileStreak">🔥 0</div>
     <button class="mobile-more-btn" id="mobileMoreBtn" onclick="toggleMobileMore()" aria-label="Меню">☰</button>
     <div class="mobile-more-menu" id="mobileMoreMenu">
-      <button class="mobile-menu-item" onclick="goPage('dashboard')"><span class="mobile-menu-icon"><i data-lucide="home" aria-hidden="true"></i></span>Главная</button>
       <button class="mobile-menu-item" onclick="goPage('plan')"><span class="mobile-menu-icon"><i data-lucide="map" aria-hidden="true"></i></span>План</button>
-      <button class="mobile-menu-item" onclick="goPage('reading')"><span class="mobile-menu-icon"><i data-lucide="book-open" aria-hidden="true"></i></span>Чтение</button>
       <button class="mobile-menu-item" onclick="goPage('homework')"><span class="mobile-menu-icon"><i data-lucide="pencil" aria-hidden="true"></i></span>Задания</button>
-      <button class="mobile-menu-item" onclick="goPage('vocab')"><span class="mobile-menu-icon"><i data-lucide="library" aria-hidden="true"></i></span>Словарь</button>
       <button class="mobile-menu-item" onclick="goPage('phrases')"><span class="mobile-menu-icon"><i data-lucide="message-circle" aria-hidden="true"></i></span>Фразы</button>
-      <button class="mobile-menu-item" onclick="goPage('practice')"><span class="mobile-menu-icon"><i data-lucide="bot" aria-hidden="true"></i></span>Практика</button>
       <button class="mobile-menu-item" onclick="goPage('repetition')"><span class="mobile-menu-icon"><i data-lucide="refresh-cw" aria-hidden="true"></i></span>Повторение</button>
       <button class="mobile-menu-item" onclick="goPage('chat')"><span class="mobile-menu-icon"><i data-lucide="users" aria-hidden="true"></i></span>Чат <span class="chat-nav-badge" id="chatMobileBadge">0</span></button>
       <button class="mobile-menu-item" onclick="goPage('settings')"><span class="mobile-menu-icon"><i data-lucide="settings" aria-hidden="true"></i></span>Настройки</button>
@@ -2101,12 +2265,13 @@ window.initDeutschFirebaseChat();
       <div class="community-chat-shell">
         <div class="community-chat-head">
           <div class="community-title-row">
-            <div>
-              <div class="community-title">💬 Чат сообщества</div>
-              <div class="community-room-hint" id="communityRoomHint">Ты можешь писать в Общий чат и чат своего уровня.</div>
+            <div class="community-title-main">
+              <div class="community-title" id="communityRoomTitle">Общий чат</div>
+              <div class="community-online" id="communityOnline">🟢 0 онлайн</div>
             </div>
-            <div class="community-online" id="communityOnline">🟢 0 онлайн</div>
+            <button class="community-clear-btn" onclick="clearCommunityLocalChat()">🗑 Очистить мой чат</button>
           </div>
+          <div class="community-room-hint" id="communityRoomHint">Ты можешь писать в Общий чат и чат своего уровня.</div>
           <div class="community-tabs" id="communityTabs"></div>
           <div class="community-pin" id="communityWordOfDay"></div>
           <div class="community-offline" id="communityOffline">Нет соединения. Чат недоступен офлайн.</div>
@@ -2117,11 +2282,11 @@ window.initDeutschFirebaseChat();
         <div class="community-composer">
           <div class="community-input-row">
             <textarea class="community-input" id="communityInput" maxlength="500" rows="1" placeholder="Введи сообщение..."></textarea>
-            <button class="community-send" id="communitySend" onclick="sendCommunityMessage()">Отправить</button>
+            <button class="community-send" id="communitySend" onclick="sendCommunityMessage()" aria-label="Отправить">→</button>
           </div>
           <div class="community-composer-meta">
             <span id="communityWriteHint">Общий чат доступен всем.</span>
-            <span><span id="communityError" class="community-error"></span> <span id="communityCount">0/500</span></span>
+            <span><span id="communityError" class="community-error"></span> <span id="communityCount" class="community-count">0/500</span></span>
           </div>
         </div>
       </div>
@@ -2139,15 +2304,13 @@ window.initDeutschFirebaseChat();
         <input class="ob-input" id="settingsName" value="">
         <div style="margin-top:16px;">
           <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Уровень</label>
-          <select class="settings-select" id="settingsLevelSelect">
-            <option value="A1">A1</option>
-            <option value="A2">A2</option>
-            <option value="B1">B1</option>
-            <option value="B2">B2</option>
-            <option value="C1">C1</option>
-            <option value="C2">C2</option>
-          </select>
-          <div style="font-size:16px;color:var(--gold);font-weight:500;display:none;" id="settingsLevel">A1</div>
+          <div class="profile-summary" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:14px;font-weight:800;color:var(--text);">Уровень определяется автоматически по результатам теста</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;">Текущий уровень: <span id="settingsLevel">A1</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="retakeTest()">Пройти тест заново</button>
+          </div>
         </div>
         <div style="margin-top:16px;">
           <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Язык перевода</label>
@@ -2169,7 +2332,6 @@ window.initDeutschFirebaseChat();
       <div class="spec-grid" id="settingsSpecGrid"></div>
       <div class="btn-row" style="margin-top:28px;">
         <button class="btn btn-gold" onclick="saveSettings()">Сохранить изменения</button>
-        <button class="btn btn-ghost" onclick="retakeTest()">Пройти тест</button>
       </div>
     </div>
   </div>
@@ -4107,6 +4269,16 @@ function startLevelTest() {
   saveLevelTestState('ob3b');
 }
 
+function skipLevelTest() {
+  S.level = 'A1';
+  S.levelScore = 0;
+  S.levelSkipped = true;
+  S.levelTestState = null;
+  setStorageKey('userLevel', 'A1');
+  setStorageKey('levelSkipped', 'true');
+  finishOnboarding();
+}
+
 function renderLTQ() {
   if (ltIdx >= 10) {
     document.getElementById('ltNum').textContent = 'Грамматика завершена';
@@ -4352,6 +4524,7 @@ function showLTResult() {
 
   S.level = level;
   S.levelScore = Number((ltPlacement.score || ltPlacement.stage1Avg || 1).toFixed(2));
+  S.levelSkipped = false;
   S.placement = {
     grammarCorrect: ltPlacement.grammarCorrect,
     stage1Avg: Number((ltPlacement.stage1Avg || 0).toFixed(2)),
@@ -4360,6 +4533,7 @@ function showLTResult() {
     completedAt: new Date().toISOString(),
   };
   setStorageKey('userLevel', level);
+  setStorageKey('levelSkipped', 'false');
   S.onboardingStep = 'ob4';
   saveS();
 
@@ -5976,6 +6150,54 @@ function toggleChatFromHeader() {
   goPage('chat');
 }
 
+function getReadableArticleSiblings(article) {
+  if (!article) return [];
+  return READING_ARTICLES
+    .filter((item) => item.sectionId === article.sectionId && canOpenReadingArticle(item))
+    .sort((a, b) => READING_ARTICLES.indexOf(a) - READING_ARTICLES.indexOf(b));
+}
+
+function swipeReadingArticle(delta) {
+  const article = getReadingArticle(activeReadingArticleId);
+  const siblings = getReadableArticleSiblings(article);
+  const index = siblings.findIndex((item) => item.id === activeReadingArticleId);
+  const next = siblings[index + delta];
+  if (!next) {
+    toast(delta > 0 ? 'Это последняя статья раздела' : 'Это первая статья раздела');
+    return;
+  }
+  renderReadingArticle(next.id);
+}
+
+function setupSwipeNavigation() {
+  if (window.__deutschSwipeNavigationWired) return;
+  window.__deutschSwipeNavigationWired = true;
+  let start = null;
+  const interactive = 'button,input,textarea,select,a,label,summary,.community-chat-shell,.rep-card';
+  document.addEventListener('touchstart', (event) => {
+    if (event.touches.length !== 1) return;
+    if (event.target.closest(interactive)) return;
+    const touch = event.touches[0];
+    start = { x: touch.clientX, y: touch.clientY, target: event.target };
+  }, { passive: true });
+  document.addEventListener('touchend', (event) => {
+    if (!start || !event.changedTouches.length) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    const target = start.target;
+    start = null;
+    if (Math.abs(dx) < 54 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+    if (target.closest('#page-reading') && activeReadingArticleId) {
+      swipeReadingArticle(dx < 0 ? 1 : -1);
+      return;
+    }
+    if (dx < 0 && target.closest('#page-plan') && modulePlanScreen.mode !== 'main') {
+      renderPlanMain();
+    }
+  }, { passive: true });
+}
+
 function fireConfetti() {
   if (typeof confetti === 'function') {
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.18 } });
@@ -6072,6 +6294,7 @@ function showXPFloating(anchor, amount) {
 function applyTheme(theme) {
   S.theme = ['light', 'purple'].includes(theme) ? theme : 'dark';
   document.body.classList.toggle('dark', S.theme === 'dark');
+  document.body.classList.toggle('light', S.theme === 'light');
   document.body.classList.toggle('purple', S.theme === 'purple');
   const btn = document.getElementById('themeToggle');
   if (btn) {
@@ -6247,6 +6470,7 @@ async function initApp() {
   updateCommunityBadge();
   if (navigator.onLine) startCommunityUnreadListeners();
   renderLogin();
+  setupSwipeNavigation();
   checkAchievements();
   recomputeGrammarPatterns();
   renderWeakBanner();
@@ -6326,6 +6550,7 @@ let communityChat = {
   presenceTimer: null,
   pagehideWired: false,
   lastSendAt: 0,
+  wordCollapsed: localStorage.getItem('communityWordCollapsed') === '1',
 };
 
 function communityLevelRoom() {
@@ -6394,6 +6619,9 @@ function renderCommunityTabs() {
     <button class="community-tab ${room.id === communityChat.room ? 'on' : ''}" onclick="switchCommunityRoom('${room.id}')">${room.label}</button>
   `).join('');
   const profile = getCommunityProfile();
+  const roomLabel = COMMUNITY_ROOMS.find((room) => room.id === communityChat.room)?.label || 'Общий';
+  const title = document.getElementById('communityRoomTitle');
+  if (title) title.textContent = roomLabel === 'Общий' ? 'Общий чат' : `Чат ${roomLabel}`;
   const hint = document.getElementById('communityRoomHint');
   if (hint) hint.textContent = `Ты можешь писать в Общий чат и чат ${profile.level}. Остальные комнаты доступны для чтения.`;
 }
@@ -6405,7 +6633,17 @@ function renderCommunityWordOfDay() {
   const start = new Date(now.getFullYear(), 0, 0);
   const day = Math.floor((now - start) / 86400000);
   const item = COMMUNITY_WORDS_OF_DAY[day % COMMUNITY_WORDS_OF_DAY.length];
-  el.innerHTML = `📌 <strong>Слово дня:</strong> ${esc(item.word)} (${esc(item.ru)})<br><span style="color:var(--muted);">Beispiel: ${esc(item.ex)}</span>`;
+  const details = communityChat.wordCollapsed ? '' : `<span style="color:var(--muted);"> · ${esc(item.ex)}</span>`;
+  el.innerHTML = `
+    <span>📌 <strong>Слово дня:</strong> ${esc(item.word)} — ${esc(item.ru)}${details}</span>
+    <button class="community-pin-toggle" onclick="toggleCommunityWordOfDay()">${communityChat.wordCollapsed ? 'Развернуть' : 'Свернуть'}</button>
+  `;
+}
+
+function toggleCommunityWordOfDay() {
+  communityChat.wordCollapsed = !communityChat.wordCollapsed;
+  setStorageKey('communityWordCollapsed', communityChat.wordCollapsed ? '1' : '0');
+  renderCommunityWordOfDay();
 }
 
 function renderCommunityComposerState() {
@@ -6443,7 +6681,7 @@ function wireCommunityInput() {
   input.addEventListener('input', () => {
     if (input.value.length > 500) input.value = input.value.slice(0, 500);
     input.style.height = 'auto';
-    input.style.height = `${Math.min(input.scrollHeight, 130)}px`;
+    input.style.height = `${Math.min(input.scrollHeight, 104)}px`;
     updateCommunityCharCount();
   });
 }
@@ -6451,7 +6689,11 @@ function wireCommunityInput() {
 function updateCommunityCharCount() {
   const input = document.getElementById('communityInput');
   const count = document.getElementById('communityCount');
-  if (count) count.textContent = `${(input?.value || '').length}/500`;
+  const length = (input?.value || '').length;
+  if (count) {
+    count.textContent = `${length}/500`;
+    count.classList.toggle('on', length >= 400);
+  }
 }
 
 async function openCommunityChat() {
@@ -6561,15 +6803,21 @@ function renderCommunityMessages(items = communityChat.messages) {
   const box = document.getElementById('communityMessages');
   if (!box) return;
   const firebaseUserId = window.deutschFirebaseChat?.user?.uid || '';
-  if (!items.length) {
+  const clearedAt = getCommunityClearedAt();
+  const visibleItems = (items || []).filter((message) => !clearedAt || Number(message.timestamp || 0) > clearedAt);
+  if (!visibleItems.length) {
     box.innerHTML = '<div class="community-empty">Пока сообщений нет. Начни разговор по-немецки или спроси что-нибудь у сообщества.</div>';
     return;
   }
-  box.innerHTML = items.map((message) => {
+  box.innerHTML = visibleItems.map((message, index) => {
     const isMine = message.userId && message.userId === firebaseUserId;
+    const prev = visibleItems[index - 1];
+    const sameAuthor = prev && String(prev.userId || prev.userName || '') === String(message.userId || message.userName || '');
+    const closeInTime = prev && Math.abs(Number(message.timestamp || 0) - Number(prev.timestamp || 0)) < 60000;
+    const grouped = sameAuthor && closeInTime;
     const reactions = renderCommunityReactions(message.reactions);
     return `
-      <div class="community-msg ${isMine ? 'mine' : ''}" data-id="${esc(message.id)}" onpointerdown="communityReactionHoldStart(event,this)" onpointerup="communityReactionHoldEnd(this)" onpointerleave="communityReactionHoldEnd(this)">
+      <div class="community-msg ${isMine ? 'mine' : ''} ${grouped ? 'grouped' : ''}" data-id="${esc(message.id)}" onpointerdown="communityReactionHoldStart(event,this)" onpointerup="communityReactionHoldEnd(this)" onpointerleave="communityReactionHoldEnd(this)">
         ${isMine ? '' : renderCommunityAvatar(message.userName)}
         <div class="community-bubble-wrap">
           <div class="community-meta">
@@ -6586,6 +6834,17 @@ function renderCommunityMessages(items = communityChat.messages) {
     `;
   }).join('');
   requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
+}
+
+function getCommunityClearedAt() {
+  return Math.max(0, Number(localStorage.getItem('chatClearedAt') || 0));
+}
+
+function clearCommunityLocalChat() {
+  if (!confirm('Очистить историю чата на этом устройстве?')) return;
+  setStorageKey('chatClearedAt', String(Date.now()));
+  renderCommunityMessages(communityChat.messages);
+  toast('История чата очищена на этом устройстве');
 }
 
 function renderCommunityAvatar(name) {
@@ -6750,8 +7009,10 @@ function updateDash() {
   streakEl.classList.toggle('empty', !(S.streakCount > 0));
   const topbarStreak = document.getElementById('topbarStreak');
   const topbarXp = document.getElementById('topbarXp');
+  const mobileStreak = document.getElementById('mobileStreak');
   if (topbarStreak) topbarStreak.textContent = `🔥 ${S.streakCount || 0}`;
   if (topbarXp) topbarXp.textContent = `${S.points || 0} XP`;
+  if (mobileStreak) mobileStreak.textContent = `🔥 ${S.streakCount || 0}`;
 
   const levelInfo = getXPLevelInfo();
   const xpPanel = document.getElementById('xpPanel');
@@ -6802,16 +7063,16 @@ function updateDash() {
   renderDashboardNextModule();
 
   const pending = getHWList()
-    .filter((item) => !S.hwDone[item.id])
-    .sort((a, b) => new Date(a.due) - new Date(b.due));
+    .filter((item) => !S.hwDone[item.id]);
   const nextHW = document.getElementById('nextHW');
   if (pending.length) {
     const hw = pending[0];
+    const state = hwSt(hw);
     nextHW.innerHTML = `
       <div class="hw-card" style="max-width:520px;cursor:pointer;" onclick="goPage('homework')">
         <div class="hw-meta">
           <span class="hw-badge hw-b-${hw.type}">${HW_TYPE_LABELS[hw.type] || hw.type}</span>
-          <span class="hw-due">${fmtDue(hw.due)}</span>
+          <span class="hw-due">${hwStatusLabel(state)}</span>
         </div>
         <div class="hw-ttl">${hw.title}</div>
         <div class="hw-dsc" style="margin-top:4px;">${hw.desc.slice(0, 120)}...</div>
@@ -8424,24 +8685,18 @@ const HW_TYPE_LABELS = {
   reading: 'Чтение',
 };
 
-function fmtDue(dateString) {
-  const due = new Date(dateString);
-  due.setHours(0, 0, 0, 0);
-  const diff = Math.round((due - TODAY) / 86400000);
-  if (diff === 0) return 'Сегодня';
-  if (diff === 1) return 'Завтра';
-  if (diff === -1) return 'Вчера';
-  if (diff < 0) return `Просрочено (${Math.abs(diff)} дн.)`;
-  return `Через ${diff} дн.`;
-}
-
 function hwSt(hw) {
   if (S.hwDone[hw.id]) return 'done';
-  const due = new Date(hw.due);
-  due.setHours(0, 0, 0, 0);
-  if (due < TODAY) return 'overdue';
-  if (due.getTime() === TODAY.getTime()) return 'today';
-  return 'pending';
+  if ((S.hwAnswers[hw.id] || '').trim()) return 'progress';
+  return 'not-started';
+}
+
+function hwStatusLabel(state) {
+  return {
+    done: 'Завершено',
+    progress: 'В процессе',
+    'not-started': 'Не начато',
+  }[state] || 'Не начато';
 }
 
 function getHWList() {
@@ -8476,20 +8731,21 @@ let curHWFilter = 'all';
 
 function renderHW(filter) {
   if (filter) curHWFilter = filter;
+  if (!['all', 'not-started', 'progress', 'done'].includes(curHWFilter)) curHWFilter = 'all';
 
-  let list = getHWList().sort((a, b) => new Date(a.due) - new Date(b.due));
+  let list = getHWList();
   const total = list.length;
-  const done = list.filter((item) => S.hwDone[item.id]).length;
-  const overdue = list.filter((item) => hwSt(item) === 'overdue').length;
-  const pending = list.filter((item) => !S.hwDone[item.id] && hwSt(item) !== 'overdue').length;
+  const done = list.filter((item) => hwSt(item) === 'done').length;
+  const inProgress = list.filter((item) => hwSt(item) === 'progress').length;
+  const notStarted = list.filter((item) => hwSt(item) === 'not-started').length;
 
   const filterWrap = document.getElementById('hwFilter');
   if (!filterWrap.children.length) {
     [
       ['all', 'Все'],
-      ['pending', 'Активные'],
-      ['done', 'Сданные'],
-      ['overdue', 'Просроченные'],
+      ['not-started', 'Не начато'],
+      ['progress', 'В процессе'],
+      ['done', 'Завершено'],
     ].forEach(([value, label]) => {
       const btn = document.createElement('button');
       btn.className = `hw-fb${value === curHWFilter ? ' on' : ''}`;
@@ -8505,14 +8761,12 @@ function renderHW(filter) {
 
   document.getElementById('hwStats').innerHTML = `
     <div class="hw-stat"><div class="hw-sn" style="color:var(--gold)">${total}</div><div class="hw-sl">Всего</div></div>
-    <div class="hw-stat"><div class="hw-sn" style="color:var(--green)">${done || 'пока нет'}</div><div class="hw-sl">Сдано</div></div>
-    <div class="hw-stat"><div class="hw-sn" style="color:var(--muted)">${pending || 'всё чисто'}</div><div class="hw-sl">Активных</div></div>
-    <div class="hw-stat"><div class="hw-sn" style="color:var(--red)">${overdue || 'нет'}</div><div class="hw-sl">Просрочено</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--muted)">${notStarted || 0}</div><div class="hw-sl">Не начато</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--gold)">${inProgress || 0}</div><div class="hw-sl">В процессе</div></div>
+    <div class="hw-stat"><div class="hw-sn" style="color:var(--green)">${done || 0}</div><div class="hw-sl">Завершено</div></div>
   `;
 
-  if (curHWFilter === 'done') list = list.filter((item) => S.hwDone[item.id]);
-  else if (curHWFilter === 'pending') list = list.filter((item) => !S.hwDone[item.id] && hwSt(item) !== 'overdue');
-  else if (curHWFilter === 'overdue') list = list.filter((item) => hwSt(item) === 'overdue');
+  if (curHWFilter !== 'all') list = list.filter((item) => hwSt(item) === curHWFilter);
 
   const hwList = document.getElementById('hwList');
   hwList.innerHTML = '';
@@ -8526,14 +8780,13 @@ function renderHW(filter) {
     const isDone = !!S.hwDone[hw.id];
     const saved = S.hwAnswers[hw.id] || '';
     const card = document.createElement('div');
-    card.className = `hw-card${isDone ? ' hw-ok' : state === 'overdue' ? ' hw-late' : state === 'today' ? ' hw-today' : ''}`;
+    card.className = `hw-card${isDone ? ' hw-ok' : saved ? ' hw-today' : ''}`;
     card.innerHTML = `
       <div class="hw-top">
         <div class="hw-left" style="flex:1;">
           <div class="hw-meta">
             <span class="hw-badge hw-b-${hw.type}">${HW_TYPE_LABELS[hw.type] || hw.type}</span>
-            <span class="hw-due ${state === 'overdue' ? 'late' : state === 'today' ? 'today' : ''}">${fmtDue(hw.due)}</span>
-            ${isDone ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--green);letter-spacing:2px;text-transform:uppercase;">✓ Сдано</span>` : ''}
+            <span class="hw-due ${isDone ? 'today' : ''}">${hwStatusLabel(state)}</span>
           </div>
           <div class="hw-ttl">${hw.title}</div>
           <div class="hw-dsc">${hw.desc}</div>
@@ -8815,8 +9068,6 @@ function renderPhrases() {
 function renderSettings() {
   document.getElementById('settingsName').value = S.name || '';
   document.getElementById('settingsLevel').textContent = S.level || 'A1';
-  const levelSelect = document.getElementById('settingsLevelSelect');
-  if (levelSelect) levelSelect.value = normalizeLevelName(S.level || 'A1');
   const translationSelect = document.getElementById('translationLangSelect');
   if (translationSelect) translationSelect.value = getTranslationLang();
   const themeSelect = document.getElementById('settingsThemeSelect');
@@ -8846,11 +9097,6 @@ function renderSettings() {
 function saveSettings() {
   const newName = document.getElementById('settingsName').value.trim();
   if (newName) S.name = newName;
-  const selectedLevel = document.getElementById('settingsLevelSelect')?.value;
-  if (selectedLevel) {
-    S.level = normalizeLevelName(selectedLevel);
-    setStorageKey('userLevel', S.level);
-  }
   S.translationLang = document.getElementById('translationLangSelect')?.value === 'de' ? 'de' : 'ru';
   applyTheme(document.getElementById('settingsThemeSelect')?.value || 'dark');
   S.specs = SPECIALIZATIONS
@@ -8867,7 +9113,12 @@ function retakeTest() {
   if (!confirm('Пройти тест заново?')) return;
   S.level = 'A1';
   S.levelScore = 0;
+  S.levelSkipped = false;
   S.onboardingDone = false;
+  S.onboardingStep = 'ob3';
+  S.levelTestState = null;
+  setStorageKey('userLevel', 'A1');
+  setStorageKey('levelSkipped', 'false');
   saveS();
   location.reload();
 }
