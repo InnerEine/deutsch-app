@@ -455,9 +455,10 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
   .module-text{font-size:16px;line-height:1.85;}
   .module-level-tab,.module-option,.module-back{min-height:46px;}
   .module-day-card.big,.module-day-card,.module-side-card,.module-panel{padding:14px;}
-  .community-chat-shell{height:calc(100vh - 132px);min-height:0;border-radius:0;border-left:0;border-right:0;margin:0 -12px;}
+  #page-chat .container{padding-bottom:0;}
+  .community-chat-shell{height:calc(100vh - 132px);min-height:0;border-radius:0;border-left:0;border-right:0;margin:0 -12px;display:flex;flex-direction:column;overflow:visible;}
   .community-chat-head{padding:12px;}
-  .community-messages{padding:14px 12px 80px;}
+  .community-messages{flex:1;min-height:0;padding:14px 12px 150px;overflow-y:auto;}
   .community-msg{width:75vw;max-width:75%;grid-template-columns:28px minmax(0,1fr);}
   .community-msg.mine{grid-template-columns:minmax(0,1fr) 28px;}
   .community-avatar{width:28px;height:28px;}
@@ -1038,6 +1039,9 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   .hw-acts{width:100%;flex-direction:row;justify-content:space-between;align-items:center;}
   .pr-msg{gap:8px;}
   .pr-bubble{max-width:calc(100% - 42px);font-size:13px;padding:11px 13px;}
+  #practiceChat{padding-bottom:138px;}
+  #practiceChat .pr-messages{max-height:none;height:calc(100vh - 360px);min-height:260px;padding-bottom:132px;}
+  #practiceChat .pr-input-wrap{position:fixed;left:0;right:0;bottom:64px;z-index:170;border-radius:16px 16px 0 0;background:var(--bg-secondary);box-shadow:0 12px 46px rgba(0,0,0,.35);}
   .pr-actions{display:grid;grid-template-columns:1fr;}
   .profile-title{font-size:22px;}
   .profile-summary-row{flex-direction:column;align-items:flex-start;}
@@ -6272,7 +6276,7 @@ function renderReadingArticle(id) {
     <div class="exercise-panel" id="readingExercisePanel"></div>
     ${renderDiaryPanel(article, section)}
     <div class="audio-panel">
-      <button class="btn btn-gold btn-sm" onclick="playReadingAudio()" aria-label="Играть">▶</button>
+      <button class="btn btn-gold btn-sm" onclick="playReadingAudio()" aria-label="Играть">Играть</button>
       <button class="btn btn-ghost btn-sm" onclick="pauseReadingAudio()" aria-label="Пауза">⏸</button>
       <div class="audio-progress"><div class="audio-progress-fill" id="readingAudioProgress"></div></div>
       <div class="audio-rate">
@@ -9691,7 +9695,7 @@ function renderSimplePlanExam(level) {
           </section>
           <section class="plan-word-card">
             <div class="plan-exam-part-head"><div class="module-row-title">Часть 2 — Hören</div><span class="plan-pill">25%</span></div>
-            <button class="btn btn-gold" onclick="speakWordOnly(${jsString(text)})">▶ Прослушать</button>
+            <button class="btn btn-gold" onclick="speakWordOnly(${jsString(text)})">Прослушать</button>
             <button class="btn btn-ghost" onclick="speakWordOnly(${jsString(text)})">↩ Прослушать снова</button>
             ${[0,1,2,3,4].map((i) => `<div>${i + 1}. Текст о немецком уровне?<input class="module-input" id="examHear${i}" placeholder="ja/nein"></div>`).join('')}
           </section>
@@ -9992,28 +9996,108 @@ function toggleHWDone(id) {
 }
 
 let curVocabLevelFilter = 'all';
+let curVocabSpecFilter = 'all';
 let curVocabSearch = '';
 let selectedVocabId = null;
 
+function specLabelById(id) {
+  if (id === 'all') return 'Все';
+  if (id === 'general') return 'Общий';
+  return SPECIALIZATIONS.find((item) => item.id === id)?.name.split('/')[0].trim() || id.toUpperCase();
+}
+
+function vocabSpecId(word) {
+  const raw = String(word.spec || word.specId || word.category || word.cat || word.tags?.[0] || '').toLowerCase();
+  const map = {
+    it: 'it',
+    'it a1': 'it',
+    'it a2': 'it',
+    медицина: 'med',
+    med: 'med',
+    право: 'law',
+    law: 'law',
+    финансы: 'fin',
+    fin: 'fin',
+    инженерия: 'eng',
+    eng: 'eng',
+    бизнес: 'biz',
+    biz: 'biz',
+    everyday: 'general',
+    reading: 'general',
+    general: 'general',
+    общий: 'general',
+  };
+  return map[raw] || (SPECIALIZATIONS.some((item) => item.id === raw) ? raw : 'general');
+}
+
+function makeBaseVocabWord(raw, source = 'base') {
+  const word = normalizeWord(raw);
+  if (!word || !cleanTerm(word.word || word.de) || isStopWord(word.word || word.de)) return null;
+  const specId = vocabSpecId(word);
+  const translation = word.translation || word.ru || word.translationRU || '';
+  return {
+    ...word,
+    id: word.id || `${source}_${specId}_${slugTerm(word.word || word.de)}`,
+    source,
+    specId,
+    saved: false,
+    translation,
+    translationRU: word.translationRU || translation,
+    translationEN: word.translationEN || word.en || '',
+    addedDate: Number(word.addedDate || 0),
+    tags: [...new Set([specLabelById(specId), ...(word.tags || [])].filter(Boolean))],
+  };
+}
+
+function getBaseVocabulary() {
+  const items = [];
+  (typeof vocabularyData !== 'undefined' ? vocabularyData : []).forEach((word) => items.push(makeBaseVocabWord(word, 'base')));
+  Object.entries(typeof SPEC_VOCAB !== 'undefined' ? SPEC_VOCAB : {}).forEach(([specId, words]) => {
+    words.forEach((word) => items.push(makeBaseVocabWord({ ...word, specId, category: specId }, 'profession')));
+  });
+  Object.entries(germanDict || {}).forEach(([key, value]) => {
+    items.push(makeBaseVocabWord({
+      de: key,
+      word: key,
+      ru: value.ru,
+      en: value.en,
+      translation: value.ru,
+      translationEN: value.en,
+      level: value.level || 'A1',
+      category: 'general',
+      example: key,
+    }, 'dict'));
+  });
+  return items.filter(Boolean);
+}
+
 function getAllVocab() {
-  const savedReading = (S.userVocabulary || S.savedReadingWords || []).map(normalizeStoredReadingWord).filter(Boolean).map(normalizeWord);
+  const savedReading = (S.userVocabulary || S.savedReadingWords || [])
+    .map(normalizeStoredReadingWord)
+    .filter(Boolean)
+    .map((word) => ({ ...normalizeWord(word), source: 'saved', saved: true, specId: vocabSpecId(word), addedDate: Number(word.addedDate || Date.now()) }));
   const seen = new Set();
-  const words = savedReading.filter((word) => {
+  const words = [...savedReading, ...getBaseVocabulary()].filter((word) => {
     const key = cleanTerm(word.word || word.de);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
   return words.sort((a, b) => {
-    return (Number(b.addedDate || 0) - Number(a.addedDate || 0)) || (a.de || a.word).localeCompare(b.de || b.word);
+    return Number(b.saved || 0) - Number(a.saved || 0)
+      || (Number(b.addedDate || 0) - Number(a.addedDate || 0))
+      || (a.de || a.word).localeCompare(b.de || b.word);
   });
 }
 
 function vocabMatchesFilters(word) {
   const levelOk = curVocabLevelFilter === 'all' || normalizeLevelName(word.level) === curVocabLevelFilter;
+  const specOk = curVocabSpecFilter === 'all' || vocabSpecId(word) === curVocabSpecFilter;
   const q = cleanTerm(curVocabSearch);
-  const searchOk = !q || cleanTerm(word.word || word.de).includes(q);
-  return levelOk && searchOk;
+  const searchOk = !q
+    || cleanTerm(word.word || word.de).includes(q)
+    || cleanTerm(word.translation || word.ru || word.translationRU || '').includes(q);
+  return levelOk && specOk && searchOk;
 }
 
 function renderVocabFilterGroup(label, values, active, onClickName) {
@@ -10042,6 +10126,31 @@ function setVocabSearch(value) {
   renderVocab();
 }
 
+function setVocabSpecFilter(value) {
+  curVocabSpecFilter = value || 'all';
+  renderVocab();
+}
+
+function saveBaseVocabWord(id) {
+  const word = getAllVocab().find((item) => item.id === id);
+  if (!word || word.saved) return;
+  if (isStopWord(word.word || word.de)) return toast('Это служебное слово, его не нужно добавлять в словарь');
+  const payload = {
+    ...word,
+    id: `saved_${slugTerm(word.word || word.de)}`,
+    source: 'saved',
+    saved: true,
+    addedDate: Date.now(),
+  };
+  S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
+  if (!isSavedVocabularyWord(payload.word || payload.de)) S.savedReadingWords.push(payload);
+  S.userVocabulary = [...S.savedReadingWords];
+  saveS();
+  syncUserVocabularyWord(payload).catch(() => {});
+  toast('Слово добавлено в мой словарь');
+  renderVocab();
+}
+
 function removeVocabWord(id) {
   const before = (S.savedReadingWords || []).length;
   S.savedReadingWords = (S.savedReadingWords || []).filter((item) => item.id !== id);
@@ -10062,9 +10171,12 @@ function renderVocab(filter) {
   const filterWrap = document.getElementById('vocabFilter');
   const allWords = getAllVocab();
   const levelValues = ['all', 'A1', 'A2', 'B1', 'B2'];
+  const specValues = ['all', 'general', ...SPECIALIZATIONS.map((item) => item.id)];
   if (!levelValues.includes(curVocabLevelFilter)) curVocabLevelFilter = 'all';
+  if (!specValues.includes(curVocabSpecFilter)) curVocabSpecFilter = 'all';
   filterWrap.innerHTML = `
-    ${renderVocabFilterGroup('', levelValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabLevelFilter, 'setVocabLevelFilter')}
+    ${renderVocabFilterGroup('Уровень', levelValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabLevelFilter, 'setVocabLevelFilter')}
+    ${renderVocabFilterGroup('Профессия', specValues.map((value) => ({ value, label: specLabelById(value) })), curVocabSpecFilter, 'setVocabSpecFilter')}
   `;
 
   const words = allWords.filter(vocabMatchesFilters);
@@ -10089,21 +10201,23 @@ function renderVocab(filter) {
     const meaning = getMeaningText(word, word.level);
     const example = word.example || word.context?.sentence || word.ex || '';
     const exampleTranslation = word.exampleTranslation || '';
+    const saved = !!word.saved || isSavedVocabularyWord(word.word || word.de);
     card.innerHTML = `
       <div class="vocab-card-top">
         <div>
           <span class="vocab-card-word">${esc(word.word || word.de)}</span>
           <span class="reading-badge">${esc(word.level || 'A1')}</span>
+          <span class="reading-badge">${esc(specLabelById(vocabSpecId(word)))}</span>
         </div>
         <div class="vocab-card-actions">
           <button class="vocab-card-icon" onclick="speakWordOnly(${jsString(word.word || word.de)})" aria-label="Озвучить">🔊</button>
-          <button class="vocab-card-icon" onclick="removeVocabWord(${jsString(word.id)})" aria-label="Удалить">🗑</button>
+          ${saved ? `<button class="vocab-card-icon" onclick="removeVocabWord(${jsString(word.id)})" aria-label="Удалить">🗑</button>` : `<button class="vocab-card-icon" onclick="saveBaseVocabWord(${jsString(word.id)})" aria-label="Добавить">＋</button>`}
         </div>
       </div>
       <div class="vocab-card-translation">${esc(meaning || 'Перевод не найден')}</div>
       <div class="vocab-card-example">${esc(example || '')}</div>
       <div class="vocab-card-example-ru">${esc(exampleTranslation || '')}</div>
-      <div class="vocab-card-date">Добавлено: ${formatVocabDate(word.addedDate)}</div>
+      <div class="vocab-card-date">${saved ? `Добавлено: ${formatVocabDate(word.addedDate)}` : 'База слов'}</div>
     `;
     body.appendChild(card);
   });
