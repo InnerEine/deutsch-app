@@ -716,6 +716,8 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .word-popup-example-title{font-size:13px;font-weight:800;color:var(--text-primary);margin-bottom:8px;}
 .word-popup-example{display:grid;gap:5px;margin-bottom:18px;font-size:14px;line-height:1.5;}
 .word-popup-example-ru{color:var(--text-muted);}
+.word-popup-manual{display:grid;gap:8px;margin:12px 0;}
+.word-popup-input{width:100%;border:1px solid var(--border2);background:var(--bg3);color:var(--text);border-radius:10px;padding:12px;outline:none;}
 .word-popup-add{width:100%;min-height:46px;border:0;border-radius:12px;background:var(--accent-primary);color:#000;font-weight:800;cursor:pointer;}
 .word-popup-add.saved,.word-popup-add:disabled{background:var(--bg-card);color:var(--text-muted);cursor:default;}
 .word-popup-add.added{background:var(--green);color:#000;}
@@ -2306,7 +2308,8 @@ window.initDeutschFirebaseChat();
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);padding:20px;border-radius:12px;margin-bottom:28px;" id="planPreview"></div>
     <div class="btn-row" style="justify-content:center;">
-      <button class="btn btn-gold" onclick="finishOnboarding()" style="font-size:16px;padding:16px 32px;">Начать →</button>
+      <button class="btn btn-gold" onclick="startPlanFromDetectedLevel()" style="font-size:16px;padding:16px 32px;" id="startDetectedLevelBtn">Начать с твоего уровня →</button>
+      <button class="btn btn-ghost btn-sm" onclick="startPlanFromBeginning()">Начать с самого начала (A1)</button>
     </div>
   </div>
 
@@ -4575,7 +4578,64 @@ function skipLevelTest() {
   S.levelTestState = null;
   setStorageKey('userLevel', 'A1');
   setStorageKey('levelSkipped', 'true');
+  applyPlacementLevelToPlan('A1', false);
   finishOnboarding();
+}
+
+function makePlacementPlanProgress(level = 'A1', startAtDetected = true) {
+  const detectedLevel = normalizeLevelName(level);
+  const targetLevel = startAtDetected ? detectedLevel : 'A1';
+  const progress = defaultPlanProgress();
+  const targetIndex = PLAN_LEVELS.indexOf(targetLevel);
+  const completedModules = {};
+  PLAN_LEVELS.forEach((planLevel, levelIndex) => {
+    const shouldComplete = startAtDetected && levelIndex < targetIndex;
+    if (!shouldComplete) return;
+    completedModules[planLevel] = { completed: true, allBlocks: true };
+    planData[planLevel].blocks.forEach((block) => {
+      progress.completedLessons[block.id] = block.lessons.map((lesson) => Number(lesson.id));
+      progress.blockTests[block.id] = { score: 100, passed: true, placement: true };
+    });
+    progress.levelExams[planLevel] = { score: 100, passed: true, placement: true };
+  });
+  progress.currentLevel = targetLevel;
+  progress.currentBlock = `${targetLevel.toLowerCase()}_b1`;
+  progress.currentLesson = 1;
+  setStorageKey('completedModules', JSON.stringify(completedModules));
+  setStorageKey('currentLevel', targetLevel);
+  setStorageKey('currentBlock', progress.currentBlock);
+  setStorageKey('currentLesson', '1');
+  return progress;
+}
+
+async function applyPlacementLevelToPlan(level = 'A1', startAtDetected = true) {
+  const targetLevel = startAtDetected ? normalizeLevelName(level) : 'A1';
+  const progress = makePlacementPlanProgress(targetLevel, startAtDetected);
+  S.level = targetLevel;
+  setStorageKey('userLevel', targetLevel);
+  setStorageKey('currentLevel', progress.currentLevel);
+  setStorageKey('currentBlock', progress.currentBlock);
+  setStorageKey('currentLesson', String(progress.currentLesson));
+  saveS();
+  savePlanProgress(progress);
+  return progress;
+}
+
+async function startPlanFromDetectedLevel() {
+  const detectedLevel = normalizeLevelName(S.level || document.getElementById('resultScore')?.textContent || 'A1');
+  const progress = await applyPlacementLevelToPlan(detectedLevel, true);
+  finishOnboarding();
+  goPage('plan');
+  simplePlanScreen = { mode: 'main' };
+  renderPlanMain(progress.currentLevel);
+}
+
+async function startPlanFromBeginning() {
+  const progress = await applyPlacementLevelToPlan('A1', false);
+  finishOnboarding();
+  goPage('plan');
+  simplePlanScreen = { mode: 'main' };
+  renderPlanMain(progress.currentLevel);
 }
 
 function renderLTQ() {
@@ -4838,6 +4898,8 @@ function showLTResult() {
 
   document.getElementById('resultScore').textContent = level;
   document.getElementById('resultLevel').textContent = `Уровень: ${level}`;
+  const startDetectedLevelBtn = document.getElementById('startDetectedLevelBtn');
+  if (startDetectedLevelBtn) startDetectedLevelBtn.textContent = `Начать с ${level} (твой уровень) →`;
   document.getElementById('resultDesc').textContent = `${descByLevel[level]} ${writingNote}`;
   const specNames = SPECIALIZATIONS
     .filter((item) => S.specs.includes(item.id))
@@ -4858,7 +4920,7 @@ function showLTResult() {
     <div style="margin-top:18px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Рекомендуем начать с:</div>
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px;">${recommended.title}</div>
-      <button class="btn btn-gold btn-sm" onclick="finishOnboarding('${recommended.id}')">Перейти к уроку →</button>
+      <button class="btn btn-gold btn-sm" onclick="startPlanFromDetectedLevel()">Перейти к плану ${level} →</button>
     </div>
   `;
   document.querySelectorAll('.ob-step').forEach((item) => item.classList.remove('on'));
@@ -5039,6 +5101,488 @@ function readingMinutes(text) {
 
 function cleanTerm(term) {
   return String(term || '').toLowerCase().replace(/[^\p{L}\s-]/gu, '').replace(/\s+/g, ' ').trim();
+}
+
+const germanDict = {
+  ich: { ru: 'я', en: 'I', level: 'A1' },
+  du: { ru: 'ты', en: 'you', level: 'A1' },
+  er: { ru: 'он', en: 'he', level: 'A1' },
+  sie: { ru: 'она / они', en: 'she / they', level: 'A1' },
+  es: { ru: 'оно / это', en: 'it', level: 'A1' },
+  wir: { ru: 'мы', en: 'we', level: 'A1' },
+  ihr: { ru: 'вы', en: 'you', level: 'A1' },
+  der: { ru: 'определённый артикль мужского рода', en: 'the (masc.)', level: 'A1' },
+  die: { ru: 'определённый артикль женского рода / множественного числа', en: 'the (fem. / pl.)', level: 'A1' },
+  das: { ru: 'определённый артикль среднего рода / это', en: 'the (neut.) / that', level: 'A1' },
+  ein: { ru: 'один / неопределённый артикль', en: 'a / one', level: 'A1' },
+  eine: { ru: 'одна / неопределённый артикль', en: 'a / one', level: 'A1' },
+  einen: { ru: 'одного / неопределённый артикль в Akkusativ', en: 'a / one (acc.)', level: 'A1' },
+  einem: { ru: 'одному / неопределённый артикль в Dativ', en: 'a / one (dat.)', level: 'A2' },
+  einer: { ru: 'одной / неопределённый артикль', en: 'a / one', level: 'A2' },
+  mein: { ru: 'мой', en: 'my', level: 'A1' },
+  meine: { ru: 'моя / мои', en: 'my', level: 'A1' },
+  dein: { ru: 'твой', en: 'your', level: 'A1' },
+  deine: { ru: 'твоя / твои', en: 'your', level: 'A1' },
+  sein: { ru: 'быть / его', en: 'to be / his', level: 'A1' },
+  seine: { ru: 'его', en: 'his', level: 'A1' },
+  ihr: { ru: 'её / их / вы', en: 'her / their / you', level: 'A1' },
+  ihre: { ru: 'её / их', en: 'her / their', level: 'A1' },
+  unser: { ru: 'наш', en: 'our', level: 'A1' },
+  unsere: { ru: 'наша / наши', en: 'our', level: 'A1' },
+  dieser: { ru: 'этот', en: 'this', level: 'A2' },
+  diese: { ru: 'эта / эти', en: 'this / these', level: 'A2' },
+  dieses: { ru: 'это', en: 'this', level: 'A2' },
+  alle: { ru: 'все', en: 'all', level: 'A1' },
+  alles: { ru: 'всё', en: 'everything', level: 'A1' },
+  jemand: { ru: 'кто-то', en: 'someone', level: 'A2' },
+  niemand: { ru: 'никто', en: 'nobody', level: 'A2' },
+  man: { ru: 'человек / неопределённое местоимение', en: 'one / people', level: 'A1' },
+  sich: { ru: 'себя', en: 'oneself', level: 'A2' },
+  mir: { ru: 'мне', en: 'me (dat.)', level: 'A1' },
+  mich: { ru: 'меня', en: 'me', level: 'A1' },
+  dir: { ru: 'тебе', en: 'you (dat.)', level: 'A1' },
+  dich: { ru: 'тебя', en: 'you', level: 'A1' },
+  ihm: { ru: 'ему', en: 'him (dat.)', level: 'A2' },
+  ihn: { ru: 'его', en: 'him', level: 'A2' },
+  uns: { ru: 'нас / нам', en: 'us', level: 'A1' },
+  euch: { ru: 'вас / вам', en: 'you', level: 'A1' },
+  heiße: { ru: 'меня зовут', en: 'my name is', base: 'heißen', level: 'A1' },
+  heißen: { ru: 'называться / звать', en: 'to be called', level: 'A1' },
+  heißt: { ru: 'называется / зовут', en: 'is called', base: 'heißen', level: 'A1' },
+  bin: { ru: 'я есть', en: 'am', base: 'sein', level: 'A1' },
+  bist: { ru: 'ты есть', en: 'are', base: 'sein', level: 'A1' },
+  ist: { ru: 'есть / является', en: 'is', base: 'sein', level: 'A1' },
+  sind: { ru: 'есть / являются', en: 'are', base: 'sein', level: 'A1' },
+  seid: { ru: 'вы есть', en: 'are', base: 'sein', level: 'A1' },
+  war: { ru: 'был / была', en: 'was', base: 'sein', level: 'A2' },
+  waren: { ru: 'были', en: 'were', base: 'sein', level: 'A2' },
+  haben: { ru: 'иметь', en: 'to have', level: 'A1' },
+  habe: { ru: 'я имею', en: 'I have', base: 'haben', level: 'A1' },
+  hast: { ru: 'ты имеешь', en: 'you have', base: 'haben', level: 'A1' },
+  hat: { ru: 'имеет', en: 'has', base: 'haben', level: 'A1' },
+  hatte: { ru: 'имел / была', en: 'had', base: 'haben', level: 'A2' },
+  kommen: { ru: 'приходить / приезжать', en: 'to come', level: 'A1' },
+  komme: { ru: 'я прихожу', en: 'I come', base: 'kommen', level: 'A1' },
+  kommst: { ru: 'ты приходишь', en: 'you come', base: 'kommen', level: 'A1' },
+  kommt: { ru: 'приходит', en: 'comes', base: 'kommen', level: 'A1' },
+  gehen: { ru: 'идти', en: 'to go', level: 'A1' },
+  gehe: { ru: 'я иду', en: 'I go', base: 'gehen', level: 'A1' },
+  gehst: { ru: 'ты идёшь', en: 'you go', base: 'gehen', level: 'A1' },
+  geht: { ru: 'идёт / дела идут', en: 'goes / is going', base: 'gehen', level: 'A1' },
+  machen: { ru: 'делать', en: 'to do / make', level: 'A1' },
+  mache: { ru: 'я делаю', en: 'I do', base: 'machen', level: 'A1' },
+  machst: { ru: 'ты делаешь', en: 'you do', base: 'machen', level: 'A1' },
+  macht: { ru: 'делает', en: 'does / makes', base: 'machen', level: 'A1' },
+  arbeiten: { ru: 'работать', en: 'to work', level: 'A1' },
+  arbeite: { ru: 'я работаю', en: 'I work', base: 'arbeiten', level: 'A1' },
+  arbeitet: { ru: 'работает', en: 'works', base: 'arbeiten', level: 'A1' },
+  wohnen: { ru: 'жить / проживать', en: 'to live', level: 'A1' },
+  wohne: { ru: 'я живу', en: 'I live', base: 'wohnen', level: 'A1' },
+  wohnst: { ru: 'ты живёшь', en: 'you live', base: 'wohnen', level: 'A1' },
+  wohnt: { ru: 'живёт', en: 'lives', base: 'wohnen', level: 'A1' },
+  lernen: { ru: 'учиться / учить', en: 'to learn', level: 'A1' },
+  lerne: { ru: 'я учу', en: 'I learn', base: 'lernen', level: 'A1' },
+  lernt: { ru: 'учит / учится', en: 'learns', base: 'lernen', level: 'A1' },
+  sprechen: { ru: 'говорить', en: 'to speak', level: 'A1' },
+  spreche: { ru: 'я говорю', en: 'I speak', base: 'sprechen', level: 'A1' },
+  spricht: { ru: 'говорит', en: 'speaks', base: 'sprechen', level: 'A1' },
+  verstehen: { ru: 'понимать', en: 'to understand', level: 'A1' },
+  verstehe: { ru: 'я понимаю', en: 'I understand', base: 'verstehen', level: 'A1' },
+  versteht: { ru: 'понимает', en: 'understands', base: 'verstehen', level: 'A1' },
+  besuchen: { ru: 'посещать', en: 'to visit', level: 'A2' },
+  besuche: { ru: 'я посещаю', en: 'I visit', base: 'besuchen', level: 'A2' },
+  besucht: { ru: 'посещает', en: 'visits', base: 'besuchen', level: 'A2' },
+  trinken: { ru: 'пить', en: 'to drink', level: 'A1' },
+  trinke: { ru: 'я пью', en: 'I drink', base: 'trinken', level: 'A1' },
+  trinkt: { ru: 'пьёт', en: 'drinks', base: 'trinken', level: 'A1' },
+  essen: { ru: 'есть / еда', en: 'to eat / food', level: 'A1' },
+  esse: { ru: 'я ем', en: 'I eat', base: 'essen', level: 'A1' },
+  isst: { ru: 'ест', en: 'eats', base: 'essen', level: 'A1' },
+  lesen: { ru: 'читать', en: 'to read', level: 'A1' },
+  lese: { ru: 'я читаю', en: 'I read', base: 'lesen', level: 'A1' },
+  liest: { ru: 'читает', en: 'reads', base: 'lesen', level: 'A1' },
+  schreiben: { ru: 'писать', en: 'to write', level: 'A1' },
+  schreibe: { ru: 'я пишу', en: 'I write', base: 'schreiben', level: 'A1' },
+  schreibt: { ru: 'пишет', en: 'writes', base: 'schreiben', level: 'A1' },
+  kaufen: { ru: 'покупать', en: 'to buy', level: 'A1' },
+  kaufe: { ru: 'я покупаю', en: 'I buy', base: 'kaufen', level: 'A1' },
+  kauft: { ru: 'покупает', en: 'buys', base: 'kaufen', level: 'A1' },
+  brauchen: { ru: 'нуждаться / нужно', en: 'to need', level: 'A1' },
+  brauche: { ru: 'мне нужно', en: 'I need', base: 'brauchen', level: 'A1' },
+  braucht: { ru: 'нужно / нуждается', en: 'needs', base: 'brauchen', level: 'A1' },
+  mögen: { ru: 'любить / нравиться', en: 'to like', level: 'A1' },
+  mag: { ru: 'нравится / люблю', en: 'like', base: 'mögen', level: 'A1' },
+  möchte: { ru: 'хотел(а) бы', en: 'would like', level: 'A1' },
+  möchten: { ru: 'хотели бы', en: 'would like', level: 'A1' },
+  können: { ru: 'мочь / уметь', en: 'can / to be able', level: 'A1' },
+  kann: { ru: 'могу / может', en: 'can', base: 'können', level: 'A1' },
+  kannst: { ru: 'можешь', en: 'can', base: 'können', level: 'A1' },
+  müssen: { ru: 'должен / нужно', en: 'must', level: 'A2' },
+  muss: { ru: 'должен / нужно', en: 'must', base: 'müssen', level: 'A2' },
+  dürfen: { ru: 'иметь разрешение', en: 'may / be allowed', level: 'A2' },
+  darf: { ru: 'можно / разрешено', en: 'may', base: 'dürfen', level: 'A2' },
+  sollen: { ru: 'следует / должен', en: 'should', level: 'A2' },
+  soll: { ru: 'должен / следует', en: 'should', base: 'sollen', level: 'A2' },
+  wollen: { ru: 'хотеть', en: 'to want', level: 'A1' },
+  will: { ru: 'хочу / хочет', en: 'want / wants', base: 'wollen', level: 'A1' },
+  werden: { ru: 'становиться / будущее время', en: 'to become / will', level: 'A2' },
+  wird: { ru: 'становится / будет', en: 'becomes / will', base: 'werden', level: 'A2' },
+  wurde: { ru: 'стал / был сделан', en: 'became / was', base: 'werden', level: 'B1' },
+  geben: { ru: 'давать / быть в наличии', en: 'to give / there is', level: 'A1' },
+  gibt: { ru: 'есть / имеется', en: 'there is / gives', base: 'geben', level: 'A1' },
+  nehmen: { ru: 'брать', en: 'to take', level: 'A1' },
+  nehme: { ru: 'я беру', en: 'I take', base: 'nehmen', level: 'A1' },
+  nimmt: { ru: 'берёт', en: 'takes', base: 'nehmen', level: 'A1' },
+  sehen: { ru: 'видеть', en: 'to see', level: 'A1' },
+  sehe: { ru: 'я вижу', en: 'I see', base: 'sehen', level: 'A1' },
+  sieht: { ru: 'видит', en: 'sees', base: 'sehen', level: 'A1' },
+  finden: { ru: 'находить / считать', en: 'to find / think', level: 'A1' },
+  finde: { ru: 'я нахожу / считаю', en: 'I find / think', base: 'finden', level: 'A1' },
+  findet: { ru: 'находит / считает', en: 'finds / thinks', base: 'finden', level: 'A1' },
+  bleiben: { ru: 'оставаться', en: 'to stay', level: 'A2' },
+  bleibt: { ru: 'остаётся', en: 'stays', base: 'bleiben', level: 'A2' },
+  bringen: { ru: 'приносить', en: 'to bring', level: 'A2' },
+  bringt: { ru: 'приносит', en: 'brings', base: 'bringen', level: 'A2' },
+  fragen: { ru: 'спрашивать', en: 'to ask', level: 'A1' },
+  fragt: { ru: 'спрашивает', en: 'asks', base: 'fragen', level: 'A1' },
+  antworten: { ru: 'отвечать', en: 'to answer', level: 'A1' },
+  antwortet: { ru: 'отвечает', en: 'answers', base: 'antworten', level: 'A1' },
+  erklären: { ru: 'объяснять', en: 'to explain', level: 'A2' },
+  erklärt: { ru: 'объясняет', en: 'explains', base: 'erklären', level: 'A2' },
+  benutzen: { ru: 'использовать', en: 'to use', level: 'A2' },
+  benutzt: { ru: 'использует', en: 'uses', base: 'benutzen', level: 'A2' },
+  nutzen: { ru: 'использовать', en: 'to use', level: 'A2' },
+  nutzt: { ru: 'использует', en: 'uses', base: 'nutzen', level: 'A2' },
+  zeigen: { ru: 'показывать', en: 'to show', level: 'A1' },
+  zeigt: { ru: 'показывает', en: 'shows', base: 'zeigen', level: 'A1' },
+  helfen: { ru: 'помогать', en: 'to help', level: 'A1' },
+  hilft: { ru: 'помогает', en: 'helps', base: 'helfen', level: 'A1' },
+  leben: { ru: 'жить', en: 'to live', level: 'A1' },
+  lebt: { ru: 'живёт', en: 'lives', base: 'leben', level: 'A1' },
+  lieben: { ru: 'любить', en: 'to love', level: 'A1' },
+  liebt: { ru: 'любит', en: 'loves', base: 'lieben', level: 'A1' },
+  denken: { ru: 'думать', en: 'to think', level: 'A2' },
+  denke: { ru: 'я думаю', en: 'I think', base: 'denken', level: 'A2' },
+  denkt: { ru: 'думает', en: 'thinks', base: 'denken', level: 'A2' },
+  wissen: { ru: 'знать', en: 'to know', level: 'A2' },
+  weiß: { ru: 'знаю / знает', en: 'know / knows', base: 'wissen', level: 'A2' },
+  sagen: { ru: 'говорить / сказать', en: 'to say', level: 'A1' },
+  sagt: { ru: 'говорит', en: 'says', base: 'sagen', level: 'A1' },
+  erzählen: { ru: 'рассказывать', en: 'to tell', level: 'A2' },
+  erzählt: { ru: 'рассказывает', en: 'tells', base: 'erzählen', level: 'A2' },
+  brauchen: { ru: 'нуждаться / нужно', en: 'to need', level: 'A1' },
+  beginnen: { ru: 'начинать', en: 'to begin', level: 'A2' },
+  beginnt: { ru: 'начинается', en: 'begins', base: 'beginnen', level: 'A2' },
+  enden: { ru: 'заканчиваться', en: 'to end', level: 'A2' },
+  endet: { ru: 'заканчивается', en: 'ends', base: 'enden', level: 'A2' },
+  öffnen: { ru: 'открывать', en: 'to open', level: 'A1' },
+  geöffnet: { ru: 'открытый / открыт', en: 'opened', base: 'öffnen', level: 'A2' },
+  schließen: { ru: 'закрывать', en: 'to close', level: 'A1' },
+  kochen: { ru: 'готовить', en: 'to cook', level: 'A1' },
+  kocht: { ru: 'готовит', en: 'cooks', base: 'kochen', level: 'A1' },
+  spielen: { ru: 'играть', en: 'to play', level: 'A1' },
+  spielt: { ru: 'играет', en: 'plays', base: 'spielen', level: 'A1' },
+  suchen: { ru: 'искать', en: 'to search', level: 'A1' },
+  sucht: { ru: 'ищет', en: 'searches', base: 'suchen', level: 'A1' },
+  warten: { ru: 'ждать', en: 'to wait', level: 'A1' },
+  wartet: { ru: 'ждёт', en: 'waits', base: 'warten', level: 'A1' },
+  fahren: { ru: 'ехать', en: 'to drive / go', level: 'A1' },
+  fährt: { ru: 'едет', en: 'drives / goes', base: 'fahren', level: 'A1' },
+  laufen: { ru: 'бежать / идти', en: 'to run / walk', level: 'A2' },
+  läuft: { ru: 'бежит / идёт', en: 'runs / walks', base: 'laufen', level: 'A2' },
+  reisen: { ru: 'путешествовать', en: 'to travel', level: 'A2' },
+  reist: { ru: 'путешествует', en: 'travels', base: 'reisen', level: 'A2' },
+  bezahlen: { ru: 'платить', en: 'to pay', level: 'A1' },
+  bezahlt: { ru: 'платит / оплаченный', en: 'pays / paid', base: 'bezahlen', level: 'A1' },
+  kosten: { ru: 'стоить', en: 'to cost', level: 'A1' },
+  kostet: { ru: 'стоит', en: 'costs', base: 'kosten', level: 'A1' },
+  heißen: { ru: 'называться / звать', en: 'to be called', level: 'A1' },
+  heißen: { ru: 'называться / звать', en: 'to be called', level: 'A1' },
+  hallo: { ru: 'привет', en: 'hello', level: 'A1' },
+  tschüss: { ru: 'пока', en: 'bye', level: 'A1' },
+  bitte: { ru: 'пожалуйста', en: 'please', level: 'A1' },
+  danke: { ru: 'спасибо', en: 'thanks', level: 'A1' },
+  tag: { ru: 'день', en: 'day', level: 'A1' },
+  morgen: { ru: 'завтра / утро', en: 'tomorrow / morning', level: 'A1' },
+  abend: { ru: 'вечер', en: 'evening', level: 'A1' },
+  nacht: { ru: 'ночь', en: 'night', level: 'A1' },
+  woche: { ru: 'неделя', en: 'week', level: 'A1' },
+  monat: { ru: 'месяц', en: 'month', level: 'A1' },
+  jahr: { ru: 'год', en: 'year', level: 'A1' },
+  name: { ru: 'имя', en: 'name', level: 'A1' },
+  land: { ru: 'страна', en: 'country', level: 'A1' },
+  stadt: { ru: 'город', en: 'city', level: 'A1' },
+  haus: { ru: 'дом', en: 'house', level: 'A1' },
+  wohnung: { ru: 'квартира', en: 'apartment', level: 'A1' },
+  zimmer: { ru: 'комната', en: 'room', level: 'A1' },
+  küche: { ru: 'кухня', en: 'kitchen', level: 'A1' },
+  bad: { ru: 'ванная', en: 'bathroom', level: 'A1' },
+  schule: { ru: 'школа', en: 'school', level: 'A1' },
+  arbeit: { ru: 'работа', en: 'work', level: 'A1' },
+  beruf: { ru: 'профессия', en: 'profession', level: 'A1' },
+  familie: { ru: 'семья', en: 'family', level: 'A1' },
+  mutter: { ru: 'мама', en: 'mother', level: 'A1' },
+  vater: { ru: 'папа', en: 'father', level: 'A1' },
+  eltern: { ru: 'родители', en: 'parents', level: 'A1' },
+  kind: { ru: 'ребёнок', en: 'child', level: 'A1' },
+  kinder: { ru: 'дети', en: 'children', level: 'A1' },
+  frau: { ru: 'женщина / жена / госпожа', en: 'woman / wife / Mrs', level: 'A1' },
+  mann: { ru: 'мужчина / муж', en: 'man / husband', level: 'A1' },
+  freund: { ru: 'друг / парень', en: 'friend / boyfriend', level: 'A1' },
+  freundin: { ru: 'подруга / девушка', en: 'friend / girlfriend', level: 'A1' },
+  mensch: { ru: 'человек', en: 'person / human', level: 'A1' },
+  leute: { ru: 'люди', en: 'people', level: 'A1' },
+  deutschland: { ru: 'Германия', en: 'Germany', level: 'A1' },
+  russland: { ru: 'Россия', en: 'Russia', level: 'A1' },
+  pakistan: { ru: 'Пакистан', en: 'Pakistan', level: 'A1' },
+  berlin: { ru: 'Берлин', en: 'Berlin', level: 'A1' },
+  buch: { ru: 'книга', en: 'book', level: 'A1' },
+  heft: { ru: 'тетрадь', en: 'notebook', level: 'A1' },
+  brief: { ru: 'письмо', en: 'letter', level: 'A2' },
+  wasser: { ru: 'вода', en: 'water', level: 'A1' },
+  musik: { ru: 'музыка', en: 'music', level: 'A1' },
+  auto: { ru: 'машина', en: 'car', level: 'A1' },
+  bus: { ru: 'автобус', en: 'bus', level: 'A1' },
+  zug: { ru: 'поезд', en: 'train', level: 'A1' },
+  bahnhof: { ru: 'вокзал', en: 'train station', level: 'A1' },
+  flughafen: { ru: 'аэропорт', en: 'airport', level: 'A2' },
+  telefon: { ru: 'телефон', en: 'phone', level: 'A1' },
+  handy: { ru: 'мобильный телефон', en: 'mobile phone', level: 'A1' },
+  computer: { ru: 'компьютер', en: 'computer', level: 'A1' },
+  geld: { ru: 'деньги', en: 'money', level: 'A1' },
+  zeit: { ru: 'время', en: 'time', level: 'A1' },
+  frage: { ru: 'вопрос', en: 'question', level: 'A1' },
+  antwort: { ru: 'ответ', en: 'answer', level: 'A1' },
+  wort: { ru: 'слово', en: 'word', level: 'A1' },
+  satz: { ru: 'предложение', en: 'sentence', level: 'A1' },
+  sprache: { ru: 'язык', en: 'language', level: 'A1' },
+  deutsch: { ru: 'немецкий язык / немецкий', en: 'German', level: 'A1' },
+  karte: { ru: 'карточка / карта', en: 'card / map', level: 'A1' },
+  fenster: { ru: 'окно', en: 'window', level: 'A1' },
+  tür: { ru: 'дверь', en: 'door', level: 'A1' },
+  tisch: { ru: 'стол', en: 'table', level: 'A1' },
+  stuhl: { ru: 'стул', en: 'chair', level: 'A1' },
+  suppe: { ru: 'суп', en: 'soup', level: 'A1' },
+  nudeln: { ru: 'лапша / макароны', en: 'noodles / pasta', level: 'A1' },
+  tee: { ru: 'чай', en: 'tea', level: 'A1' },
+  kaffee: { ru: 'кофе', en: 'coffee', level: 'A1' },
+  brot: { ru: 'хлеб', en: 'bread', level: 'A1' },
+  milch: { ru: 'молоко', en: 'milk', level: 'A1' },
+  käse: { ru: 'сыр', en: 'cheese', level: 'A1' },
+  fleisch: { ru: 'мясо', en: 'meat', level: 'A1' },
+  fisch: { ru: 'рыба', en: 'fish', level: 'A1' },
+  obst: { ru: 'фрукты', en: 'fruit', level: 'A1' },
+  gemüse: { ru: 'овощи', en: 'vegetables', level: 'A1' },
+  museum: { ru: 'музей', en: 'museum', level: 'A1' },
+  restaurant: { ru: 'ресторан', en: 'restaurant', level: 'A2' },
+  krankenhaus: { ru: 'больница', en: 'hospital', level: 'A2' },
+  arzt: { ru: 'врач', en: 'doctor', level: 'A2' },
+  kellner: { ru: 'официант', en: 'waiter', level: 'A1' },
+  lehrer: { ru: 'учитель', en: 'teacher', level: 'A1' },
+  lehrerin: { ru: 'учительница', en: 'female teacher', level: 'A1' },
+  student: { ru: 'студент', en: 'student', level: 'A1' },
+  schüler: { ru: 'ученик', en: 'pupil', level: 'A1' },
+  chef: { ru: 'начальник / шеф', en: 'boss / chef', level: 'A2' },
+  kunde: { ru: 'клиент', en: 'customer', level: 'A2' },
+  problem: { ru: 'проблема', en: 'problem', level: 'A1' },
+  lösung: { ru: 'решение', en: 'solution', level: 'A2' },
+  termin: { ru: 'встреча / срок', en: 'appointment', level: 'A2' },
+  aufgabe: { ru: 'задача / задание', en: 'task', level: 'A2' },
+  fehler: { ru: 'ошибка', en: 'mistake / error', level: 'A2' },
+  daten: { ru: 'данные', en: 'data', level: 'B1' },
+  zugang: { ru: 'доступ', en: 'access', level: 'B1' },
+  passwort: { ru: 'пароль', en: 'password', level: 'B1' },
+  dokument: { ru: 'документ', en: 'document', level: 'A2' },
+  firma: { ru: 'компания', en: 'company', level: 'A2' },
+  team: { ru: 'команда', en: 'team', level: 'A2' },
+  mitarbeiter: { ru: 'сотрудник', en: 'employee', level: 'B1' },
+  gesellschaft: { ru: 'общество', en: 'society', level: 'B1' },
+  wirtschaft: { ru: 'экономика', en: 'economy', level: 'B1' },
+  umwelt: { ru: 'окружающая среда', en: 'environment', level: 'B1' },
+  klimawandel: { ru: 'изменение климата', en: 'climate change', level: 'B1' },
+  digitalisierung: { ru: 'цифровизация', en: 'digitalization', level: 'B1' },
+  entwicklung: { ru: 'развитие', en: 'development', level: 'B1' },
+  zusammenhang: { ru: 'связь / контекст', en: 'context / connection', level: 'B1' },
+  gut: { ru: 'хорошо / хороший', en: 'good / well', level: 'A1' },
+  schlecht: { ru: 'плохо / плохой', en: 'bad', level: 'A1' },
+  groß: { ru: 'большой', en: 'big / tall', level: 'A1' },
+  klein: { ru: 'маленький', en: 'small', level: 'A1' },
+  neu: { ru: 'новый', en: 'new', level: 'A1' },
+  alt: { ru: 'старый / пожилой', en: 'old', level: 'A1' },
+  jung: { ru: 'молодой', en: 'young', level: 'A1' },
+  schön: { ru: 'красивый / приятно', en: 'beautiful / nice', level: 'A1' },
+  warm: { ru: 'тёплый', en: 'warm', level: 'A1' },
+  kalt: { ru: 'холодный', en: 'cold', level: 'A1' },
+  ruhig: { ru: 'тихий / спокойный', en: 'quiet / calm', level: 'A2' },
+  laut: { ru: 'громкий', en: 'loud', level: 'A1' },
+  wichtig: { ru: 'важный', en: 'important', level: 'A2' },
+  einfach: { ru: 'простой / просто', en: 'simple / easy', level: 'A1' },
+  schwer: { ru: 'тяжёлый / трудный', en: 'heavy / difficult', level: 'A1' },
+  leicht: { ru: 'лёгкий', en: 'light / easy', level: 'A1' },
+  richtig: { ru: 'правильный', en: 'correct', level: 'A1' },
+  falsch: { ru: 'неправильный', en: 'wrong', level: 'A1' },
+  schnell: { ru: 'быстрый / быстро', en: 'fast', level: 'A1' },
+  langsam: { ru: 'медленный / медленно', en: 'slow', level: 'A1' },
+  teuer: { ru: 'дорогой', en: 'expensive', level: 'A1' },
+  billig: { ru: 'дешёвый', en: 'cheap', level: 'A1' },
+  möglich: { ru: 'возможный', en: 'possible', level: 'A2' },
+  unmöglich: { ru: 'невозможный', en: 'impossible', level: 'A2' },
+  sicher: { ru: 'безопасный / уверенный', en: 'safe / sure', level: 'A2' },
+  persönlich: { ru: 'личный / лично', en: 'personal / personally', level: 'B1' },
+  gemeinsam: { ru: 'общий / совместно', en: 'shared / together', level: 'B1' },
+  automatisch: { ru: 'автоматически', en: 'automatically', level: 'B1' },
+  ja: { ru: 'да', en: 'yes', level: 'A1' },
+  nein: { ru: 'нет', en: 'no', level: 'A1' },
+  nicht: { ru: 'не', en: 'not', level: 'A1' },
+  kein: { ru: 'никакой / не', en: 'no / not a', level: 'A1' },
+  keine: { ru: 'никакая / никакие', en: 'no / none', level: 'A1' },
+  auch: { ru: 'тоже / также', en: 'also / too', level: 'A1' },
+  sehr: { ru: 'очень', en: 'very', level: 'A1' },
+  hier: { ru: 'здесь', en: 'here', level: 'A1' },
+  da: { ru: 'там / тогда', en: 'there / then', level: 'A1' },
+  dort: { ru: 'там', en: 'there', level: 'A1' },
+  heute: { ru: 'сегодня', en: 'today', level: 'A1' },
+  gestern: { ru: 'вчера', en: 'yesterday', level: 'A1' },
+  jetzt: { ru: 'сейчас', en: 'now', level: 'A1' },
+  später: { ru: 'позже', en: 'later', level: 'A1' },
+  früh: { ru: 'рано', en: 'early', level: 'A1' },
+  zusammen: { ru: 'вместе', en: 'together', level: 'A1' },
+  oft: { ru: 'часто', en: 'often', level: 'A1' },
+  manchmal: { ru: 'иногда', en: 'sometimes', level: 'A1' },
+  immer: { ru: 'всегда', en: 'always', level: 'A1' },
+  nie: { ru: 'никогда', en: 'never', level: 'A1' },
+  noch: { ru: 'ещё', en: 'still / yet', level: 'A1' },
+  schon: { ru: 'уже', en: 'already', level: 'A1' },
+  wieder: { ru: 'снова', en: 'again', level: 'A1' },
+  nur: { ru: 'только', en: 'only', level: 'A1' },
+  besonders: { ru: 'особенно', en: 'especially', level: 'A2' },
+  leider: { ru: 'к сожалению', en: 'unfortunately', level: 'A2' },
+  genau: { ru: 'точно / именно', en: 'exactly', level: 'A2' },
+  vielleicht: { ru: 'может быть', en: 'maybe / perhaps', level: 'A2' },
+  natürlich: { ru: 'конечно / естественно', en: 'of course / naturally', level: 'A2' },
+  wirklich: { ru: 'действительно', en: 'really', level: 'A2' },
+  eigentlich: { ru: 'собственно / на самом деле', en: 'actually', level: 'A2' },
+  bereits: { ru: 'уже', en: 'already', level: 'A2' },
+  allerdings: { ru: 'однако / правда', en: 'however / indeed', level: 'B1' },
+  trotzdem: { ru: 'тем не менее', en: 'nevertheless', level: 'B1' },
+  jedoch: { ru: 'однако', en: 'however', level: 'B1' },
+  darüber: { ru: 'об этом / сверх', en: 'about it / above', level: 'B1' },
+  hinaus: { ru: 'за пределы / сверх', en: 'beyond', level: 'B1' },
+  infolgedessen: { ru: 'вследствие этого', en: 'as a result', level: 'B1' },
+  und: { ru: 'и', en: 'and', level: 'A1' },
+  oder: { ru: 'или', en: 'or', level: 'A1' },
+  aber: { ru: 'но / однако', en: 'but / however', level: 'A1' },
+  denn: { ru: 'потому что / ведь', en: 'because', level: 'A2' },
+  weil: { ru: 'потому что', en: 'because', level: 'A2' },
+  dass: { ru: 'что (союз)', en: 'that', level: 'A2' },
+  wenn: { ru: 'когда / если', en: 'when / if', level: 'A2' },
+  obwohl: { ru: 'хотя', en: 'although', level: 'B1' },
+  während: { ru: 'пока / во время', en: 'while / during', level: 'B1' },
+  nachdem: { ru: 'после того как', en: 'after', level: 'B1' },
+  bevor: { ru: 'прежде чем', en: 'before', level: 'B1' },
+  damit: { ru: 'чтобы / с этим', en: 'so that / with it', level: 'B1' },
+  sodass: { ru: 'так что', en: 'so that', level: 'B1' },
+  wie: { ru: 'как', en: 'how', level: 'A1' },
+  was: { ru: 'что', en: 'what', level: 'A1' },
+  wo: { ru: 'где', en: 'where', level: 'A1' },
+  wer: { ru: 'кто', en: 'who', level: 'A1' },
+  wann: { ru: 'когда', en: 'when', level: 'A1' },
+  warum: { ru: 'почему', en: 'why', level: 'A1' },
+  woher: { ru: 'откуда', en: 'from where', level: 'A1' },
+  wohin: { ru: 'куда', en: 'where to', level: 'A1' },
+  welche: { ru: 'какая / какие', en: 'which', level: 'A1' },
+  welcher: { ru: 'какой', en: 'which', level: 'A1' },
+  welches: { ru: 'какое', en: 'which', level: 'A1' },
+  in: { ru: 'в / внутри', en: 'in / into', level: 'A1' },
+  an: { ru: 'на / у / при', en: 'at / on / by', level: 'A1' },
+  auf: { ru: 'на поверхности', en: 'on / onto', level: 'A1' },
+  aus: { ru: 'из', en: 'from / out of', level: 'A1' },
+  mit: { ru: 'с / вместе с', en: 'with', level: 'A1' },
+  für: { ru: 'для / за', en: 'for', level: 'A1' },
+  von: { ru: 'от / из / о', en: 'from / of / about', level: 'A1' },
+  zu: { ru: 'к / в / слишком', en: 'to / too', level: 'A1' },
+  bei: { ru: 'у / при / около', en: 'at / near / with', level: 'A1' },
+  nach: { ru: 'после / в направлении', en: 'after / to', level: 'A1' },
+  über: { ru: 'над / о / более', en: 'over / about', level: 'A1' },
+  unter: { ru: 'под / среди', en: 'under / among', level: 'A1' },
+  neben: { ru: 'рядом / около', en: 'next to / beside', level: 'A1' },
+  zwischen: { ru: 'между', en: 'between', level: 'A2' },
+  ohne: { ru: 'без', en: 'without', level: 'A1' },
+  durch: { ru: 'через / сквозь', en: 'through', level: 'A2' },
+  gegen: { ru: 'против / около времени', en: 'against / around', level: 'A2' },
+  bis: { ru: 'до', en: 'until', level: 'A1' },
+  seit: { ru: 'с какого-то времени', en: 'since / for', level: 'A2' },
+  vor: { ru: 'перед / назад', en: 'before / ago', level: 'A1' },
+  hinter: { ru: 'за / позади', en: 'behind', level: 'A2' },
+};
+
+[
+  ['montag','понедельник','Monday','A1'],['dienstag','вторник','Tuesday','A1'],['mittwoch','среда','Wednesday','A1'],['donnerstag','четверг','Thursday','A1'],['freitag','пятница','Friday','A1'],['samstag','суббота','Saturday','A1'],['sonntag','воскресенье','Sunday','A1'],
+  ['januar','январь','January','A1'],['februar','февраль','February','A1'],['märz','март','March','A1'],['april','апрель','April','A1'],['mai','май','May','A1'],['juni','июнь','June','A1'],['juli','июль','July','A1'],['august','август','August','A1'],['september','сентябрь','September','A1'],['oktober','октябрь','October','A1'],['november','ноябрь','November','A1'],['dezember','декабрь','December','A1'],
+  ['eins','один','one','A1'],['zwei','два','two','A1'],['drei','три','three','A1'],['vier','четыре','four','A1'],['fünf','пять','five','A1'],['sechs','шесть','six','A1'],['sieben','семь','seven','A1'],['acht','восемь','eight','A1'],['neun','девять','nine','A1'],['zehn','десять','ten','A1'],['elf','одиннадцать','eleven','A1'],['zwölf','двенадцать','twelve','A1'],['dreizehn','тринадцать','thirteen','A1'],['vierzehn','четырнадцать','fourteen','A1'],['fünfzehn','пятнадцать','fifteen','A1'],['sechzehn','шестнадцать','sixteen','A1'],['siebzehn','семнадцать','seventeen','A1'],['achtzehn','восемнадцать','eighteen','A1'],['neunzehn','девятнадцать','nineteen','A1'],['zwanzig','двадцать','twenty','A1'],['dreißig','тридцать','thirty','A1'],['vierzig','сорок','forty','A1'],['fünfzig','пятьдесят','fifty','A1'],['hundert','сто','hundred','A1'],['tausend','тысяча','thousand','A1'],
+  ['rot','красный','red','A1'],['blau','синий','blue','A1'],['grün','зелёный','green','A1'],['gelb','жёлтый','yellow','A1'],['schwarz','чёрный','black','A1'],['weiß','белый / знаю','white / know','A1'],['grau','серый','gray','A1'],['braun','коричневый','brown','A1'],
+  ['kopf','голова','head','A1'],['hand','рука','hand','A1'],['auge','глаз','eye','A1'],['ohr','ухо','ear','A1'],['mund','рот','mouth','A1'],['fuß','ступня / нога','foot','A1'],['herz','сердце','heart','A2'],['körper','тело','body','A2'],['schmerz','боль','pain','A2'],['krank','больной','ill','A1'],['gesundheit','здоровье','health','A2'],
+  ['straße','улица','street','A1'],['platz','площадь / место','place / square','A1'],['weg','путь / дорога','way','A1'],['apotheke','аптека','pharmacy','A1'],['geschäft','магазин / дело','shop / business','A2'],['markt','рынок','market','A1'],['preis','цена','price','A1'],['rechnung','счёт','bill / invoice','A2'],['ticket','билет','ticket','A1'],['karte','карта / карточка','card / map','A1'],
+  ['morgen früh','завтра утром','tomorrow morning','A1'],['mittag','полдень / обед','noon / lunch','A1'],['nachmittag','послеобеденное время','afternoon','A1'],['wochenende','выходные','weekend','A1'],['urlaub','отпуск','vacation','A2'],['ferien','каникулы','holidays','A2'],
+  ['anfang','начало','beginning','A2'],['ende','конец','end','A2'],['teil','часть','part','A2'],['seite','страница / сторона','page / side','A1'],['nummer','номер','number','A1'],['alter','возраст','age','A1'],['adresse','адрес','address','A1'],['e-mail','электронная почта','email','A1'],['internet','интернет','internet','A1'],['app','приложение','app','A2'],['gerät','устройство','device','A2'],['bildschirm','экран','screen','A2'],['datei','файл','file','B1'],['ordner','папка','folder','B1'],['cloud','облако','cloud','B1'],['sicherheit','безопасность','security','B1'],['schutz','защита','protection','B1'],['regel','правило','rule','A2'],['grund','причина / основание','reason','A2'],['ziel','цель','goal','A2'],['plan','план','plan','A1'],['projekt','проект','project','A2'],['ergebnis','результат','result','A2'],['erfolg','успех','success','A2'],
+  ['ändern','изменять','to change','B1'],['ändert','изменяет','changes','B1'],['verändert','изменяет / изменённый','changes / changed','B1'],['entwickeln','развивать / разрабатывать','to develop','B1'],['entwickelt','развивает / разработан','develops / developed','B1'],['verwenden','использовать','to use','B1'],['verwendet','использует','uses','B1'],['bedeuten','означать','to mean','A2'],['bedeutet','означает','means','A2'],['ermöglichen','делать возможным','to enable','B1'],['ermöglicht','делает возможным','enables','B1'],['verbessern','улучшать','to improve','B1'],['verbessert','улучшает / улучшенный','improves / improved','B1'],['prüfen','проверять','to check','A2'],['prüft','проверяет','checks','A2'],['sammeln','собирать','to collect','A2'],['sammelt','собирает','collects','A2'],['speichern','сохранять','to save','B1'],['speichert','сохраняет','saves','B1'],['kopieren','копировать','to copy','A2'],['kopiert','копирует','copies','A2'],['verlieren','терять','to lose','A2'],['verloren','потерянный','lost','A2'],['erhalten','получать','to receive','A2'],['erhält','получает','receives','A2'],['entscheiden','решать','to decide','B1'],['entscheidet','решает','decides','B1'],['meinen','иметь в виду / считать','to mean / think','A2'],['meint','имеет в виду / считает','means / thinks','A2'],['glauben','верить / думать','to believe','A2'],['glaubt','верит / думает','believes','A2'],['fühlen','чувствовать','to feel','A2'],['fühlt','чувствует','feels','A2'],['scheinen','казаться','to seem','B1'],['scheint','кажется','seems','B1'],['wirken','действовать / выглядеть','to affect / seem','B1'],['wirkt','действует / кажется','affects / seems','B1'],
+  ['liebe','любовь / дорогая','love / dear','A1'],['angst','страх','fear','A2'],['freude','радость','joy','A2'],['glück','счастье / удача','happiness / luck','A2'],['lust','желание','desire','A2'],['spaß','веселье / удовольствие','fun','A1'],['interesse','интерес','interest','A2'],['idee','идея','idea','A2'],['meinung','мнение','opinion','B1'],['erfahrung','опыт','experience','B1'],['chance','шанс','chance','A2'],['gefahr','опасность','danger','B1'],['rolle','роль','role','B1'],['beispiel','пример','example','A1'],['form','форма','form','A2'],['art','вид / способ','kind / way','A2'],['weise','способ','way','B1'],['fall','случай','case','A2'],['welt','мир','world','A1'],['leben','жизнь / жить','life / to live','A1'],['alltag','повседневная жизнь','everyday life','A2'],['heimat','родина','homeland','A2'],
+  ['voll','полный','full','A1'],['leer','пустой','empty','A1'],['offen','открытый','open','A1'],['geschlossen','закрытый','closed','A1'],['fertig','готовый','finished / ready','A1'],['frei','свободный','free','A1'],['besetzt','занятый','occupied / busy','A2'],['klar','ясный / понятно','clear','A1'],['stark','сильный','strong','A2'],['schwach','слабый','weak','A2'],['hoch','высокий','high','A1'],['niedrig','низкий','low','A2'],['kurz','короткий','short','A1'],['lang','длинный','long','A1'],['gleich','сразу / одинаковый','same / soon','A2'],['anders','иначе / другой','different','A2'],['weitere','дальнейшие','further','B1'],['letzte','последний','last','A1'],['erste','первый','first','A1'],['zweite','второй','second','A1'],['nächste','следующий','next','A1'],
+  ['oben','наверху','above / upstairs','A1'],['unten','внизу','below / downstairs','A1'],['links','слева','left','A1'],['rechts','справа','right','A1'],['geradeaus','прямо','straight ahead','A1'],['zurück','назад','back','A1'],['vorne','спереди','in front','A2'],['hinten','сзади','at the back','A2'],['innen','внутри','inside','A2'],['außen','снаружи','outside','A2'],
+  ['deshalb','поэтому','therefore','A2'],['darum','поэтому','therefore','A2'],['danach','после этого','after that','A2'],['davor','до этого','before that','A2'],['dann','затем / тогда','then','A1'],['also','итак / значит','so','A2'],['sonst','иначе / обычно','otherwise','A2'],['fast','почти','almost','A2'],['mehr','больше','more','A1'],['weniger','меньше','less','A1'],['viel','много','much / a lot','A1'],['viele','многие','many','A1'],['wenig','мало','little','A1'],['ein bisschen','немного','a little','A1'],['genug','достаточно','enough','A1'],
+  ['ramen','рамен','ramen','A1'],['soße','соус','sauce','A1'],['reis','рис','rice','A1'],['ei','яйцо','egg','A1'],['eier','яйца','eggs','A1'],['huhn','курица','chicken','A1'],['kartoffel','картофель','potato','A1'],['tomate','помидор','tomato','A1'],['zwiebel','лук','onion','A1'],['salat','салат','salad','A1'],['zucker','сахар','sugar','A1'],['salz','соль','salt','A1'],['pfeffer','перец','pepper','A1'],['öl','масло','oil','A1'],['flasche','бутылка','bottle','A1'],['glas','стакан / стекло','glass','A1'],['teller','тарелка','plate','A1'],['messer','нож','knife','A1'],['gabel','вилка','fork','A1'],['löffel','ложка','spoon','A1']
+].forEach(([word, ru, en, level]) => {
+  if (!germanDict[word]) germanDict[word] = { ru, en, level };
+});
+
+function getWordTranslation(clickedWord) {
+  const word = String(clickedWord || '').toLowerCase();
+  if (germanDict[word]) return germanDict[word];
+  const clean = word.replace(/[.,!?;:«»"']/g, '').trim();
+  if (germanDict[clean]) return germanDict[clean];
+  const normalized = cleanTerm(clean);
+  if (germanDict[normalized]) return germanDict[normalized];
+  return {
+    ru: 'Перевод не найден',
+    en: 'Translation not found',
+    level: '?',
+    missing: true,
+    word: clean || word,
+  };
+}
+
+function addManualDictionaryWord(word, button = null) {
+  const ru = document.getElementById('manualRuInput')?.value.trim() || '';
+  const en = document.getElementById('manualEnInput')?.value.trim() || '';
+  if (!ru && !en) return toast('Введи перевод на русском или английском');
+  const key = cleanTerm(word);
+  const entry = { ru: ru || en, en: en || ru, level: 'custom' };
+  germanDict[key] = entry;
+  const payload = {
+    id: `manual_${slugTerm(key)}`,
+    word: key,
+    de: key,
+    wordClass: 'Wort',
+    level: 'custom',
+    translation: entry.ru,
+    translationRU: entry.ru,
+    translationEN: entry.en,
+    example: key,
+    exampleTranslation: entry.ru,
+    pronunciation: estimatePronunciation(key),
+    addedDate: Date.now(),
+  };
+  S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
+  if (!isSavedVocabularyWord(key)) S.savedReadingWords.push(payload);
+  S.userVocabulary = [...S.savedReadingWords];
+  saveS();
+  syncUserVocabularyWord(payload).catch(() => {});
+  if (button) {
+    button.textContent = '✓ Добавлено в словарь';
+    button.classList.add('added');
+    button.disabled = true;
+  }
+  toast('Слово добавлено в словарь');
 }
 
 function articleVocabMap(article) {
@@ -5721,8 +6265,10 @@ function speakWordOnly(word) {
 function wordPopupMarkup(item, article, isPhrase = false) {
   const base = item.word || '';
   const saved = isSavedVocabularyWord(base);
-  const level = normalizeLevelName(item.level || article?.level || getWordLevel(base));
-  const translation = item.translation || item.ru || item.definition || 'Перевод недоступен';
+  const dictEntry = !isPhrase ? getWordTranslation(item.clickedWord || base) : null;
+  const missing = !isPhrase && dictEntry?.missing && !(item.translation || item.ru || item.definition);
+  const level = dictEntry && !dictEntry.missing ? dictEntry.level : normalizeLevelName(item.level || article?.level || getWordLevel(base));
+  const translation = item.translation || item.ru || item.definition || (dictEntry && !dictEntry.missing ? `🇷🇺 ${dictEntry.ru} · 🇬🇧 ${dictEntry.en}` : 'Перевод не найден в словаре');
   const example = item.example || item.examples?.[0] || articleSentenceForTerm(article, base);
   const exampleTranslation = item.exampleTranslation || articleSentenceTranslationForTerm(article, example);
   return `
@@ -5736,6 +6282,14 @@ function wordPopupMarkup(item, article, isPhrase = false) {
     </div>
     <div class="word-popup-base">${esc(base)}${item.wordClass ? ` — ${esc(item.wordClass)}` : ''}</div>
     <div class="word-popup-translation">${esc(translation)}</div>
+    ${missing ? `
+      <div class="word-popup-translation">Перевод не найден в словаре</div>
+      <div class="word-popup-manual">
+        <input class="word-popup-input" id="manualRuInput" placeholder="Введи перевод на русском...">
+        <input class="word-popup-input" id="manualEnInput" placeholder="Введи перевод на английском...">
+      </div>
+      <button class="word-popup-add" onclick="addManualDictionaryWord(${jsString(base)},this)">+ Добавить в словарь со своим переводом</button>
+    ` : ''}
     <div class="word-popup-example-title">📖 Пример:</div>
     <div class="word-popup-example">
       <div>«${esc(example || base)}»</div>
@@ -5753,9 +6307,10 @@ function readingWordClick(event, span) {
   const word = span.dataset.word || span.textContent;
   const sentence = articleSentenceForTerm(article, word);
   const vocabItem = vocab.get(cleanTerm(word));
+  const dictEntry = getWordTranslation(word);
   const item = vocabItem
     ? { ...vocabItem, clickedWord: word, level: article?.level, example: vocabItem.examples?.[0] || sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence) }
-    : { word, clickedWord: word, wordClass: 'Wort', translation: 'Перевод недоступен', definition: '', example: sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence), examples: [], pronunciation: estimatePronunciation(word), level: getWordLevel(word) };
+    : { word, clickedWord: word, wordClass: 'Wort', translation: dictEntry.missing ? '' : dictEntry.ru, ru: dictEntry.missing ? '' : dictEntry.ru, definition: dictEntry.missing ? '' : dictEntry.en, example: sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence), examples: [], pronunciation: estimatePronunciation(word), level: dictEntry.level || getWordLevel(word) };
   const popup = ensureReadingPopup();
   popup.innerHTML = wordPopupMarkup(item, article, false);
   document.getElementById('word-popup-overlay')?.classList.remove('hidden');
@@ -9544,7 +10099,14 @@ function defaultPlanProgress() {
 
 function getPlanProgress() {
   const raw = readJSONKey('planProgress', null);
-  return { ...defaultPlanProgress(), ...(raw || {}) };
+  const progress = { ...defaultPlanProgress(), ...(raw || {}) };
+  const storedLevel = normalizeLevelName(localStorage.getItem('currentLevel') || progress.currentLevel || 'A1');
+  const storedBlock = localStorage.getItem('currentBlock') || progress.currentBlock || `${storedLevel.toLowerCase()}_b1`;
+  const storedLesson = Number(localStorage.getItem('currentLesson') || progress.currentLesson || 1);
+  progress.currentLevel = storedLevel;
+  progress.currentBlock = storedBlock;
+  progress.currentLesson = Number.isFinite(storedLesson) ? storedLesson : 1;
+  return progress;
 }
 
 function savePlanProgress(progress = getPlanProgress()) {
@@ -9655,6 +10217,20 @@ function planLessonContent(blockId, lessonId) {
 
 function planLexiconEntry(word) {
   const key = cleanTerm(word);
+  const dictEntry = getWordTranslation(word);
+  if (!dictEntry.missing) {
+    return {
+      word: String(word || ''),
+      pronunciation: estimatePronunciation(String(word || '')),
+      wordClass: 'Wort',
+      level: dictEntry.level || normalizeLevelName(getWordLevel(String(word || ''))),
+      translationRU: dictEntry.ru,
+      translationEN: dictEntry.en,
+      example: String(word || ''),
+      exampleRU: dictEntry.ru,
+      exampleEN: dictEntry.en,
+    };
+  }
   return PLAN_LEXICON[word]
     || Object.values(PLAN_LEXICON).find((item) => cleanTerm(item.word) === key)
     || allPlanWords().find((item) => cleanTerm(item.word) === key)
@@ -9697,6 +10273,8 @@ function planClickableText(text, words, prefix = '') {
 function showPlanWordPopup(word, event) {
   event?.stopPropagation?.();
   const item = planLexiconEntry(word) || planWordBank[0];
+  const dictEntry = getWordTranslation(word);
+  const missing = dictEntry.missing && /translation will appear|перевод появится/i.test(`${item.translationEN || ''} ${item.translationRU || ''}`);
   const popup = ensureReadingPopup();
   const saved = isSavedVocabularyWord(item.word);
   popup.innerHTML = `
@@ -9711,6 +10289,14 @@ function showPlanWordPopup(word, event) {
     <div class="word-popup-base">${esc(item.pronunciation || '')}</div>
     <div class="word-popup-translation">🇷🇺 ${esc(item.translationRU)}</div>
     <div class="word-popup-translation">🇬🇧 ${esc(item.translationEN)}</div>
+    ${missing ? `
+      <div class="word-popup-translation">Перевод не найден в словаре</div>
+      <div class="word-popup-manual">
+        <input class="word-popup-input" id="manualRuInput" placeholder="Введи перевод на русском...">
+        <input class="word-popup-input" id="manualEnInput" placeholder="Введи перевод на английском...">
+      </div>
+      <button class="word-popup-add" onclick="addManualDictionaryWord(${jsString(word)},this)">+ Добавить в словарь со своим переводом</button>
+    ` : ''}
     <div class="word-popup-example-title">Beispiel:</div>
     <div class="word-popup-example">
       <div>${esc(item.example)}</div>
