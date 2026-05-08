@@ -755,7 +755,34 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .plan-lesson-card.current .plan-lesson-dot{color:var(--gold);border-color:rgba(240,192,96,.55);background:rgba(240,192,96,.08);}
 .plan-step-head{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px;}
 .plan-content-text{font-size:17px;line-height:1.9;}
-.plan-word{border:0;background:transparent;color:inherit;font:inherit;padding:0 2px;border-radius:5px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(240,192,96,.35);text-underline-offset:4px;}
+.plan-word{border:1px solid transparent;background:var(--wl-a1);color:inherit;font:inherit;padding:1px 4px;border-radius:6px;cursor:pointer;text-decoration:none;transition:background .18s,border-color .18s,color .18s;}
+.plan-word.level-a1{background:var(--wl-a1);}
+.plan-word.level-a2{background:var(--wl-a2);}
+.plan-word.level-b1{background:var(--wl-b1);}
+.plan-word.level-b2{background:var(--wl-b2);}
+.plan-word.speaking{background:#ffe36a;color:#111;border-color:#ffd43b;}
+.plan-preview-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:18px 0;}
+.plan-preview-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px;font-weight:800;}
+.plan-check-list{display:grid;gap:8px;margin:16px 0 20px;color:var(--text);}
+.plan-intro-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:12px;padding:16px 18px;margin:18px 0;display:grid;gap:12px;}
+.plan-intro-title{font-weight:800;color:var(--gold);font-size:16px;}
+.plan-intro-card ul{display:grid;gap:7px;margin:0;padding-left:22px;color:var(--text);}
+.plan-dialogue{display:grid;gap:12px;margin:16px 0;}
+.plan-utterance{border:1px solid var(--border);background:var(--bg3);border-radius:12px;padding:15px 16px;display:grid;gap:9px;}
+.plan-utterance-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.plan-speaker{font-weight:900;color:var(--text);font-size:16px;}
+.plan-utterance-text{font-size:18px;line-height:1.8;}
+.plan-translation{font-size:14px;color:var(--muted);line-height:1.45;}
+.plan-speak-btn{width:42px;height:42px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);cursor:pointer;font-size:18px;display:grid;place-items:center;flex-shrink:0;}
+.plan-speak-btn:hover,.plan-rate-btn.on{border-color:var(--gold);background:rgba(240,192,96,.1);color:var(--gold);}
+.plan-stepper{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;}
+.plan-step{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:9px 6px;text-align:center;color:var(--muted);}
+.plan-step-icon{display:block;font-size:20px;line-height:1;margin-bottom:5px;}
+.plan-step-label{font-size:11px;font-weight:800;}
+.plan-step.done{border-color:rgba(61,214,140,.45);background:rgba(61,214,140,.08);color:var(--green);}
+.plan-step.active{border-color:rgba(240,192,96,.6);background:rgba(240,192,96,.11);color:var(--gold);}
+.plan-audio-rate{position:sticky;bottom:10px;z-index:40;border:1px solid var(--border);background:var(--hdr-bg);backdrop-filter:blur(12px);border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px;}
+.plan-rate-btn{min-height:38px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);border-radius:9px;padding:8px 14px;font-weight:900;cursor:pointer;}
 .plan-feedback{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;line-height:1.45;}
 .plan-feedback.ok{border-color:rgba(61,214,140,.45);background:rgba(61,214,140,.08);}
 .plan-feedback.no{border-color:rgba(240,85,85,.45);background:rgba(240,85,85,.08);}
@@ -2316,8 +2343,8 @@ window.initDeutschFirebaseChat();
 </header>
 
 <nav class="nav" id="appNav" style="display:none;">
-  <button class="nav-btn mobile-tab on" data-page="dashboard" data-title="Главная" onclick="goPage('dashboard')"><span class="nav-icon"><i data-lucide="home" aria-hidden="true"></i></span><span class="nav-text">Главная</span></button>
-  <button class="nav-btn" data-page="plan" data-title="План" onclick="goPage('plan')"><span class="nav-icon"><i data-lucide="map" aria-hidden="true"></i></span><span class="nav-text">План</span></button>
+  <button class="nav-btn mobile-tab on" data-page="dashboard" data-title="Главная" onclick="goPage('dashboard')"><span class="nav-icon">🏠</span><span class="nav-text">Главная</span></button>
+  <button class="nav-btn mobile-tab" data-page="plan" data-title="План" onclick="goPage('plan')"><span class="nav-icon">📖</span><span class="nav-text">План</span></button>
   <button class="nav-btn mobile-tab" data-page="reading" data-title="Чтение" onclick="goPage('reading')"><span class="nav-icon"><i data-lucide="book-open" aria-hidden="true"></i></span><span class="nav-text">Чтение</span></button>
   <button class="nav-btn" data-page="homework" data-title="Задания" onclick="goPage('homework')"><span class="nav-icon"><i data-lucide="pencil" aria-hidden="true"></i></span><span class="nav-text">Задания</span></button>
   <button class="nav-btn mobile-tab" data-page="vocab" data-title="Словарь" onclick="goPage('vocab')"><span class="nav-icon"><i data-lucide="library" aria-hidden="true"></i></span><span class="nav-text">Словарь</span></button>
@@ -2333,6 +2360,10 @@ window.initDeutschFirebaseChat();
   <button class="tab-btn active" data-section="home">
     <span class="tab-icon">🏠</span>
     <span class="tab-label">Главная</span>
+  </button>
+  <button class="tab-btn" data-section="plan">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">План</span>
   </button>
   <button class="tab-btn" data-section="reading">
     <span class="tab-icon">📰</span>
@@ -2356,8 +2387,6 @@ window.initDeutschFirebaseChat();
 <div id="more-menu" class="bottom-sheet hidden">
   <div class="sheet-handle"></div>
   <div class="sheet-grid">
-    <button data-section="plan">🗺 План</button>
-    <button data-section="tasks">✏️ Задания</button>
     <button data-section="phrases">💬 Фразы</button>
     <button data-section="repeat">🔄 Повторение</button>
     <button data-section="chat">💬 Чат</button>
@@ -6881,6 +6910,7 @@ const MOBILE_SECTION_TO_PAGE = {
 
 const PAGE_TO_MOBILE_SECTION = {
   dashboard: 'home',
+  plan: 'plan',
   reading: 'reading',
   vocab: 'vocabulary',
   practice: 'practice',
@@ -6947,6 +6977,7 @@ document.getElementById('more-menu')
   });
 
 function goPage(name) {
+  stopPlanSpeech();
   if (name !== 'reading') {
     stopReadingAudio();
     hideReadingPopup();
@@ -9154,14 +9185,14 @@ const planData = {
         grammar: 'sein, heißen, kommen aus',
         lessons: [
           { id: 1, title: 'Привет по-немецки', type: 'dialogue' },
-          { id: 2, title: 'Как тебя зовут?', type: 'grammar' },
-          { id: 3, title: 'Откуда ты?', type: 'vocabulary' },
+          { id: 2, title: 'Как тебя зовут?', type: 'dialogue' },
+          { id: 3, title: 'Откуда ты?', type: 'dialogue' },
           { id: 4, title: 'Профессии', type: 'vocabulary' },
-          { id: 5, title: 'Числа 1-10', type: 'vocabulary' },
-          { id: 6, title: 'Отрицание: nicht', type: 'grammar' },
-          { id: 7, title: 'Вопросы: wie/wo/was', type: 'grammar' },
+          { id: 5, title: 'Числа 1-20', type: 'vocabulary' },
+          { id: 6, title: 'Вопросы: wie/wo/was/wer', type: 'dialogue' },
+          { id: 7, title: 'Не/нет: nicht и nein', type: 'grammar' },
           { id: 8, title: 'Диалог: знакомство', type: 'practice' },
-          { id: 9, title: 'Письмо: о себе', type: 'writing' },
+          { id: 9, title: 'Напиши о себе', type: 'writing' },
           { id: 10, title: 'Повторение блока', type: 'review' },
         ],
       },
@@ -9274,6 +9305,177 @@ const planData = {
   },
 };
 
+const PLAN_LEXICON = {
+  Hallo: { word: 'Hallo', pronunciation: 'халло', wordClass: 'Gruß', level: 'A1', translationRU: 'привет', translationEN: 'hello', example: 'Hallo, ich heiße Mara.', exampleRU: 'Привет, меня зовут Мара.', exampleEN: 'Hello, my name is Mara.' },
+  'Guten Tag': { word: 'Guten Tag', pronunciation: 'гутэн так', wordClass: 'Gruß', level: 'A1', translationRU: 'добрый день', translationEN: 'good day', example: 'Guten Tag, ich komme aus Lahore.', exampleRU: 'Добрый день, я из Лахора.', exampleEN: 'Good day, I am from Lahore.' },
+  'Guten Morgen': { word: 'Guten Morgen', pronunciation: 'гутэн морген', wordClass: 'Gruß', level: 'A1', translationRU: 'доброе утро', translationEN: 'good morning', example: 'Guten Morgen, Mara.', exampleRU: 'Доброе утро, Мара.', exampleEN: 'Good morning, Mara.' },
+  Tschüss: { word: 'Tschüss', pronunciation: 'чюс', wordClass: 'Gruß', level: 'A1', translationRU: 'пока', translationEN: 'bye', example: 'Tschüss, bis morgen.', exampleRU: 'Пока, до завтра.', exampleEN: 'Bye, see you tomorrow.' },
+  'Auf Wiedersehen': { word: 'Auf Wiedersehen', pronunciation: 'ауф видэрзээн', wordClass: 'Gruß', level: 'A1', translationRU: 'до свидания', translationEN: 'goodbye', example: 'Auf Wiedersehen, Herr Khan.', exampleRU: 'До свидания, господин Хан.', exampleEN: 'Goodbye, Mr. Khan.' },
+  Bitte: { word: 'Bitte', pronunciation: 'битэ', wordClass: 'Partikel', level: 'A1', translationRU: 'пожалуйста', translationEN: 'please', example: 'Bitte, komm herein.', exampleRU: 'Пожалуйста, заходи.', exampleEN: 'Please, come in.' },
+  Danke: { word: 'Danke', pronunciation: 'данкэ', wordClass: 'Partikel', level: 'A1', translationRU: 'спасибо', translationEN: 'thanks', example: 'Danke, das ist nett.', exampleRU: 'Спасибо, это мило.', exampleEN: 'Thanks, that is kind.' },
+  Entschuldigung: { word: 'Entschuldigung', pronunciation: 'энтшульдигунг', wordClass: 'Nomen', level: 'A1', translationRU: 'извините', translationEN: 'excuse me', example: 'Entschuldigung, wie heißt du?', exampleRU: 'Извините, как тебя зовут?', exampleEN: 'Excuse me, what is your name?' },
+  heißen: { word: 'heißen', pronunciation: 'хайсэн', wordClass: 'Verb', level: 'A1', translationRU: 'называться, зваться', translationEN: 'to be called', example: 'Ich heiße Aziz.', exampleRU: 'Меня зовут Азиз.', exampleEN: 'My name is Aziz.' },
+  Name: { word: 'Name', pronunciation: 'наамэ', wordClass: 'Nomen', level: 'A1', translationRU: 'имя', translationEN: 'name', example: 'Mein Name ist Mara.', exampleRU: 'Моё имя Мара.', exampleEN: 'My name is Mara.' },
+  ich: { word: 'ich', pronunciation: 'ихь', wordClass: 'Pronomen', level: 'A1', translationRU: 'я', translationEN: 'I', example: 'Ich bin Mara.', exampleRU: 'Я Мара.', exampleEN: 'I am Mara.' },
+  du: { word: 'du', pronunciation: 'ду', wordClass: 'Pronomen', level: 'A1', translationRU: 'ты', translationEN: 'you', example: 'Wie heißt du?', exampleRU: 'Как тебя зовут?', exampleEN: 'What is your name?' },
+  er: { word: 'er', pronunciation: 'эа', wordClass: 'Pronomen', level: 'A1', translationRU: 'он', translationEN: 'he', example: 'Er heißt Aziz.', exampleRU: 'Его зовут Азиз.', exampleEN: 'He is called Aziz.' },
+  sie: { word: 'sie', pronunciation: 'зи', wordClass: 'Pronomen', level: 'A1', translationRU: 'она', translationEN: 'she', example: 'Sie heißt Mara.', exampleRU: 'Её зовут Мара.', exampleEN: 'She is called Mara.' },
+  wie: { word: 'wie', pronunciation: 'ви', wordClass: 'Fragewort', level: 'A1', translationRU: 'как', translationEN: 'how', example: 'Wie geht es dir?', exampleRU: 'Как у тебя дела?', exampleEN: 'How are you?' },
+  kommen: { word: 'kommen', pronunciation: 'комэн', wordClass: 'Verb', level: 'A1', translationRU: 'приходить, происходить', translationEN: 'to come', example: 'Ich komme aus Pakistan.', exampleRU: 'Я из Пакистана.', exampleEN: 'I come from Pakistan.' },
+  aus: { word: 'aus', pronunciation: 'аус', wordClass: 'Präposition', level: 'A1', translationRU: 'из', translationEN: 'from', example: 'Aziz kommt aus Lahore.', exampleRU: 'Азиз из Лахора.', exampleEN: 'Aziz comes from Lahore.' },
+  Land: { word: 'Land', pronunciation: 'лант', wordClass: 'Nomen', level: 'A1', translationRU: 'страна', translationEN: 'country', example: 'Deutschland ist ein Land.', exampleRU: 'Германия - это страна.', exampleEN: 'Germany is a country.' },
+  Deutschland: { word: 'Deutschland', pronunciation: 'дойчланд', wordClass: 'Nomen', level: 'A1', translationRU: 'Германия', translationEN: 'Germany', example: 'Mara wohnt in Deutschland.', exampleRU: 'Мара живёт в Германии.', exampleEN: 'Mara lives in Germany.' },
+  Russland: { word: 'Russland', pronunciation: 'руссланд', wordClass: 'Nomen', level: 'A1', translationRU: 'Россия', translationEN: 'Russia', example: 'Kommst du aus Russland?', exampleRU: 'Ты из России?', exampleEN: 'Do you come from Russia?' },
+  England: { word: 'England', pronunciation: 'энгланд', wordClass: 'Nomen', level: 'A1', translationRU: 'Англия', translationEN: 'England', example: 'Er kommt aus England.', exampleRU: 'Он из Англии.', exampleEN: 'He comes from England.' },
+  Amerika: { word: 'Amerika', pronunciation: 'амэрика', wordClass: 'Nomen', level: 'A1', translationRU: 'Америка', translationEN: 'America', example: 'Sie wohnt in Amerika.', exampleRU: 'Она живёт в Америке.', exampleEN: 'She lives in America.' },
+  wohnen: { word: 'wohnen', pronunciation: 'воонэн', wordClass: 'Verb', level: 'A1', translationRU: 'жить, проживать', translationEN: 'to live', example: 'Wo wohnst du?', exampleRU: 'Где ты живёшь?', exampleEN: 'Where do you live?' },
+  Stadt: { word: 'Stadt', pronunciation: 'штат', wordClass: 'Nomen', level: 'A1', translationRU: 'город', translationEN: 'city', example: 'Lahore ist eine große Stadt.', exampleRU: 'Лахор - большой город.', exampleEN: 'Lahore is a big city.' },
+  Arzt: { word: 'Arzt', pronunciation: 'арцт', wordClass: 'Nomen', level: 'A1', translationRU: 'врач', translationEN: 'doctor', example: 'Ich bin Arzt.', exampleRU: 'Я врач.', exampleEN: 'I am a doctor.' },
+  Lehrer: { word: 'Lehrer', pronunciation: 'леэрэр', wordClass: 'Nomen', level: 'A1', translationRU: 'учитель', translationEN: 'teacher', example: 'Mara ist Lehrerin.', exampleRU: 'Мара учительница.', exampleEN: 'Mara is a teacher.' },
+  Student: { word: 'Student', pronunciation: 'штудэнт', wordClass: 'Nomen', level: 'A1', translationRU: 'студент', translationEN: 'student', example: 'Aziz ist Student.', exampleRU: 'Азиз студент.', exampleEN: 'Aziz is a student.' },
+  Programmierer: { word: 'Programmierer', pronunciation: 'програмирэр', wordClass: 'Nomen', level: 'A1', translationRU: 'программист', translationEN: 'programmer', example: 'Ich arbeite als Programmierer.', exampleRU: 'Я работаю программистом.', exampleEN: 'I work as a programmer.' },
+  Ingenieur: { word: 'Ingenieur', pronunciation: 'инжэнъёр', wordClass: 'Nomen', level: 'A1', translationRU: 'инженер', translationEN: 'engineer', example: 'Er ist Ingenieur.', exampleRU: 'Он инженер.', exampleEN: 'He is an engineer.' },
+  Koch: { word: 'Koch', pronunciation: 'кох', wordClass: 'Nomen', level: 'A1', translationRU: 'повар', translationEN: 'cook', example: 'Mein Bruder ist Koch.', exampleRU: 'Мой брат повар.', exampleEN: 'My brother is a cook.' },
+  Kellner: { word: 'Kellner', pronunciation: 'кельнэр', wordClass: 'Nomen', level: 'A1', translationRU: 'официант', translationEN: 'waiter', example: 'Der Kellner arbeitet heute.', exampleRU: 'Официант работает сегодня.', exampleEN: 'The waiter works today.' },
+  sein: { word: 'sein', pronunciation: 'зайн', wordClass: 'Verb', level: 'A1', translationRU: 'быть', translationEN: 'to be', example: 'Ich bin Student.', exampleRU: 'Я студент.', exampleEN: 'I am a student.' },
+  arbeiten: { word: 'arbeiten', pronunciation: 'арбайтэн', wordClass: 'Verb', level: 'A1', translationRU: 'работать', translationEN: 'to work', example: 'Ich arbeite heute.', exampleRU: 'Я сегодня работаю.', exampleEN: 'I work today.' },
+  eins: { word: 'eins', pronunciation: 'айнс', wordClass: 'Zahl', level: 'A1', translationRU: 'один', translationEN: 'one', example: 'Ich habe eine Frage.', exampleRU: 'У меня один вопрос.', exampleEN: 'I have one question.' },
+  zwei: { word: 'zwei', pronunciation: 'цвай', wordClass: 'Zahl', level: 'A1', translationRU: 'два', translationEN: 'two', example: 'Zwei Freunde lernen Deutsch.', exampleRU: 'Два друга учат немецкий.', exampleEN: 'Two friends learn German.' },
+  drei: { word: 'drei', pronunciation: 'драй', wordClass: 'Zahl', level: 'A1', translationRU: 'три', translationEN: 'three', example: 'Ich schreibe drei Sätze.', exampleRU: 'Я пишу три предложения.', exampleEN: 'I write three sentences.' },
+  Telefon: { word: 'Telefon', pronunciation: 'тэлефон', wordClass: 'Nomen', level: 'A1', translationRU: 'телефон', translationEN: 'phone', example: 'Meine Telefonnummer ist kurz.', exampleRU: 'Мой номер телефона короткий.', exampleEN: 'My phone number is short.' },
+  Alter: { word: 'Alter', pronunciation: 'альтэр', wordClass: 'Nomen', level: 'A1', translationRU: 'возраст', translationEN: 'age', example: 'Mein Alter ist zwanzig.', exampleRU: 'Мой возраст - двадцать.', exampleEN: 'My age is twenty.' },
+  Adresse: { word: 'Adresse', pronunciation: 'адрэсэ', wordClass: 'Nomen', level: 'A1', translationRU: 'адрес', translationEN: 'address', example: 'Meine Adresse ist in Lahore.', exampleRU: 'Мой адрес в Лахоре.', exampleEN: 'My address is in Lahore.' },
+  wo: { word: 'wo', pronunciation: 'во', wordClass: 'Fragewort', level: 'A1', translationRU: 'где', translationEN: 'where', example: 'Wo wohnst du?', exampleRU: 'Где ты живёшь?', exampleEN: 'Where do you live?' },
+  was: { word: 'was', pronunciation: 'вас', wordClass: 'Fragewort', level: 'A1', translationRU: 'что', translationEN: 'what', example: 'Was machst du?', exampleRU: 'Что ты делаешь?', exampleEN: 'What are you doing?' },
+  wer: { word: 'wer', pronunciation: 'вэа', wordClass: 'Fragewort', level: 'A1', translationRU: 'кто', translationEN: 'who', example: 'Wer ist das?', exampleRU: 'Кто это?', exampleEN: 'Who is that?' },
+  nicht: { word: 'nicht', pronunciation: 'нихьт', wordClass: 'Negation', level: 'A1', translationRU: 'не', translationEN: 'not', example: 'Ich wohne nicht in Berlin.', exampleRU: 'Я не живу в Берлине.', exampleEN: 'I do not live in Berlin.' },
+  nein: { word: 'nein', pronunciation: 'найн', wordClass: 'Antwort', level: 'A1', translationRU: 'нет', translationEN: 'no', example: 'Nein, ich bin nicht Arzt.', exampleRU: 'Нет, я не врач.', exampleEN: 'No, I am not a doctor.' },
+};
+
+const PLAN_LESSON_CONTENT = {
+  a1_b1: {
+    1: {
+      intro: ['Как приветствовать по-немецки', 'Как сказать как тебя зовут', 'Как сказать откуда ты'],
+      newWords: ['Hallo', 'Guten Tag', 'Guten Morgen', 'Tschüss', 'Auf Wiedersehen', 'Bitte', 'Danke', 'Entschuldigung'],
+      grammar: 'нет',
+      minutes: 10,
+      outcomes: ['Как поздороваться', 'Как представиться', 'Как спросить как дела'],
+      dialogues: [
+        { speaker: 'Mara', text: 'Hallo, ich heiße Mara.', translationRU: 'Привет, меня зовут Мара.', translationEN: 'Hello, my name is Mara.' },
+        { speaker: 'Aziz', text: 'Guten Tag, ich komme aus Lahore.', translationRU: 'Добрый день, я из Лахора.', translationEN: 'Good day, I come from Lahore.' },
+        { speaker: 'Mara', text: 'Guten Morgen, Aziz.', translationRU: 'Доброе утро, Азиз.', translationEN: 'Good morning, Aziz.' },
+        { speaker: 'Aziz', text: 'Danke, Mara. Wie geht es dir?', translationRU: 'Спасибо, Мара. Как у тебя дела?', translationEN: 'Thanks, Mara. How are you?' },
+        { speaker: 'Mara', text: 'Gut, danke. Und dir?', translationRU: 'Хорошо, спасибо. А у тебя?', translationEN: 'Good, thanks. And you?' },
+        { speaker: 'Aziz', text: 'Auch gut, bitte komm herein.', translationRU: 'Тоже хорошо, пожалуйста, заходи.', translationEN: 'Also good, please come in.' },
+        { speaker: 'Mara', text: 'Entschuldigung, ist das dein Kurs?', translationRU: 'Извини, это твой курс?', translationEN: 'Excuse me, is this your course?' },
+        { speaker: 'Aziz', text: 'Ja. Auf Wiedersehen und tschüss!', translationRU: 'Да. До свидания и пока!', translationEN: 'Yes. Goodbye and bye!' },
+      ],
+    },
+    2: {
+      intro: ['Как спросить имя', 'Как сказать свое имя', 'Чем отличаются ich, du, er, sie'],
+      newWords: ['heißen', 'Name', 'ich', 'du', 'er', 'sie', 'wie'],
+      grammar: 'Ich heiße... / Wie heißt du?',
+      minutes: 10,
+      outcomes: ['Сказать Ich heiße...', 'Спросить Wie heißt du?', 'Понять er/sie'],
+      dialogues: [
+        { speaker: 'Mara', text: 'Wie heißt du?', translationRU: 'Как тебя зовут?', translationEN: 'What is your name?' },
+        { speaker: 'Aziz', text: 'Ich heiße Aziz. Und du?', translationRU: 'Меня зовут Азиз. А тебя?', translationEN: 'My name is Aziz. And you?' },
+        { speaker: 'Mara', text: 'Ich heiße Mara.', translationRU: 'Меня зовут Мара.', translationEN: 'My name is Mara.' },
+        { speaker: 'Aziz', text: 'Ist Mara dein Name?', translationRU: 'Мара - это твое имя?', translationEN: 'Is Mara your name?' },
+        { speaker: 'Mara', text: 'Ja. Er heißt Karim.', translationRU: 'Да. Его зовут Карим.', translationEN: 'Yes. His name is Karim.' },
+        { speaker: 'Aziz', text: 'Und sie heißt Sara.', translationRU: 'А ее зовут Сара.', translationEN: 'And her name is Sara.' },
+      ],
+    },
+    3: {
+      intro: ['Как сказать страну', 'Как спросить где ты живешь', 'Как говорить о городе'],
+      newWords: ['kommen', 'aus', 'Land', 'Deutschland', 'Russland', 'England', 'Amerika', 'wohnen', 'Stadt'],
+      grammar: 'Ich komme aus... / Wo wohnst du?',
+      minutes: 10,
+      outcomes: ['Сказать Ich komme aus...', 'Спросить Wo wohnst du?', 'Назвать страну и город'],
+      dialogues: [
+        { speaker: 'Mara', text: 'Woher kommst du?', translationRU: 'Откуда ты?', translationEN: 'Where are you from?' },
+        { speaker: 'Aziz', text: 'Ich komme aus Pakistan.', translationRU: 'Я из Пакистана.', translationEN: 'I come from Pakistan.' },
+        { speaker: 'Mara', text: 'Ich komme aus Deutschland.', translationRU: 'Я из Германии.', translationEN: 'I come from Germany.' },
+        { speaker: 'Aziz', text: 'Ist Deutschland dein Land?', translationRU: 'Германия - твоя страна?', translationEN: 'Is Germany your country?' },
+        { speaker: 'Mara', text: 'Ja. Wo wohnst du?', translationRU: 'Да. Где ты живешь?', translationEN: 'Yes. Where do you live?' },
+        { speaker: 'Aziz', text: 'Ich wohne in Lahore. Lahore ist eine Stadt.', translationRU: 'Я живу в Лахоре. Лахор - это город.', translationEN: 'I live in Lahore. Lahore is a city.' },
+      ],
+    },
+    4: {
+      intro: ['Названия профессий', 'Как сказать кто ты', 'Фраза Ich arbeite als...'],
+      newWords: ['Arzt', 'Lehrer', 'Student', 'Programmierer', 'Ingenieur', 'Koch', 'Kellner', 'sein', 'arbeiten'],
+      grammar: 'Ich bin... / Ich arbeite als...',
+      minutes: 10,
+      outcomes: ['Назвать профессию', 'Использовать Ich bin...', 'Сказать где работаешь'],
+      text: 'Ich bin Student. Mara ist Lehrerin. Aziz arbeitet als Programmierer. Der Kellner arbeitet heute. Ein Arzt hilft Menschen. Ein Koch kocht Essen.',
+    },
+    5: {
+      intro: ['Числа 1-20', 'Телефон, возраст и адрес', 'Как услышать число'],
+      newWords: ['eins', 'zwei', 'drei', 'Telefon', 'Alter', 'Adresse'],
+      grammar: 'числа в простых фразах',
+      minutes: 10,
+      outcomes: ['Узнать числа на слух', 'Назвать возраст', 'Понять номер телефона'],
+      text: 'eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, zehn, elf, zwölf, dreizehn, vierzehn, fünfzehn, sechzehn, siebzehn, achtzehn, neunzehn, zwanzig. Meine Telefonnummer ist eins zwei drei. Mein Alter ist zwanzig. Meine Adresse ist in Lahore.',
+    },
+    6: {
+      intro: ['Вопросы wie, wo, was, wer', 'Как отвечать коротко', 'Интонация вопроса'],
+      newWords: ['wie', 'wo', 'was', 'wer', 'heißen', 'wohnen'],
+      grammar: 'вопросительные слова',
+      minutes: 10,
+      outcomes: ['Спросить как', 'Спросить где', 'Спросить кто/что'],
+      dialogues: [
+        { speaker: 'Mara', text: 'Wie heißt du?', translationRU: 'Как тебя зовут?', translationEN: 'What is your name?' },
+        { speaker: 'Aziz', text: 'Ich heiße Aziz.', translationRU: 'Меня зовут Азиз.', translationEN: 'My name is Aziz.' },
+        { speaker: 'Mara', text: 'Wo wohnst du?', translationRU: 'Где ты живешь?', translationEN: 'Where do you live?' },
+        { speaker: 'Aziz', text: 'Ich wohne in Lahore.', translationRU: 'Я живу в Лахоре.', translationEN: 'I live in Lahore.' },
+        { speaker: 'Mara', text: 'Was machst du?', translationRU: 'Что ты делаешь?', translationEN: 'What do you do?' },
+        { speaker: 'Aziz', text: 'Ich lerne Deutsch.', translationRU: 'Я учу немецкий.', translationEN: 'I learn German.' },
+        { speaker: 'Mara', text: 'Wer ist das?', translationRU: 'Кто это?', translationEN: 'Who is that?' },
+        { speaker: 'Aziz', text: 'Das ist Sara.', translationRU: 'Это Сара.', translationEN: 'That is Sara.' },
+      ],
+    },
+    7: {
+      intro: ['Nein как ответ', 'Nicht в предложении', 'Где стоит nicht'],
+      newWords: ['nicht', 'nein', 'ich', 'sein', 'wohnen', 'arbeiten'],
+      grammar: 'nicht после глагола',
+      minutes: 10,
+      outcomes: ['Ответить Nein', 'Сказать Я не...', 'Поставить nicht после глагола'],
+      text: 'Nein, ich bin nicht Arzt. Ich wohne nicht in Berlin. Aziz arbeitet nicht heute. Mara kommt nicht aus Amerika. Nicht стоит после глагола в простом предложении.',
+    },
+    8: {
+      intro: ['Полный диалог знакомства', 'Правильная реакция', 'Повторение приветствий'],
+      newWords: ['Hallo', 'heißen', 'kommen', 'aus', 'wohnen', 'wie', 'wo'],
+      grammar: 'практика без новой грамматики',
+      minutes: 10,
+      outcomes: ['Выбрать правильный ответ', 'Собрать диалог', 'Представиться уверенно'],
+      dialogues: [
+        { speaker: 'Mara', text: 'Hallo, wie heißt du?', translationRU: 'Привет, как тебя зовут?', translationEN: 'Hello, what is your name?' },
+        { speaker: 'Aziz', text: 'Ich heiße Aziz. Und du?', translationRU: 'Меня зовут Азиз. А тебя?', translationEN: 'My name is Aziz. And you?' },
+        { speaker: 'Mara', text: 'Ich heiße Mara. Woher kommst du?', translationRU: 'Меня зовут Мара. Откуда ты?', translationEN: 'My name is Mara. Where are you from?' },
+        { speaker: 'Aziz', text: 'Ich komme aus Lahore.', translationRU: 'Я из Лахора.', translationEN: 'I come from Lahore.' },
+        { speaker: 'Mara', text: 'Wo wohnst du jetzt?', translationRU: 'Где ты живешь сейчас?', translationEN: 'Where do you live now?' },
+        { speaker: 'Aziz', text: 'Ich wohne in Berlin.', translationRU: 'Я живу в Берлине.', translationEN: 'I live in Berlin.' },
+      ],
+    },
+    9: {
+      intro: ['Написать 3 предложения о себе', 'Использовать готовые подсказки', 'Проверить порядок слов'],
+      newWords: ['ich', 'heißen', 'kommen', 'aus', 'sein'],
+      grammar: 'Ich heiße... / Ich komme aus... / Ich bin...',
+      minutes: 10,
+      outcomes: ['Написать имя', 'Написать страну', 'Написать профессию'],
+      text: 'Ich heiße Aziz. Ich komme aus Pakistan. Ich bin Student. Используй подсказки: Ich heiße... / Ich komme aus... / Ich bin...',
+    },
+    10: {
+      intro: ['Повторить весь блок', 'Смешать слова и фразы', 'Подготовиться к тесту блока'],
+      newWords: ['Hallo', 'heißen', 'kommen', 'wohnen', 'nicht', 'wie', 'wo', 'was', 'wer'],
+      grammar: 'повторение блока Кто я?',
+      minutes: 12,
+      outcomes: ['Уверенно представиться', 'Понять базовые вопросы', 'Разблокировать тест блока'],
+      text: 'Hallo, ich heiße Mara. Ich komme aus Deutschland. Ich wohne in Berlin. Ich bin Lehrerin. Nein, ich arbeite heute nicht. Wie heißt du? Wo wohnst du? Was machst du?',
+    },
+  },
+};
+
 const planWordBank = [
   { word: 'besuchen', wordClass: 'Verb', level: 'A2', translationRU: 'посещать', translationEN: 'to visit', example: 'Sie besucht das Museum.', exampleRU: 'Она посещает музей.', exampleEN: 'She visits the museum.' },
   { word: 'die Familie', wordClass: 'Nomen', level: 'A1', translationRU: 'семья', translationEN: 'family', example: 'Meine Familie wohnt in Berlin.', exampleRU: 'Моя семья живёт в Берлине.', exampleEN: 'My family lives in Berlin.' },
@@ -9315,6 +9517,8 @@ Object.values(planData).forEach((levelData) => {
 let simplePlanScreen = { mode: 'main' };
 let planLessonStep = 1;
 let planTranslateLang = 'RU';
+let planSpeechRate = 1;
+let planSpeechToken = 0;
 
 function defaultPlanProgress() {
   return {
@@ -9431,23 +9635,60 @@ function planPercent(progress = getPlanProgress()) {
   return Math.round((done / Math.max(total, 1)) * 100);
 }
 
+function allPlanWords() {
+  const merged = new Map(planWordBank.map((item) => [cleanTerm(item.word), item]));
+  Object.values(PLAN_LEXICON).forEach((item) => merged.set(cleanTerm(item.word), item));
+  return [...merged.values()];
+}
+
+function planLessonContent(blockId, lessonId) {
+  return PLAN_LESSON_CONTENT[blockId]?.[Number(lessonId)] || null;
+}
+
+function planLexiconEntry(word) {
+  const key = cleanTerm(word);
+  return PLAN_LEXICON[word]
+    || Object.values(PLAN_LEXICON).find((item) => cleanTerm(item.word) === key)
+    || allPlanWords().find((item) => cleanTerm(item.word) === key)
+    || {
+      word: String(word || ''),
+      pronunciation: estimatePronunciation(String(word || '')),
+      wordClass: 'Wort',
+      level: normalizeLevelName(getWordLevel(String(word || ''))),
+      translationRU: 'перевод появится в словаре',
+      translationEN: 'translation will appear in vocabulary',
+      example: String(word || ''),
+      exampleRU: 'Кликни по словам в контексте урока.',
+      exampleEN: 'Tap words in the lesson context.',
+    };
+}
+
 function planWordSet(level, blockId, lessonId = 1) {
+  const content = planLessonContent(blockId, lessonId);
+  if (content?.newWords?.length) return content.newWords.map((word) => planLexiconEntry(word)).filter(Boolean);
   const offset = (PLAN_LEVELS.indexOf(level) * 5 + Number(blockId.split('_b')[1] || 1) + Number(lessonId)) % planWordBank.length;
   return Array.from({ length: 5 }, (_, index) => planWordBank[(offset + index) % planWordBank.length]);
 }
 
-function planClickableText(text, words) {
-  const map = new Map(words.map((word) => [cleanTerm(word.word).split(' ').pop(), word]));
+function planClickableText(text, words, prefix = '') {
+  const entries = allPlanWords();
+  const map = new Map(entries.flatMap((word) => {
+    const parts = String(word.word || '').split(/\s+/).map(cleanTerm).filter(Boolean);
+    return [[cleanTerm(word.word), word], [cleanTerm(String(word.word || '').split(/\s+/).pop()), word], ...parts.map((part) => [part, word])];
+  }));
+  let index = 0;
   return String(text || '').split(/([A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?)/g).map((token) => {
-    const found = map.get(cleanTerm(token));
-    if (!found) return esc(token).replace(/\r?\n/g, '<br>');
-    return `<button class="plan-word" onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
+    const found = map.get(cleanTerm(token)) || planLexiconEntry(token);
+    if (!/[A-Za-zÄÖÜäöüß]/.test(token)) return esc(token).replace(/\r?\n/g, '<br>');
+    const id = prefix ? `${prefix}-w${index++}` : '';
+    const level = normalizeLevelName(found.level || getWordLevel(found.word)).toLowerCase();
+    return `<button class="plan-word level-${esc(level)}" ${id ? `id="${esc(id)}"` : ''} onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
   }).join('');
 }
 
 function showPlanWordPopup(word, event) {
   event?.stopPropagation?.();
-  const item = planWordBank.find((entry) => entry.word === word) || planWordBank[0];
+  const item = planLexiconEntry(word) || planWordBank[0];
   const popup = ensureReadingPopup();
   const saved = isSavedVocabularyWord(item.word);
   popup.innerHTML = `
@@ -9459,6 +9700,7 @@ function showPlanWordPopup(word, event) {
         <button class="word-popup-speak" onclick="speakWordOnly(${jsString(item.word)})" aria-label="Озвучить">🔊</button>
       </div>
     </div>
+    <div class="word-popup-base">${esc(item.pronunciation || '')}</div>
     <div class="word-popup-translation">🇷🇺 ${esc(item.translationRU)}</div>
     <div class="word-popup-translation">🇬🇧 ${esc(item.translationEN)}</div>
     <div class="word-popup-example-title">Beispiel:</div>
@@ -9474,7 +9716,7 @@ function showPlanWordPopup(word, event) {
 }
 
 function addPlanWordToVocabulary(word, button = null) {
-  const item = planWordBank.find((entry) => entry.word === word);
+  const item = planLexiconEntry(word);
   if (!item) return;
   const payload = {
     id: `plan_${slugTerm(item.word)}`,
@@ -9608,7 +9850,7 @@ function openSimplePlanBlock(level, blockId) {
 }
 
 function openSimplePlanLesson(level, blockId, lessonId) {
-  planLessonStep = 1;
+  planLessonStep = 0;
   simplePlanScreen = { mode: 'lesson', level, blockId, lessonId: Number(lessonId) };
   renderPlan();
 }
@@ -9670,8 +9912,10 @@ function renderSimplePlanBlock(level, blockId) {
 function planLessonPayload(level, blockId, lessonId) {
   const block = getPlanBlock(level, blockId);
   const lesson = getPlanLesson(level, blockId, lessonId);
+  const content = planLessonContent(blockId, lessonId) || {};
   const words = planWordSet(level, blockId, lessonId);
-  const text = lesson.type === 'dialogue'
+  const text = content.text || (content.dialogues || []).map((line) => `${line.speaker}: ${line.text}`).join(' ')
+    || (lesson.type === 'dialogue'
     ? `Mara: Hallo, ich heiße Mara. Aziz: Guten Tag, ich komme aus Lahore. Mara: Arbeitest du heute? Aziz: Ja, ich arbeite und besuche später meine Familie. Mara: Sehr gut. Wir verstehen die Frage zusammen.`
     : lesson.type === 'grammar'
       ? `Heute üben wir ${block.grammar}. Ich bin Azamat. Du bist freundlich. Wir haben eine Wohnung. Sie besucht das Museum. Diese Beispiele zeigen die Form im Alltag.`
@@ -9679,14 +9923,15 @@ function planLessonPayload(level, blockId, lessonId) {
         ? `Neue Wörter: ${words.map((word) => word.word).join(', ')}. Ich benutze diese Wörter in kurzen Sätzen und verstehe den Kontext.`
         : lesson.type === 'writing'
           ? `Lies die Beispiele und schreibe danach über dich. Meine Familie ist freundlich. Ich arbeite heute. Morgen besuche ich einen Freund.`
-          : `Wir wiederholen den Block ${block.title}. Lies langsam, klicke auf Wörter und prüfe, was du schon sicher kannst.`;
-  return { block, lesson, words, text };
+          : `Wir wiederholen den Block ${block.title}. Lies langsam, klicke auf Wörter und prüfe, was du schon sicher kannst.`);
+  return { block, lesson, words, text, content };
 }
 
 function renderSimplePlanLesson(level, blockId, lessonId) {
   const root = document.getElementById('planRoot');
-  const { block, lesson, words, text } = planLessonPayload(level, blockId, lessonId);
+  const { block, lesson, words, text, content } = planLessonPayload(level, blockId, lessonId);
   const maxStep = ['writing', 'review'].includes(lesson.type) ? 4 : 3;
+  if (planLessonStep === 0) return renderPlanLessonPreview(level, blockId, lessonId, { block, lesson, words, text, content, maxStep });
   if (planLessonStep > maxStep) planLessonStep = maxStep;
   root.innerHTML = `
     <div class="simple-plan">
@@ -9696,28 +9941,70 @@ function renderSimplePlanLesson(level, blockId, lessonId) {
           <span class="plan-pill">Урок ${lesson.id} из 10</span>
           <button class="module-back" onclick="simplePlanScreen={mode:'main'};renderPlan()">× закрыть</button>
         </div>
-        <div class="plan-bar"><div class="plan-bar-fill" style="width:${Math.round((planLessonStep / maxStep) * 100)}%"></div></div>
-        <div class="plan-status">Шаг ${planLessonStep} из ${maxStep}</div>
+        ${renderPlanStepper(planLessonStep)}
       </div>
       <section class="plan-screen-card">
         <div class="plan-title">${esc(lesson.title)}</div>
-        <div class="plan-sub">${esc(block.title)} · ${esc(block.grammar)}</div>
-        ${renderPlanLessonStep(level, blockId, lessonId, planLessonStep, { block, lesson, words, text, maxStep })}
+        <div class="plan-sub">${esc(block.title)} · ${esc(content.grammar || block.grammar)}</div>
+        ${renderPlanLessonStep(level, blockId, lessonId, planLessonStep, { block, lesson, words, text, content, maxStep })}
+      </section>
+      ${renderPlanRateControls()}
+    </div>
+  `;
+}
+
+function renderPlanLessonPreview(level, blockId, lessonId, payload) {
+  const root = document.getElementById('planRoot');
+  const { block, lesson, words, content } = payload;
+  root.innerHTML = `
+    <div class="simple-plan">
+      <button class="module-back" onclick="openSimplePlanBlock(${jsString(level)},${jsString(blockId)})">← Назад</button>
+      <section class="plan-screen-card">
+        <div class="plan-title">Урок ${lesson.id}: ${esc(lesson.title)} ${lesson.id === 1 ? '👋' : ''}</div>
+        <div class="plan-sub">Блок: ${esc(block.title)} · ${esc(level)}</div>
+        <div class="plan-preview-meta">
+          <div class="plan-preview-item">📚 Новых слов: ${words.length}</div>
+          <div class="plan-preview-item">⚡ Грамматика: ${esc(content.grammar || block.grammar || 'нет')}</div>
+          <div class="plan-preview-item">⏱ ~${content.minutes || 10} минут</div>
+        </div>
+        <div class="module-row-title">Что ты узнаешь:</div>
+        <div class="plan-check-list">
+          ${(content.outcomes || ['Понять текст урока', 'Выучить новые слова', 'Закрепить фразы']).map((item) => `<div>✓ ${esc(item)}</div>`).join('')}
+        </div>
+        <button class="btn btn-gold" onclick="planLessonStep=1;renderPlan()">Начать урок →</button>
       </section>
     </div>
   `;
 }
 
+function renderPlanStepper(step) {
+  return `<div class="plan-stepper">${[
+    ['📖', 'Текст'],
+    ['✏️', 'Задания'],
+    ['📝', 'Слова'],
+    ['✓', 'Готово'],
+  ].map((item, index) => {
+    const pos = index + 1;
+    return `<div class="plan-step ${pos < step ? 'done' : pos === step ? 'active' : ''}"><span class="plan-step-icon">${item[0]}</span><span class="plan-step-label">${item[1]}</span></div>`;
+  }).join('')}</div>`;
+}
+
+function renderPlanRateControls() {
+  return `<div class="plan-audio-rate" aria-label="Скорость озвучки">
+    ${[0.5, 1, 1.5].map((rate) => `<button class="plan-rate-btn ${planSpeechRate === rate ? 'on' : ''}" onclick="setPlanSpeechRate(${rate})">${rate}x</button>`).join('')}
+  </div>`;
+}
+
 function renderPlanLessonStep(level, blockId, lessonId, step, payload) {
   if (step === 1) {
     return `
-      <div class="plan-content-text" style="margin-top:18px;">${planClickableText(payload.text, payload.words)}</div>
+      ${renderPlanLessonText(level, blockId, lessonId, payload)}
       <div class="btn-row"><button class="btn btn-gold" onclick="planLessonStep=2;renderPlan()">Далее →</button></div>
     `;
   }
   if (step === 2) {
     return `
-      <div class="plan-question-list" style="margin-top:18px;">${buildPlanLessonExercises(payload.words).map((q, index) => renderPlanExercise(q, index)).join('')}</div>
+      <div class="plan-question-list" style="margin-top:18px;">${buildPlanLessonExercises(payload).map((q, index) => renderPlanExercise(q, index)).join('')}</div>
       <div class="btn-row"><button class="btn btn-gold" onclick="planLessonStep=3;renderPlan()">Далее →</button></div>
     `;
   }
@@ -9740,13 +10027,149 @@ function renderPlanLessonStep(level, blockId, lessonId, step, payload) {
     `;
   }
   return `
-    <div class="plan-sub" style="margin-top:18px;">Напиши 2-3 предложения по теме урока.</div>
+    <div class="plan-sub" style="margin-top:18px;">${lessonId === 9 ? 'Напиши 3 предложения о себе: Ich heiße... / Ich komme aus... / Ich bin...' : 'Напиши 2-3 предложения по теме урока.'}</div>
     <textarea class="module-textarea" id="planWriting"></textarea>
     <div class="btn-row"><button class="btn btn-gold" onclick="completeSimplePlanLesson(${jsString(level)},${jsString(blockId)},${lessonId})">Завершить урок →</button></div>
   `;
 }
 
-function buildPlanLessonExercises(words) {
+function renderPlanLessonText(level, blockId, lessonId, payload) {
+  const intro = payload.content.intro || ['Прочитать текст', 'Кликать по словам', 'Послушать немецкое произношение'];
+  const dialogues = payload.content.dialogues || [];
+  return `
+    <section class="plan-intro-card">
+      <div class="plan-intro-title">💡 В этом уроке ты узнаешь:</div>
+      <ul>${intro.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
+      <button class="btn btn-gold" onclick="speakPlanDialog(${jsString(blockId)},${lessonId})">🔊 Послушать весь диалог</button>
+    </section>
+    ${dialogues.length ? `<div class="plan-dialogue">${dialogues.map((line, index) => renderPlanUtterance(line, index, blockId, lessonId, payload.words)).join('')}</div>`
+      : `<div class="plan-content-text" style="margin-top:18px;">${planClickableText(payload.text, payload.words, `plan-${blockId}-${lessonId}`)}</div>`}
+  `;
+}
+
+function renderPlanUtterance(line, index, blockId, lessonId, words) {
+  const avatar = /Mara/i.test(line.speaker) ? '🧑' : '👨';
+  return `
+    <article class="plan-utterance" id="plan-utt-${blockId}-${lessonId}-${index}">
+      <div class="plan-utterance-head">
+        <div class="plan-speaker">${avatar} ${esc(line.speaker)}</div>
+        <button class="plan-speak-btn" onclick="speakPlanUtterance(${jsString(blockId)},${lessonId},${index})" aria-label="Озвучить реплику">🔊</button>
+      </div>
+      <div class="plan-utterance-text">${planClickableText(line.text, words, `plan-${blockId}-${lessonId}-${index}`)}</div>
+      <div class="plan-translation">🇷🇺 ${esc(line.translationRU || '')}</div>
+      <div class="plan-translation">🇬🇧 ${esc(line.translationEN || '')}</div>
+    </article>
+  `;
+}
+
+function setPlanSpeechRate(rate) {
+  planSpeechRate = Number(rate) || 1;
+  renderPlan();
+}
+
+function planDialogLines(blockId, lessonId) {
+  return planLessonContent(blockId, lessonId)?.dialogues || [];
+}
+
+function clearPlanSpeechHighlight() {
+  document.querySelectorAll('.plan-word.speaking').forEach((item) => item.classList.remove('speaking'));
+}
+
+function stopPlanSpeech() {
+  planSpeechToken += 1;
+  clearPlanSpeechHighlight();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function speakPlanDialog(blockId, lessonId) {
+  const lines = planDialogLines(blockId, lessonId);
+  if (!lines.length) {
+    const payload = planLessonPayload(simplePlanScreen.level || 'A1', blockId, lessonId);
+    return speakPlanText(payload.text, document.querySelector('.plan-screen-card'));
+  }
+  stopPlanSpeech();
+  const token = ++planSpeechToken;
+  const playNext = (index) => {
+    if (token !== planSpeechToken || index >= lines.length) return;
+    const scope = document.getElementById(`plan-utt-${blockId}-${lessonId}-${index}`);
+    speakPlanText(lines[index].text, scope, () => playNext(index + 1), token, false);
+  };
+  playNext(0);
+}
+
+function speakPlanUtterance(blockId, lessonId, index) {
+  const line = planDialogLines(blockId, lessonId)[index];
+  if (!line) return;
+  stopPlanSpeech();
+  const token = ++planSpeechToken;
+  speakPlanText(line.text, document.getElementById(`plan-utt-${blockId}-${lessonId}-${index}`), null, token, false);
+}
+
+function speakPlanText(text, scope, onDone = null, token = ++planSpeechToken, cancelFirst = true) {
+  if (!('speechSynthesis' in window)) return;
+  if (cancelFirst) window.speechSynthesis.cancel();
+  clearPlanSpeechHighlight();
+  const words = String(text || '').match(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?/g) || [];
+  const clickable = [...(scope || document).querySelectorAll('.plan-word')];
+  let fallbackTimer = null;
+  const highlightAt = (index) => {
+    if (token !== planSpeechToken) return;
+    clearPlanSpeechHighlight();
+    clickable[Math.min(index, clickable.length - 1)]?.classList.add('speaking');
+  };
+  const utterance = new SpeechSynthesisUtterance(String(text || ''));
+  utterance.lang = 'de-DE';
+  utterance.rate = planSpeechRate;
+  utterance.onboundary = (event) => {
+    if (event.name && event.name !== 'word') return;
+    const spoken = String(text || '').slice(0, event.charIndex || 0);
+    const index = (spoken.match(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?/g) || []).length;
+    highlightAt(index);
+  };
+  utterance.onstart = () => {
+    highlightAt(0);
+    const stepMs = Math.max(260, 560 / Math.max(planSpeechRate, 0.5));
+    let index = 0;
+    fallbackTimer = setInterval(() => {
+      index += 1;
+      if (index >= Math.max(words.length, clickable.length)) return clearInterval(fallbackTimer);
+      highlightAt(index);
+    }, stepMs);
+  };
+  utterance.onend = () => {
+    if (fallbackTimer) clearInterval(fallbackTimer);
+    clearPlanSpeechHighlight();
+    if (token === planSpeechToken && typeof onDone === 'function') onDone();
+  };
+  utterance.onerror = utterance.onend;
+  window.speechSynthesis.speak(utterance);
+}
+
+function buildPlanLessonExercises(payloadOrWords) {
+  const payload = Array.isArray(payloadOrWords) ? { words: payloadOrWords, lesson: {} } : payloadOrWords;
+  const words = payload.words;
+  if (Number(payload.lesson?.id) === 5) {
+    return [
+      { type: 'listen-choice', q: 'Услышь число и выбери ответ', speak: 'eins', options: ['eins', 'sieben', 'zwölf', 'zwanzig'], answer: 0, explain: 'eins = один.' },
+      { type: 'listen-choice', q: 'Услышь число и выбери ответ', speak: 'zwanzig', options: ['zwei', 'zwölf', 'zwanzig', 'zehn'], answer: 2, explain: 'zwanzig = двадцать.' },
+      { type: 'mc', q: 'Что значит Telefon?', options: ['телефон', 'возраст', 'адрес', 'страна'], answer: 0, explain: 'Telefon используется для номера телефона.' },
+      { type: 'mc', q: 'Что значит Alter?', options: ['адрес', 'возраст', 'город', 'имя'], answer: 1, explain: 'Alter = возраст.' },
+    ];
+  }
+  if (Number(payload.lesson?.id) === 8) {
+    return [
+      { type: 'mc', q: 'Mara: Wie heißt du? Aziz отвечает:', options: ['Ich heiße Aziz.', 'Ich wohne nicht.', 'Danke schön.', 'Auf Wiedersehen.'], answer: 0, explain: 'На вопрос об имени отвечаем Ich heiße...' },
+      { type: 'mc', q: 'Mara: Woher kommst du? Aziz отвечает:', options: ['Ich komme aus Lahore.', 'Ich heiße Mara.', 'Guten Morgen.', 'Nein, danke.'], answer: 0, explain: 'Woher kommst du? = Откуда ты?' },
+      { type: 'build', q: 'Собери фразу', words: ['Ich', 'wohne', 'in', 'Berlin'], answer: 'Ich wohne in Berlin', explain: 'Глагол wohne стоит на втором месте.' },
+    ];
+  }
+  if (Number(payload.lesson?.id) === 10) {
+    return [
+      { type: 'mc', q: 'Как сказать “Меня зовут Mara”?', options: ['Ich heiße Mara.', 'Ich komme Mara.', 'Ich wohne Mara.', 'Ich bin nicht Mara.'], answer: 0, explain: 'Имя: Ich heiße...' },
+      { type: 'mc', q: 'Где стоит nicht?', options: ['после глагола', 'всегда первым словом', 'только перед именем', 'не используется'], answer: 0, explain: 'В простом предложении: Ich wohne nicht in Berlin.' },
+      { type: 'build', q: 'Собери вопрос', words: ['Wo', 'wohnst', 'du'], answer: 'Wo wohnst du', explain: 'Вопросительное слово + глагол + du.' },
+    ];
+  }
   return [
     { type: 'mc', q: `Что значит ${words[0].word}?`, options: [words[0].translationRU, words[1].translationRU, words[2].translationRU, 'окно'], answer: 0, explain: 'Смотри перевод в карточке слова.' },
     { type: 'input', q: `Вставь слово: Ich ___ heute.`, answer: 'arbeite', explain: 'После ich форма часто заканчивается на -e.' },
@@ -9765,6 +10188,9 @@ function renderPlanExercise(q, index) {
   }
   if (q.type === 'build') {
     return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><input class="module-input" id="planEx${index}" placeholder="Ich ..."><div class="module-word-list">${q.words.map((word) => `<button class="module-word-chip" onclick="document.getElementById('planEx${index}').value=(document.getElementById('planEx${index}').value+' ${esc(word)}').trim()">${esc(word)}</button>`).join('')}</div><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'input',${jsString(q.answer)},${jsString(q.explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
+  }
+  if (q.type === 'listen-choice') {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><button class="btn btn-gold btn-sm" onclick="speakPlanText(${jsString(q.speak)},this.closest('.plan-word-card'))">🔊 Слушать</button><div class="module-options">${q.options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(q.answer))},${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
   }
   if (q.type === 'translate') {
     const opts = planTranslateLang === 'RU' ? q.optionsRU : q.optionsEN;
