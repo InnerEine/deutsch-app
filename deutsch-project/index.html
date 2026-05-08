@@ -2180,6 +2180,460 @@ a,button,input,textarea,select{font-family:inherit;}
   #appMain{padding-bottom:74px!important;}
   .container{padding-bottom:74px!important;}
 }
+
+/* Compact community chat rebuild */
+#page-chat{
+  --chat-page-bg:#0A0A0A;
+  --chat-shell-bg:#0A0A0A;
+  --chat-other-bg:#1E1E1E;
+  --chat-mine-bg:#F5C518;
+  --chat-accent:#F5C518;
+  --chat-accent-rgb:245,197,24;
+  --chat-mine-text:#000000;
+  --chat-input-bg:#1E1E1E;
+  --chat-border:#2A2A2A;
+  background:var(--chat-page-bg);
+}
+body.light #page-chat{
+  --chat-page-bg:#FFFFFF;
+  --chat-shell-bg:#FFFFFF;
+  --chat-other-bg:#F0F0F0;
+  --chat-mine-bg:#F5C518;
+  --chat-accent:#F5C518;
+  --chat-accent-rgb:245,197,24;
+  --chat-mine-text:#000000;
+  --chat-input-bg:#F0F0F0;
+  --chat-border:#DDDDDD;
+}
+body.purple #page-chat{
+  --chat-page-bg:#0D0A1A;
+  --chat-shell-bg:#0D0A1A;
+  --chat-other-bg:#231A35;
+  --chat-mine-bg:#A855F7;
+  --chat-accent:#A855F7;
+  --chat-accent-rgb:168,85,247;
+  --chat-mine-text:#000000;
+  --chat-input-bg:#231A35;
+  --chat-border:#3B2A59;
+}
+#page-chat .container{
+  max-width:900px;
+  padding-top:16px;
+  padding-bottom:0!important;
+}
+.community-chat-shell{
+  height:auto;
+  min-height:0;
+  border:1px solid var(--chat-border);
+  background:var(--chat-shell-bg);
+  border-radius:12px;
+  display:grid;
+  grid-template-rows:auto auto auto minmax(0,auto) auto;
+  overflow:hidden;
+  box-shadow:none;
+  transform:none!important;
+}
+.community-chat-head{
+  padding:0;
+  border-bottom:0;
+  background:var(--chat-shell-bg);
+  display:grid;
+  gap:0;
+}
+.community-title-row{
+  padding:12px 16px;
+  border-bottom:1px solid var(--chat-border);
+  align-items:center;
+  flex-wrap:nowrap;
+}
+.community-title-main{
+  width:100%;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:nowrap;
+}
+.community-title{
+  font-family:Inter,system-ui,sans-serif;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:0;
+  color:var(--text-primary);
+}
+.community-online{
+  margin-left:auto;
+  border:0;
+  background:transparent;
+  padding:0;
+  color:var(--green);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.community-clear-btn,
+.community-room-hint{
+  display:none!important;
+}
+.community-tabs{
+  display:flex;
+  gap:6px;
+  padding:8px 16px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  border-bottom:1px solid var(--chat-border);
+  background:var(--chat-shell-bg);
+}
+.community-tabs::-webkit-scrollbar{display:none;}
+.community-tab{
+  min-height:0!important;
+  padding:6px 14px!important;
+  border-radius:20px!important;
+  font-family:Inter,system-ui,sans-serif;
+  font-size:13px!important;
+  font-weight:500!important;
+  line-height:1.2;
+  white-space:nowrap;
+  border:1.5px solid var(--chat-border)!important;
+  background:transparent!important;
+  color:var(--text-secondary)!important;
+  cursor:pointer;
+}
+.community-tab.on{
+  background:var(--chat-accent)!important;
+  color:#000000!important;
+  border-color:var(--chat-accent)!important;
+}
+.community-pin{
+  margin:0 16px 8px;
+  padding:8px 12px;
+  background:var(--chat-other-bg);
+  border:0;
+  border-left:3px solid var(--chat-accent);
+  border-radius:10px;
+  color:var(--text-primary);
+  font-size:13px;
+  line-height:1.25;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:34px;
+}
+.community-pin.collapsed{
+  cursor:pointer;
+}
+.community-pin-text{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.community-pin-toggle{
+  margin-left:auto;
+  width:22px;
+  height:22px;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:var(--text-muted);
+  font-size:17px;
+  font-weight:700;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.community-pin-toggle:hover{
+  color:var(--chat-accent);
+  background:rgba(var(--chat-accent-rgb),.12);
+}
+.community-offline{
+  margin:0 16px 8px;
+  font-size:12px;
+}
+.community-messages{
+  height:calc(100vh - 280px);
+  min-height:220px;
+  overflow-y:auto;
+  padding:12px 16px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  background:var(--chat-page-bg);
+}
+.community-empty{
+  margin:auto;
+  max-width:310px;
+  color:var(--text-muted);
+  font-size:13px;
+}
+.community-msg{
+  width:auto;
+  max-width:70%;
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  margin-bottom:4px;
+  position:relative;
+}
+.community-msg.mine{
+  align-self:flex-end;
+  flex-direction:row-reverse;
+}
+.community-msg.grouped{
+  margin-top:-2px;
+}
+.community-msg.grouped .community-avatar{
+  visibility:hidden;
+}
+.community-msg.grouped .community-meta{
+  display:none;
+}
+.community-avatar{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-family:Inter,system-ui,sans-serif;
+  font-size:13px;
+  font-weight:800;
+  flex:0 0 32px;
+  box-shadow:none;
+}
+.community-bubble-wrap{
+  min-width:0;
+}
+.community-meta{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:0 0 3px;
+  color:var(--text-muted);
+  font-size:11px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.community-msg.mine .community-meta{
+  justify-content:flex-end;
+  margin:3px 0 0;
+  text-align:right;
+}
+.community-name{
+  color:var(--text-muted);
+  font-weight:700;
+}
+.community-level{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--text-muted)!important;
+  font-family:Inter,system-ui,sans-serif;
+  font-size:11px!important;
+  font-weight:700!important;
+}
+.community-time{
+  color:var(--text-muted);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:11px;
+}
+.community-bubble{
+  max-width:100%;
+  background:var(--chat-other-bg);
+  border:1px solid var(--chat-border);
+  border-radius:4px 16px 16px 16px;
+  padding:8px 12px;
+  color:var(--text-primary);
+  font-size:14px;
+  line-height:1.42;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.community-msg.mine .community-bubble{
+  background:var(--chat-mine-bg);
+  color:var(--chat-mine-text);
+  border-color:var(--chat-mine-bg);
+  border-radius:16px 4px 16px 16px;
+}
+.community-reactor{
+  display:none;
+  position:absolute;
+  left:40px;
+  top:-38px;
+  z-index:8;
+  border:1px solid var(--chat-border);
+  background:var(--bg-card);
+  box-shadow:0 12px 28px rgba(0,0,0,.22);
+  border-radius:16px;
+  padding:5px 7px;
+  gap:2px;
+}
+.community-msg.mine .community-reactor{
+  left:auto;
+  right:40px;
+}
+.community-msg.react-open .community-reactor{
+  display:flex;
+}
+.community-reaction-btn{
+  width:28px;
+  height:28px;
+  border:0;
+  background:transparent;
+  border-radius:50%;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  font-size:16px;
+}
+.community-reaction-btn:hover{
+  background:var(--bg-hover);
+}
+.community-reactions{
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  margin-top:3px;
+}
+.community-msg.mine .community-reactions{
+  justify-content:flex-end;
+}
+.community-reaction-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  background:var(--bg-hover);
+  border:1px solid var(--chat-border);
+  border-radius:10px;
+  padding:2px 6px;
+  color:var(--text-primary);
+  font-size:12px;
+  line-height:1.2;
+  cursor:pointer;
+}
+.community-reaction-pill:hover{
+  border-color:var(--chat-accent);
+}
+.community-reaction-pill.mine{
+  border-color:var(--chat-accent);
+  background:rgba(var(--chat-accent-rgb),.1);
+}
+.community-composer{
+  position:sticky;
+  bottom:0;
+  padding:8px 16px 12px;
+  background:var(--chat-page-bg);
+  border-top:1px solid var(--chat-border);
+  display:block;
+  box-shadow:none;
+  z-index:5;
+}
+.community-input-row{
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+}
+.community-input{
+  flex:1;
+  width:100%;
+  min-height:40px;
+  max-height:100px;
+  background:var(--chat-input-bg);
+  border:1.5px solid var(--chat-border);
+  border-radius:20px;
+  padding:10px 16px;
+  color:var(--text-primary);
+  resize:none;
+  overflow-y:auto;
+  font-size:14px;
+  line-height:1.4;
+}
+.community-input:focus{
+  border-color:var(--chat-accent);
+  outline:none;
+}
+.community-send{
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  border:0;
+  border-radius:50%;
+  background:var(--chat-accent);
+  color:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  font-size:16px;
+  font-weight:800;
+  line-height:1;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:transform .1s ease;
+}
+.community-send:active{
+  transform:scale(.9);
+}
+.community-composer-meta{
+  min-height:0;
+  margin-top:4px;
+  justify-content:flex-end;
+  font-family:Inter,system-ui,sans-serif;
+  font-size:11px;
+  color:var(--text-muted);
+}
+#communityWriteHint{
+  display:none!important;
+}
+.community-count{
+  display:none!important;
+}
+.community-error:empty{
+  display:none;
+}
+@media(max-width:640px){
+  #page-chat .container{
+    padding:0 0 74px!important;
+  }
+  .community-chat-shell{
+    border-left:0;
+    border-right:0;
+    border-radius:0;
+    margin:0;
+  }
+  .community-title-row{
+    padding:11px 16px;
+  }
+  .community-title{
+    font-size:19px;
+  }
+  .community-tabs{
+    padding:8px 16px;
+  }
+  .community-messages{
+    height:calc(100dvh - 280px);
+    min-height:230px;
+    padding:12px 16px 8px;
+  }
+  .community-msg{
+    max-width:82%;
+  }
+  .community-composer{
+    position:sticky!important;
+    left:auto;
+    right:auto;
+    bottom:0!important;
+    border-left:0;
+    border-right:0;
+    border-radius:0;
+    padding:8px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+}
 </style>
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -2587,23 +3041,23 @@ window.initDeutschFirebaseChat();
         <div class="community-chat-head">
           <div class="community-title-row">
             <div class="community-title-main">
-              <div class="community-title" id="communityRoomTitle">Общий чат</div>
+              <div class="community-title" id="communityRoomTitle">Чат</div>
               <div class="community-online" id="communityOnline">🟢 0 онлайн</div>
             </div>
             <button class="community-clear-btn" onclick="clearCommunityLocalChat()">🗑 Очистить мой чат</button>
           </div>
           <div class="community-room-hint" id="communityRoomHint">Ты можешь писать в Общий чат и чат своего уровня.</div>
-          <div class="community-tabs" id="communityTabs"></div>
-          <div class="community-pin" id="communityWordOfDay"></div>
+          <div class="community-tabs chat-tabs" id="communityTabs"></div>
+          <div class="community-pin word-of-day" id="communityWordOfDay"></div>
           <div class="community-offline" id="communityOffline">Нет соединения. Чат недоступен офлайн.</div>
         </div>
         <div class="community-messages" id="communityMessages">
           <div class="community-empty">Открываем чат...</div>
         </div>
-        <div class="community-composer">
-          <div class="community-input-row">
-            <textarea class="community-input" id="communityInput" maxlength="500" rows="1" placeholder="Введи сообщение..."></textarea>
-            <button class="community-send" id="communitySend" onclick="sendCommunityMessage()" aria-label="Отправить">→</button>
+        <div class="community-composer chat-input-area">
+          <div class="community-input-row chat-input-row">
+            <textarea class="community-input chat-input" id="communityInput" maxlength="500" rows="1" placeholder="Введи сообщение..."></textarea>
+            <button class="community-send send-btn" id="communitySend" onclick="sendCommunityMessage()" aria-label="Отправить">→</button>
           </div>
           <div class="community-composer-meta">
             <span id="communityWriteHint">Общий чат доступен всем.</span>
@@ -8005,12 +8459,11 @@ function renderCommunityTabs() {
   const el = document.getElementById('communityTabs');
   if (!el) return;
   el.innerHTML = COMMUNITY_ROOMS.map((room) => `
-    <button class="community-tab ${room.id === communityChat.room ? 'on' : ''}" onclick="switchCommunityRoom('${room.id}')">${room.label}</button>
+    <button class="community-tab chat-tab ${room.id === communityChat.room ? 'on active' : ''}" onclick="switchCommunityRoom('${room.id}')">${room.label}</button>
   `).join('');
   const profile = getCommunityProfile();
-  const roomLabel = COMMUNITY_ROOMS.find((room) => room.id === communityChat.room)?.label || 'Общий';
   const title = document.getElementById('communityRoomTitle');
-  if (title) title.textContent = roomLabel === 'Общий' ? 'Общий чат' : `Чат ${roomLabel}`;
+  if (title) title.textContent = 'Чат';
   const hint = document.getElementById('communityRoomHint');
   if (hint) hint.textContent = `Ты можешь писать в Общий чат и чат ${profile.level}. Остальные комнаты доступны для чтения.`;
 }
@@ -8022,10 +8475,27 @@ function renderCommunityWordOfDay() {
   const start = new Date(now.getFullYear(), 0, 0);
   const day = Math.floor((now - start) / 86400000);
   const item = COMMUNITY_WORDS_OF_DAY[day % COMMUNITY_WORDS_OF_DAY.length];
-  const details = communityChat.wordCollapsed ? '' : `<span style="color:var(--muted);"> · ${esc(item.ex)}</span>`;
+  el.classList.toggle('collapsed', communityChat.wordCollapsed);
+  if (communityChat.wordCollapsed) {
+    el.innerHTML = '<span class="community-pin-text">📌 Слово дня</span>';
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.onclick = toggleCommunityWordOfDay;
+    el.onkeydown = (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleCommunityWordOfDay();
+      }
+    };
+    return;
+  }
+  el.removeAttribute('role');
+  el.removeAttribute('tabindex');
+  el.onclick = null;
+  el.onkeydown = null;
   el.innerHTML = `
-    <span>📌 <strong>Слово дня:</strong> ${esc(item.word)} — ${esc(item.ru)}${details}</span>
-    <button class="community-pin-toggle" onclick="toggleCommunityWordOfDay()">${communityChat.wordCollapsed ? 'Развернуть' : 'Свернуть'}</button>
+    <span class="community-pin-text">📌 ${esc(item.word)} — ${esc(item.ru)}</span>
+    <button class="community-pin-toggle" onclick="toggleCommunityWordOfDay()" aria-label="Свернуть слово дня">×</button>
   `;
 }
 
@@ -8052,7 +8522,7 @@ function renderCommunityComposerState() {
     hint.textContent = 'Нет соединения. Чат недоступен офлайн.';
     input.placeholder = 'Нет соединения';
   } else {
-    hint.textContent = `Ты пишешь в ${communityChat.room === 'general' ? 'Общий чат' : `чат ${getCommunityProfile().level}`}.`;
+    hint.textContent = '';
     input.placeholder = 'Введи сообщение...';
   }
 }
@@ -8139,7 +8609,7 @@ async function updateCommunityPresence() {
       level: getCommunityProfile().level,
       lastSeen: serverTimestamp(),
     }).catch(() => null);
-  }, 60000);
+  }, 30000);
   if (!communityChat.pagehideWired) {
     communityChat.pagehideWired = true;
     window.addEventListener('pagehide', () => {
@@ -8202,21 +8672,30 @@ function renderCommunityMessages(items = communityChat.messages) {
     const isMine = message.userId && message.userId === firebaseUserId;
     const prev = visibleItems[index - 1];
     const sameAuthor = prev && String(prev.userId || prev.userName || '') === String(message.userId || message.userName || '');
-    const closeInTime = prev && Math.abs(Number(message.timestamp || 0) - Number(prev.timestamp || 0)) < 60000;
+    const closeInTime = prev && Math.abs(Number(message.timestamp || 0) - Number(prev.timestamp || 0)) < 2 * 60 * 1000;
     const grouped = sameAuthor && closeInTime;
-    const reactions = renderCommunityReactions(message.reactions);
+    const reactions = renderCommunityReactions(message.reactions, firebaseUserId, message.id);
+    const metaOther = `
+      <div class="community-meta message-meta">
+        <span class="community-name">${esc(message.userName || 'Аноним')}</span>
+        <span class="community-level">${esc(message.userLevel || 'A1')}</span>
+        <span class="community-time">${formatCommunityTime(message.timestamp)}</span>
+      </div>
+    `;
+    const metaMine = `
+      <div class="community-meta message-meta-mine">
+        <span class="community-time">${formatCommunityTime(message.timestamp)}</span>
+      </div>
+    `;
     return `
-      <div class="community-msg ${isMine ? 'mine' : ''} ${grouped ? 'grouped' : ''}" data-id="${esc(message.id)}" onpointerdown="communityReactionHoldStart(event,this)" onpointerup="communityReactionHoldEnd(this)" onpointerleave="communityReactionHoldEnd(this)">
+      <div class="community-msg ${isMine ? 'mine message-mine' : 'message-other'} ${grouped ? 'grouped' : ''}" data-id="${esc(message.id)}" onpointerenter="communityReactionHover(this)" onpointerdown="communityReactionHoldStart(event,this)" onpointerup="communityReactionHoldEnd(this)" onpointerleave="communityReactionHoldEnd(this)">
         ${isMine ? '' : renderCommunityAvatar(message.userName)}
         <div class="community-bubble-wrap">
-          <div class="community-meta">
-            <span class="community-name">${esc(message.userName || 'Аноним')}</span>
-            <span class="community-level">${esc(message.userLevel || 'A1')}</span>
-            <span class="community-time">${formatCommunityTime(message.timestamp)}</span>
-          </div>
-          <div class="community-bubble">${esc(message.text || '')}</div>
-          <div class="community-reactor">${COMMUNITY_REACTIONS.map((emoji) => `<button class="community-reaction-btn" onclick="addCommunityReaction('${communityChat.room}','${message.id}','${emoji}')">${emoji}</button>`).join('')}</div>
-          ${reactions ? `<div class="community-reactions">${reactions}</div>` : ''}
+          ${isMine ? '' : metaOther}
+          <div class="community-bubble ${isMine ? 'bubble-mine' : 'bubble-other'}">${esc(message.text || '')}</div>
+          <div class="community-reactor">${COMMUNITY_REACTIONS.map((emoji) => `<button class="community-reaction-btn" onclick="addCommunityReaction(${jsString(communityChat.room)},${jsString(message.id)},${jsString(emoji)})">${emoji}</button>`).join('')}</div>
+          ${isMine ? metaMine : ''}
+          ${reactions ? `<div class="community-reactions reactions">${reactions}</div>` : ''}
         </div>
         ${isMine ? renderCommunityAvatar(message.userName) : ''}
       </div>
@@ -8240,13 +8719,17 @@ function renderCommunityAvatar(name) {
   return `<div class="community-avatar" style="background:${avatarColor(name)};">${esc(communityInitial(name))}</div>`;
 }
 
-function renderCommunityReactions(reactions) {
+function renderCommunityReactions(reactions, currentUserId = '', messageId = '') {
   const counts = {};
+  const mine = new Set();
   Object.values(reactions || {}).forEach((item) => {
     const emoji = item?.emoji;
     if (emoji) counts[emoji] = (counts[emoji] || 0) + 1;
+    if (emoji && item?.userId && item.userId === currentUserId) mine.add(emoji);
   });
-  return Object.entries(counts).map(([emoji, count]) => `<span class="community-reaction-pill">${emoji} ${count}</span>`).join('');
+  return Object.entries(counts).map(([emoji, count]) => `
+    <button type="button" class="community-reaction-pill reaction-badge ${mine.has(emoji) ? 'mine' : ''}" onclick="addCommunityReaction(${jsString(communityChat.room)},${jsString(messageId)},${jsString(emoji)})">${emoji} ${count}</button>
+  `).join('');
 }
 
 function formatCommunityTime(timestamp) {
@@ -8259,14 +8742,32 @@ function formatCommunityTime(timestamp) {
 }
 
 let communityHoldTimer = null;
+let communityReactionCloseTimer = null;
+function communityOpenReactionPicker(el) {
+  if (!el) return;
+  clearTimeout(communityReactionCloseTimer);
+  el.classList.add('react-open');
+  communityReactionCloseTimer = setTimeout(() => el.classList.remove('react-open'), 3000);
+}
+
+function communityReactionHover(el) {
+  communityOpenReactionPicker(el);
+}
+
 function communityReactionHoldStart(event, el) {
   clearTimeout(communityHoldTimer);
-  communityHoldTimer = setTimeout(() => el.classList.add('react-open'), event.pointerType === 'mouse' ? 600 : 420);
+  if (event.pointerType === 'mouse') {
+    communityOpenReactionPicker(el);
+    return;
+  }
+  communityHoldTimer = setTimeout(() => communityOpenReactionPicker(el), 420);
 }
 
 function communityReactionHoldEnd(el) {
   clearTimeout(communityHoldTimer);
-  setTimeout(() => el.classList.remove('react-open'), 1800);
+  if (!el?.classList.contains('react-open')) return;
+  clearTimeout(communityReactionCloseTimer);
+  communityReactionCloseTimer = setTimeout(() => el.classList.remove('react-open'), 3000);
 }
 
 function containsBadCommunityWord(text) {
@@ -9582,6 +10083,17 @@ function renderPlanExercise(q, index) {
     return `<div class="plan-word-card"><div class="plan-card-top"><div>${index + 1}. ${esc(q.q)}</div><div><button class="vf-btn ${planTranslateLang === 'RU' ? 'on' : ''}" onclick="planTranslateLang='RU';renderPlan()">🇷🇺 RU</button><button class="vf-btn ${planTranslateLang === 'EN' ? 'on' : ''}" onclick="planTranslateLang='EN';renderPlan()">🇬🇧 EN</button></div></div><div class="module-options">${opts.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice','0',${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
   }
   return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><div class="module-options">${q.options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(q.answer))},${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+}
+
+function normalizePlanAnswer(value) {
+  return String(value ?? '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[“”„]/g, '"')
+    .replace(/[’`´]/g, "'")
+    .replace(/[.,!?;:]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function checkPlanExercise(index, type, answer, explain, chosen = null) {
