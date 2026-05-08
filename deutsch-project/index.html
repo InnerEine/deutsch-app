@@ -733,6 +733,41 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .vocab-empty-icon{font-size:38px;}
 .vocab-empty-title{font-size:20px;font-weight:800;color:var(--text-primary);}
 .vocab-empty-copy{color:var(--text-muted);line-height:1.5;max-width:320px;}
+.simple-plan{display:grid;gap:18px;}
+.plan-progress-card,.plan-block-card,.plan-lesson-card,.plan-screen-card{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:18px;}
+.plan-progress-top,.plan-card-top,.plan-lesson-top,.plan-exam-part-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.plan-title{font-family:'Syne',sans-serif;font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:0;line-height:1.05;}
+.plan-sub{color:var(--muted);font-size:14px;line-height:1.5;margin-top:6px;}
+.plan-bar{height:12px;background:var(--bg3);border:1px solid var(--border);border-radius:999px;overflow:hidden;margin:14px 0 10px;}
+.plan-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:999px;transition:width .25s ease;}
+.plan-level-tabs{display:flex;gap:8px;flex-wrap:wrap;}
+.plan-level-tab{border:1px solid var(--border);background:var(--bg2);color:var(--text);border-radius:999px;min-height:42px;padding:9px 16px;font-weight:800;cursor:pointer;}
+.plan-level-tab.active{border-color:var(--gold);color:var(--gold);background:rgba(240,192,96,.08);}
+.plan-level-tab.locked{opacity:.45;cursor:not-allowed;}
+.plan-block-list,.plan-lesson-list,.plan-step-list,.plan-word-grid,.plan-question-list{display:grid;gap:10px;}
+.plan-block-card{display:grid;gap:12px;}
+.plan-block-card.locked,.plan-lesson-card.locked{opacity:.55;}
+.plan-status{font-size:13px;color:var(--muted);line-height:1.45;}
+.plan-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg3);border-radius:999px;padding:5px 9px;font-size:12px;color:var(--muted);}
+.plan-lesson-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;}
+.plan-lesson-dot{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);display:grid;place-items:center;font-weight:800;color:var(--muted);}
+.plan-lesson-card.done .plan-lesson-dot{color:var(--green);border-color:rgba(61,214,140,.5);background:rgba(61,214,140,.08);}
+.plan-lesson-card.current .plan-lesson-dot{color:var(--gold);border-color:rgba(240,192,96,.55);background:rgba(240,192,96,.08);}
+.plan-step-head{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.plan-content-text{font-size:17px;line-height:1.9;}
+.plan-word{border:0;background:transparent;color:inherit;font:inherit;padding:0 2px;border-radius:5px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(240,192,96,.35);text-underline-offset:4px;}
+.plan-feedback{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;line-height:1.45;}
+.plan-feedback.ok{border-color:rgba(61,214,140,.45);background:rgba(61,214,140,.08);}
+.plan-feedback.no{border-color:rgba(240,85,85,.45);background:rgba(240,85,85,.08);}
+.plan-word-card{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:13px;display:grid;gap:7px;}
+.plan-word-title{font-size:17px;font-weight:800;}
+.plan-exam-grid{display:grid;gap:14px;}
+.plan-victory{border:1px solid rgba(61,214,140,.45);background:rgba(61,214,140,.08);border-radius:12px;padding:18px;text-align:center;}
+@media(max-width:768px){
+  .plan-progress-card,.plan-block-card,.plan-lesson-card,.plan-screen-card{padding:14px;}
+  .plan-lesson-card{grid-template-columns:auto minmax(0,1fr);}
+  .plan-lesson-card .btn{grid-column:1/-1;width:100%;}
+}
 
 /* Misc */
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);letter-spacing:1px;}
@@ -6819,6 +6854,7 @@ async function initApp() {
   renderPhrases();
   renderCommunityChatShell(false);
   loadUserVocabularyFromFirebase().catch(() => {});
+  loadPlanProgressFromFirebase().catch(() => {});
   updateCommunityBadge();
   if (navigator.onLine) startCommunityUnreadListeners();
   renderLogin();
@@ -9100,6 +9136,828 @@ function showModuleVictory(title, copy, buttonLabel, action) {
 
 function closeModuleVictory() {
   document.getElementById('moduleVictory')?.remove();
+}
+
+const PLAN_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+const planLessonTypes = ['dialogue', 'grammar', 'vocabulary', 'vocabulary', 'grammar', 'practice', 'grammar', 'practice', 'writing', 'review'];
+const planData = {
+  A1: {
+    title: 'A1 — Первые шаги',
+    description: 'Базовые фразы и знакомство',
+    totalLessons: 50,
+    blocks: [
+      {
+        id: 'a1_b1',
+        title: 'Кто я?',
+        emoji: '👋',
+        description: 'Знакомство, имя, страна, профессия',
+        grammar: 'sein, heißen, kommen aus',
+        lessons: [
+          { id: 1, title: 'Привет по-немецки', type: 'dialogue' },
+          { id: 2, title: 'Как тебя зовут?', type: 'grammar' },
+          { id: 3, title: 'Откуда ты?', type: 'vocabulary' },
+          { id: 4, title: 'Профессии', type: 'vocabulary' },
+          { id: 5, title: 'Числа 1-10', type: 'vocabulary' },
+          { id: 6, title: 'Отрицание: nicht', type: 'grammar' },
+          { id: 7, title: 'Вопросы: wie/wo/was', type: 'grammar' },
+          { id: 8, title: 'Диалог: знакомство', type: 'practice' },
+          { id: 9, title: 'Письмо: о себе', type: 'writing' },
+          { id: 10, title: 'Повторение блока', type: 'review' },
+        ],
+      },
+      {
+        id: 'a1_b2',
+        title: 'Моя семья',
+        emoji: '👨‍👩‍👧',
+        grammar: 'haben, притяжательные местоимения, Akkusativ',
+        lessons: [
+          { id: 1, title: 'Члены семьи' },
+          { id: 2, title: 'haben: у меня есть' },
+          { id: 3, title: 'Мой/моя/моё' },
+          { id: 4, title: 'Внешность' },
+          { id: 5, title: 'Характер' },
+          { id: 6, title: 'Akkusativ: вижу кого?' },
+          { id: 7, title: 'Числа 11-100' },
+          { id: 8, title: 'Диалог: моя семья' },
+          { id: 9, title: 'Письмо: опиши семью' },
+          { id: 10, title: 'Повторение блока' },
+        ],
+      },
+      {
+        id: 'a1_b3',
+        title: 'Город',
+        emoji: '🏙️',
+        grammar: 'предлоги места, Imperativ',
+        lessons: [
+          { id: 1, title: 'Где что находится?' },
+          { id: 2, title: 'Транспорт' },
+          { id: 3, title: 'Предлоги: in/an/auf/neben' },
+          { id: 4, title: 'Imperativ: иди/езжай' },
+          { id: 5, title: 'Магазины и места' },
+          { id: 6, title: 'Цены и деньги' },
+          { id: 7, title: 'Дорога: налево/направо' },
+          { id: 8, title: 'Диалог: где аптека?' },
+          { id: 9, title: 'Письмо: мой район' },
+          { id: 10, title: 'Повторение блока' },
+        ],
+      },
+      {
+        id: 'a1_b4',
+        title: 'Еда и кафе',
+        emoji: '🍽️',
+        grammar: 'mögen/essen/trinken + Akkusativ, kein',
+        lessons: [
+          { id: 1, title: 'Продукты питания' },
+          { id: 2, title: 'Я люблю / не люблю' },
+          { id: 3, title: 'В кафе: заказ' },
+          { id: 4, title: 'kein: у меня нет' },
+          { id: 5, title: 'Напитки' },
+          { id: 6, title: 'Готовка дома' },
+          { id: 7, title: 'Сколько стоит?' },
+          { id: 8, title: 'Диалог: в ресторане' },
+          { id: 9, title: 'Письмо: моя любимая еда' },
+          { id: 10, title: 'Повторение блока' },
+        ],
+      },
+      {
+        id: 'a1_b5',
+        title: 'Время и планы',
+        emoji: '⏰',
+        grammar: 'Präteritum sein/haben, временные предлоги',
+        lessons: [
+          { id: 1, title: 'Который час?' },
+          { id: 2, title: 'Дни недели' },
+          { id: 3, title: 'Месяцы и времена года' },
+          { id: 4, title: 'Вчера, сегодня, завтра' },
+          { id: 5, title: 'Präteritum: был/была' },
+          { id: 6, title: 'Моё расписание' },
+          { id: 7, title: 'Праздники в Германии' },
+          { id: 8, title: 'Диалог: когда встретимся?' },
+          { id: 9, title: 'Письмо: мой вчерашний день' },
+          { id: 10, title: 'Повторение блока' },
+        ],
+      },
+    ],
+  },
+  A2: {
+    title: 'A2 — Я справляюсь',
+    description: 'Повседневные ситуации и общение',
+    blocks: [
+      { id: 'a2_b1', title: 'Работа', emoji: '💼', grammar: 'Perfekt haben/sein + Partizip II' },
+      { id: 'a2_b2', title: 'Квартира', emoji: '🏠', grammar: 'Dativ: предлоги in/an/auf/neben/unter/über' },
+      { id: 'a2_b3', title: 'Здоровье', emoji: '🏥', grammar: 'Modalverben: müssen/dürfen/sollen/können' },
+      { id: 'a2_b4', title: 'Путешествия', emoji: '✈️', grammar: 'Komparativ и Superlativ' },
+      { id: 'a2_b5', title: 'Чувства', emoji: '💬', grammar: 'Союзы: weil/dass/wenn/obwohl' },
+    ],
+  },
+  B1: {
+    title: 'B1 — Я понимаю',
+    description: 'Сложные темы и свободное общение',
+    blocks: [
+      { id: 'b1_b1', title: 'Медиа', emoji: '📱', grammar: 'Konjunktiv II: würde/könnte/sollte' },
+      { id: 'b1_b2', title: 'Карьера', emoji: '📊', grammar: 'Passiv Präsens/Präteritum' },
+      { id: 'b1_b3', title: 'Экология', emoji: '🌍', grammar: 'Infinitivkonstruktionen: um zu/ohne zu' },
+      { id: 'b1_b4', title: 'История', emoji: '🏛️', grammar: 'Plusquamperfekt' },
+      { id: 'b1_b5', title: 'Общество', emoji: '👥', grammar: 'Konjunktiv I — косвенная речь' },
+    ],
+  },
+  B2: {
+    title: 'B2 — Я свободен',
+    description: 'Сложные тексты и профессиональный язык',
+    blocks: [
+      { id: 'b2_b1', title: 'Политика', emoji: '🌐', grammar: 'Nominalstil — номинализация' },
+      { id: 'b2_b2', title: 'Экономика', emoji: '📈', grammar: 'Erweiterte Partizipialkonstruktionen' },
+      { id: 'b2_b3', title: 'Наука', emoji: '🔬', grammar: 'Konzessivsätze: obwohl/trotzdem/dennoch' },
+      { id: 'b2_b4', title: 'Искусство', emoji: '🎨', grammar: 'Modalpartikeln: doch/ja/halt/eben' },
+      { id: 'b2_b5', title: 'Философия', emoji: '💭', grammar: 'Komplexe Satzgefüge — сложные конструкции' },
+    ],
+  },
+};
+
+const planWordBank = [
+  { word: 'besuchen', wordClass: 'Verb', level: 'A2', translationRU: 'посещать', translationEN: 'to visit', example: 'Sie besucht das Museum.', exampleRU: 'Она посещает музей.', exampleEN: 'She visits the museum.' },
+  { word: 'die Familie', wordClass: 'Nomen', level: 'A1', translationRU: 'семья', translationEN: 'family', example: 'Meine Familie wohnt in Berlin.', exampleRU: 'Моя семья живёт в Берлине.', exampleEN: 'My family lives in Berlin.' },
+  { word: 'arbeiten', wordClass: 'Verb', level: 'A1', translationRU: 'работать', translationEN: 'to work', example: 'Ich arbeite heute.', exampleRU: 'Я сегодня работаю.', exampleEN: 'I work today.' },
+  { word: 'die Wohnung', wordClass: 'Nomen', level: 'A2', translationRU: 'квартира', translationEN: 'apartment', example: 'Die Wohnung ist klein.', exampleRU: 'Квартира маленькая.', exampleEN: 'The apartment is small.' },
+  { word: 'gesund', wordClass: 'Adjektiv', level: 'A2', translationRU: 'здоровый', translationEN: 'healthy', example: 'Wasser ist gesund.', exampleRU: 'Вода полезна.', exampleEN: 'Water is healthy.' },
+  { word: 'verstehen', wordClass: 'Verb', level: 'A2', translationRU: 'понимать', translationEN: 'to understand', example: 'Ich verstehe die Frage.', exampleRU: 'Я понимаю вопрос.', exampleEN: 'I understand the question.' },
+  { word: 'die Meinung', wordClass: 'Nomen', level: 'B1', translationRU: 'мнение', translationEN: 'opinion', example: 'Meine Meinung ist klar.', exampleRU: 'Моё мнение ясно.', exampleEN: 'My opinion is clear.' },
+  { word: 'die Entwicklung', wordClass: 'Nomen', level: 'B1', translationRU: 'развитие', translationEN: 'development', example: 'Die Entwicklung ist wichtig.', exampleRU: 'Развитие важно.', exampleEN: 'The development is important.' },
+  { word: 'die Gesellschaft', wordClass: 'Nomen', level: 'B1', translationRU: 'общество', translationEN: 'society', example: 'Die Gesellschaft verändert sich.', exampleRU: 'Общество меняется.', exampleEN: 'Society is changing.' },
+  { word: 'die Verantwortung', wordClass: 'Nomen', level: 'B2', translationRU: 'ответственность', translationEN: 'responsibility', example: 'Verantwortung braucht Vertrauen.', exampleRU: 'Ответственности нужно доверие.', exampleEN: 'Responsibility needs trust.' },
+  { word: 'nachhaltig', wordClass: 'Adjektiv', level: 'B2', translationRU: 'устойчивый', translationEN: 'sustainable', example: 'Die Lösung ist nachhaltig.', exampleRU: 'Решение устойчивое.', exampleEN: 'The solution is sustainable.' },
+  { word: 'die Voraussetzung', wordClass: 'Nomen', level: 'B2', translationRU: 'предпосылка', translationEN: 'precondition', example: 'Das ist eine wichtige Voraussetzung.', exampleRU: 'Это важная предпосылка.', exampleEN: 'That is an important precondition.' },
+];
+
+Object.values(planData).forEach((levelData) => {
+  levelData.totalLessons = 50;
+  levelData.blocks.forEach((block, blockIndex) => {
+    block.description = block.description || `${block.title}: 10 коротких уроков и тест блока`;
+    block.lessons = (block.lessons && block.lessons.length === 10 ? block.lessons : Array.from({ length: 10 }, (_, index) => ({
+      id: index + 1,
+      title: [
+        `Слова: ${block.title}`,
+        `Грамматика: ${block.grammar.split(',')[0]}`,
+        `Диалог: ${block.title}`,
+        `Практика: ${block.title}`,
+        `Письмо: ${block.title}`,
+        `Слушаем и понимаем`,
+        `Ситуация из жизни`,
+        `Ошибки и исправления`,
+        `Мини-текст`,
+        `Повторение блока`,
+      ][index],
+      type: planLessonTypes[index],
+    }))).map((lesson, index) => ({ ...lesson, type: lesson.type || planLessonTypes[index] }));
+  });
+});
+
+let simplePlanScreen = { mode: 'main' };
+let planLessonStep = 1;
+let planTranslateLang = 'RU';
+
+function defaultPlanProgress() {
+  return {
+    currentLevel: 'A1',
+    currentBlock: 'a1_b1',
+    currentLesson: 1,
+    completedLessons: {},
+    blockTests: {},
+    levelExams: {},
+    blockAttempts: {},
+    examAttempts: {},
+    lessonStreaks: {},
+  };
+}
+
+function getPlanProgress() {
+  const raw = readJSONKey('planProgress', null);
+  return { ...defaultPlanProgress(), ...(raw || {}) };
+}
+
+function savePlanProgress(progress = getPlanProgress()) {
+  setStorageKey('planProgress', JSON.stringify(progress));
+  syncPlanProgressToFirebase(progress).catch(() => {});
+}
+
+async function syncPlanProgressToFirebase(progress) {
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready || !firebase.user?.uid) return;
+  const { ref, set } = firebase.api;
+  await set(ref(firebase.db, `users/${firebase.user.uid}/planProgress`), progress);
+}
+
+async function loadPlanProgressFromFirebase() {
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready || !firebase.user?.uid) return;
+  const { ref, onValue } = firebase.api;
+  onValue(ref(firebase.db, `users/${firebase.user.uid}/planProgress`), (snapshot) => {
+    const remote = snapshot.val();
+    if (!remote) return;
+    setStorageKey('planProgress', JSON.stringify({ ...defaultPlanProgress(), ...remote }));
+    renderPlan();
+  }, { onlyOnce: true });
+}
+
+function getPlanBlock(level, blockId) {
+  return planData[level]?.blocks.find((block) => block.id === blockId);
+}
+
+function getPlanLesson(level, blockId, lessonId) {
+  return getPlanBlock(level, blockId)?.lessons.find((lesson) => Number(lesson.id) === Number(lessonId));
+}
+
+function prevPlanLevel(level) {
+  return PLAN_LEVELS[PLAN_LEVELS.indexOf(level) - 1];
+}
+
+function isPlanLevelUnlocked(level, progress = getPlanProgress()) {
+  const prev = prevPlanLevel(level);
+  return !prev || !!progress.levelExams?.[prev]?.passed;
+}
+
+function completedPlanLessons(blockId, progress = getPlanProgress()) {
+  return new Set(progress.completedLessons?.[blockId] || []);
+}
+
+function isPlanBlockUnlocked(level, blockId, progress = getPlanProgress()) {
+  if (!isPlanLevelUnlocked(level, progress)) return false;
+  const blocks = planData[level].blocks;
+  const index = blocks.findIndex((block) => block.id === blockId);
+  return index === 0 || !!progress.blockTests?.[blocks[index - 1].id]?.passed;
+}
+
+function isPlanLessonUnlocked(level, blockId, lessonId, progress = getPlanProgress()) {
+  if (!isPlanBlockUnlocked(level, blockId, progress)) return false;
+  if (Number(lessonId) === 1) return true;
+  return completedPlanLessons(blockId, progress).has(Number(lessonId) - 1);
+}
+
+function isPlanBlockTestUnlocked(level, blockId, progress = getPlanProgress()) {
+  return isPlanBlockUnlocked(level, blockId, progress) && completedPlanLessons(blockId, progress).size >= 10;
+}
+
+function isPlanExamUnlocked(level, progress = getPlanProgress()) {
+  return isPlanLevelUnlocked(level, progress) && planData[level].blocks.every((block) => progress.blockTests?.[block.id]?.passed);
+}
+
+function currentPlanPosition(progress = getPlanProgress()) {
+  for (const level of PLAN_LEVELS) {
+    if (!isPlanLevelUnlocked(level, progress)) break;
+    for (const block of planData[level].blocks) {
+      if (!isPlanBlockUnlocked(level, block.id, progress)) return { level, block, kind: 'locked' };
+      const done = completedPlanLessons(block.id, progress);
+      const nextLesson = block.lessons.find((lesson) => !done.has(lesson.id));
+      if (nextLesson) return { level, block, lesson: nextLesson, kind: 'lesson' };
+      if (!progress.blockTests?.[block.id]?.passed) return { level, block, kind: 'test' };
+    }
+    if (!progress.levelExams?.[level]?.passed) return { level, kind: 'exam' };
+  }
+  return { level: 'B2', kind: 'done' };
+}
+
+function planPercent(progress = getPlanProgress()) {
+  let done = 0;
+  let total = 0;
+  PLAN_LEVELS.forEach((level) => {
+    planData[level].blocks.forEach((block) => {
+      total += 11;
+      done += completedPlanLessons(block.id, progress).size;
+      if (progress.blockTests?.[block.id]?.passed) done += 1;
+    });
+    total += 1;
+    if (progress.levelExams?.[level]?.passed) done += 1;
+  });
+  return Math.round((done / Math.max(total, 1)) * 100);
+}
+
+function planWordSet(level, blockId, lessonId = 1) {
+  const offset = (PLAN_LEVELS.indexOf(level) * 5 + Number(blockId.split('_b')[1] || 1) + Number(lessonId)) % planWordBank.length;
+  return Array.from({ length: 5 }, (_, index) => planWordBank[(offset + index) % planWordBank.length]);
+}
+
+function planClickableText(text, words) {
+  const map = new Map(words.map((word) => [cleanTerm(word.word).split(' ').pop(), word]));
+  return String(text || '').split(/([A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?)/g).map((token) => {
+    const found = map.get(cleanTerm(token));
+    if (!found) return esc(token).replace(/\r?\n/g, '<br>');
+    return `<button class="plan-word" onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
+  }).join('');
+}
+
+function showPlanWordPopup(word, event) {
+  event?.stopPropagation?.();
+  const item = planWordBank.find((entry) => entry.word === word) || planWordBank[0];
+  const popup = ensureReadingPopup();
+  const saved = isSavedVocabularyWord(item.word);
+  popup.innerHTML = `
+    <div class="word-popup-handle"></div>
+    <div class="word-popup-head">
+      <div class="word-popup-title">${esc(item.word)}</div>
+      <div class="word-popup-actions">
+        <span class="reading-badge">${esc(item.level)}</span>
+        <button class="word-popup-speak" onclick="speakWordOnly(${jsString(item.word)})" aria-label="Озвучить">🔊</button>
+      </div>
+    </div>
+    <div class="word-popup-translation">🇷🇺 ${esc(item.translationRU)}</div>
+    <div class="word-popup-translation">🇬🇧 ${esc(item.translationEN)}</div>
+    <div class="word-popup-example-title">Beispiel:</div>
+    <div class="word-popup-example">
+      <div>${esc(item.example)}</div>
+      <div class="word-popup-example-ru">🇷🇺 ${esc(item.exampleRU)}</div>
+      <div class="word-popup-example-ru">🇬🇧 ${esc(item.exampleEN)}</div>
+    </div>
+    <button class="word-popup-add${saved ? ' saved' : ''}" ${saved ? 'disabled' : ''} onclick="addPlanWordToVocabulary(${jsString(item.word)},this)">${saved ? '✓ В словаре' : '+ В словарь'}</button>
+  `;
+  document.getElementById('word-popup-overlay')?.classList.remove('hidden');
+  requestAnimationFrame(() => popup.classList.add('open'));
+}
+
+function addPlanWordToVocabulary(word, button = null) {
+  const item = planWordBank.find((entry) => entry.word === word);
+  if (!item) return;
+  const payload = {
+    id: `plan_${slugTerm(item.word)}`,
+    word: item.word,
+    de: item.word,
+    wordClass: item.wordClass,
+    level: item.level,
+    translation: item.translationRU,
+    translationRU: item.translationRU,
+    translationEN: item.translationEN,
+    example: item.example,
+    exampleTranslation: item.exampleRU,
+    exampleEN: item.exampleEN,
+    pronunciation: estimatePronunciation(item.word),
+    addedDate: Date.now(),
+  };
+  S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
+  if (!isSavedVocabularyWord(payload.word)) {
+    S.savedReadingWords.push(payload);
+    S.userVocabulary = [...S.savedReadingWords];
+    saveS();
+    syncUserVocabularyWord(payload).catch(() => {});
+  }
+  if (button) {
+    button.textContent = '✓ В словаре';
+    button.classList.add('saved');
+    button.disabled = true;
+  }
+}
+
+function renderPlan() {
+  const root = document.getElementById('planRoot');
+  if (!root) return;
+  if (simplePlanScreen.mode === 'block') return renderSimplePlanBlock(simplePlanScreen.level, simplePlanScreen.blockId);
+  if (simplePlanScreen.mode === 'lesson') return renderSimplePlanLesson(simplePlanScreen.level, simplePlanScreen.blockId, simplePlanScreen.lessonId);
+  if (simplePlanScreen.mode === 'test') return renderSimplePlanBlockTest(simplePlanScreen.level, simplePlanScreen.blockId);
+  if (simplePlanScreen.mode === 'exam') return renderSimplePlanExam(simplePlanScreen.level);
+  renderPlanMain();
+}
+
+function renderPlanMain(levelOverride) {
+  const root = document.getElementById('planRoot');
+  const progress = getPlanProgress();
+  const pos = currentPlanPosition(progress);
+  const activeLevel = levelOverride || progress.currentLevel || pos.level || 'A1';
+  const levelData = planData[activeLevel];
+  const percent = planPercent(progress);
+  const currentLabel = pos.kind === 'lesson'
+    ? `Уровень ${pos.level} · Блок ${planData[pos.level].blocks.indexOf(pos.block) + 1} · Урок ${pos.lesson.id}`
+    : pos.kind === 'test'
+      ? `Уровень ${pos.level} · ${pos.block.title} · Тест блока`
+      : pos.kind === 'exam'
+        ? `Уровень ${pos.level} · Экзамен уровня`
+        : 'Курс завершён';
+  root.innerHTML = `
+    <div class="simple-plan">
+      <section class="plan-progress-card">
+        <div class="plan-progress-top">
+          <div>
+            <div class="plan-title">${esc(currentLabel)}</div>
+            <div class="plan-sub">${esc(levelData.title)} · ${esc(levelData.description)}</div>
+          </div>
+          <span class="plan-pill">${percent}%</span>
+        </div>
+        <div class="plan-bar"><div class="plan-bar-fill" style="width:${percent}%"></div></div>
+        <button class="btn btn-gold" onclick="continuePlan()">Продолжить урок →</button>
+      </section>
+      <div class="plan-level-tabs">
+        ${PLAN_LEVELS.map((level) => {
+          const unlocked = isPlanLevelUnlocked(level, progress);
+          const passed = !!progress.levelExams?.[level]?.passed;
+          return `<button class="plan-level-tab ${level === activeLevel ? 'active' : ''} ${unlocked ? '' : 'locked'}" onclick="${unlocked ? `renderPlanMain(${jsString(level)})` : ''}">${level} ${passed ? '✓' : unlocked ? '→' : '🔒'}</button>`;
+        }).join('')}
+      </div>
+      <div class="plan-block-list">
+        ${levelData.blocks.map((block, index) => renderPlanBlockCard(activeLevel, block, index, progress)).join('')}
+        ${renderPlanExamCard(activeLevel, progress)}
+      </div>
+    </div>
+  `;
+}
+
+function renderPlanBlockCard(level, block, index, progress) {
+  const done = completedPlanLessons(block.id, progress).size;
+  const unlocked = isPlanBlockUnlocked(level, block.id, progress);
+  const test = progress.blockTests?.[block.id];
+  const current = unlocked && done < 10 && !test?.passed;
+  const status = test?.passed ? `10/10 уроков · Тест: ${test.score}% ✓` : unlocked ? `${done}/10 уроков` : 'Заблокирован';
+  return `
+    <section class="plan-block-card ${unlocked ? '' : 'locked'}">
+      <div class="plan-card-top">
+        <div>
+          <div class="module-row-title">${test?.passed ? '✓' : current ? '●' : unlocked ? '○' : '🔒'} Блок ${index + 1}: ${esc(block.title)} ${block.emoji}</div>
+          <div class="plan-status">${esc(status)}</div>
+          <div class="plan-sub">${esc(block.grammar)}</div>
+        </div>
+        ${unlocked ? `<button class="btn ${current ? 'btn-gold' : 'btn-ghost'}" onclick="openSimplePlanBlock(${jsString(level)},${jsString(block.id)})">${current ? 'Продолжить →' : 'Открыть'}</button>` : ''}
+      </div>
+      <div class="plan-bar"><div class="plan-bar-fill" style="width:${done * 10}%"></div></div>
+    </section>
+  `;
+}
+
+function renderPlanExamCard(level, progress) {
+  const unlocked = isPlanExamUnlocked(level, progress);
+  const exam = progress.levelExams?.[level];
+  return `
+    <section class="plan-block-card ${unlocked || exam?.passed ? '' : 'locked'}">
+      <div class="plan-card-top">
+        <div>
+          <div class="module-row-title">🏆 Экзамен ${level}</div>
+          <div class="plan-status">${exam?.passed ? `Пройден · ${exam.score}% ✓` : unlocked ? 'Доступен сейчас' : 'Доступен после всех блоков'}</div>
+        </div>
+        ${unlocked ? `<button class="btn btn-gold" onclick="openSimplePlanExam(${jsString(level)})">${exam?.passed ? 'Повторить' : 'Начать экзамен'}</button>` : ''}
+      </div>
+    </section>
+  `;
+}
+
+function continuePlan() {
+  const pos = currentPlanPosition();
+  if (pos.kind === 'lesson') return openSimplePlanLesson(pos.level, pos.block.id, pos.lesson.id);
+  if (pos.kind === 'test') return openSimplePlanBlockTest(pos.level, pos.block.id);
+  if (pos.kind === 'exam') return openSimplePlanExam(pos.level);
+  renderPlanMain(pos.level || 'A1');
+}
+
+function openSimplePlanBlock(level, blockId) {
+  simplePlanScreen = { mode: 'block', level, blockId };
+  renderPlan();
+}
+
+function openSimplePlanLesson(level, blockId, lessonId) {
+  planLessonStep = 1;
+  simplePlanScreen = { mode: 'lesson', level, blockId, lessonId: Number(lessonId) };
+  renderPlan();
+}
+
+function openSimplePlanBlockTest(level, blockId) {
+  simplePlanScreen = { mode: 'test', level, blockId };
+  renderPlan();
+}
+
+function openSimplePlanExam(level) {
+  simplePlanScreen = { mode: 'exam', level };
+  renderPlan();
+}
+
+function renderSimplePlanBlock(level, blockId) {
+  const root = document.getElementById('planRoot');
+  const progress = getPlanProgress();
+  const block = getPlanBlock(level, blockId);
+  const done = completedPlanLessons(blockId, progress);
+  root.innerHTML = `
+    <div class="simple-plan">
+      <button class="module-back" onclick="simplePlanScreen={mode:'main'};renderPlanMain(${jsString(level)})">← Назад</button>
+      <section class="plan-progress-card">
+        <div class="plan-title">Блок ${planData[level].blocks.indexOf(block) + 1}: ${esc(block.title)} ${block.emoji}</div>
+        <div class="plan-sub">Грамматика: ${esc(block.grammar)}</div>
+        <div class="plan-bar"><div class="plan-bar-fill" style="width:${done.size * 10}%"></div></div>
+        <div class="plan-status">${done.size}/10 уроков · ${done.size >= 5 ? '🔥 Серия 5 уроков!' : 'Горячая серия появится после 5 уроков подряд'}</div>
+      </section>
+      <div class="plan-lesson-list">
+        ${block.lessons.map((lesson) => {
+          const complete = done.has(lesson.id);
+          const unlocked = isPlanLessonUnlocked(level, blockId, lesson.id, progress);
+          const current = unlocked && !complete;
+          return `
+            <section class="plan-lesson-card ${complete ? 'done' : current ? 'current' : unlocked ? '' : 'locked'}">
+              <div class="plan-lesson-dot">${complete ? '✓' : current ? '●' : unlocked ? lesson.id : '🔒'}</div>
+              <div>
+                <div class="module-row-title">Урок ${lesson.id}: ${esc(lesson.title)}</div>
+                <div class="plan-status">${esc(lesson.type || 'lesson')}</div>
+              </div>
+              ${unlocked ? `<button class="btn ${current ? 'btn-gold' : 'btn-ghost'}" onclick="openSimplePlanLesson(${jsString(level)},${jsString(blockId)},${lesson.id})">${complete ? 'Повторить' : 'Продолжить'}</button>` : ''}
+            </section>
+          `;
+        }).join('')}
+      </div>
+      <section class="plan-block-card ${isPlanBlockTestUnlocked(level, blockId, progress) ? '' : 'locked'}">
+        <div class="plan-card-top">
+          <div>
+            <div class="module-row-title">Тест блока</div>
+            <div class="plan-status">${progress.blockTests?.[blockId]?.passed ? `Пройден · ${progress.blockTests[blockId].score}% ✓` : isPlanBlockTestUnlocked(level, blockId, progress) ? '10 вопросов · без таймера' : 'Откроется после 10 уроков'}</div>
+          </div>
+          ${isPlanBlockTestUnlocked(level, blockId, progress) ? `<button class="btn btn-gold" onclick="openSimplePlanBlockTest(${jsString(level)},${jsString(blockId)})">Открыть тест</button>` : ''}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function planLessonPayload(level, blockId, lessonId) {
+  const block = getPlanBlock(level, blockId);
+  const lesson = getPlanLesson(level, blockId, lessonId);
+  const words = planWordSet(level, blockId, lessonId);
+  const text = lesson.type === 'dialogue'
+    ? `Mara: Hallo, ich heiße Mara. Aziz: Guten Tag, ich komme aus Lahore. Mara: Arbeitest du heute? Aziz: Ja, ich arbeite und besuche später meine Familie. Mara: Sehr gut. Wir verstehen die Frage zusammen.`
+    : lesson.type === 'grammar'
+      ? `Heute üben wir ${block.grammar}. Ich bin Azamat. Du bist freundlich. Wir haben eine Wohnung. Sie besucht das Museum. Diese Beispiele zeigen die Form im Alltag.`
+      : lesson.type === 'vocabulary'
+        ? `Neue Wörter: ${words.map((word) => word.word).join(', ')}. Ich benutze diese Wörter in kurzen Sätzen und verstehe den Kontext.`
+        : lesson.type === 'writing'
+          ? `Lies die Beispiele und schreibe danach über dich. Meine Familie ist freundlich. Ich arbeite heute. Morgen besuche ich einen Freund.`
+          : `Wir wiederholen den Block ${block.title}. Lies langsam, klicke auf Wörter und prüfe, was du schon sicher kannst.`;
+  return { block, lesson, words, text };
+}
+
+function renderSimplePlanLesson(level, blockId, lessonId) {
+  const root = document.getElementById('planRoot');
+  const { block, lesson, words, text } = planLessonPayload(level, blockId, lessonId);
+  const maxStep = ['writing', 'review'].includes(lesson.type) ? 4 : 3;
+  if (planLessonStep > maxStep) planLessonStep = maxStep;
+  root.innerHTML = `
+    <div class="simple-plan">
+      <div class="plan-step-head">
+        <div class="plan-progress-top">
+          <button class="module-back" onclick="openSimplePlanBlock(${jsString(level)},${jsString(blockId)})">← Назад</button>
+          <span class="plan-pill">Урок ${lesson.id} из 10</span>
+          <button class="module-back" onclick="simplePlanScreen={mode:'main'};renderPlan()">× закрыть</button>
+        </div>
+        <div class="plan-bar"><div class="plan-bar-fill" style="width:${Math.round((planLessonStep / maxStep) * 100)}%"></div></div>
+        <div class="plan-status">Шаг ${planLessonStep} из ${maxStep}</div>
+      </div>
+      <section class="plan-screen-card">
+        <div class="plan-title">${esc(lesson.title)}</div>
+        <div class="plan-sub">${esc(block.title)} · ${esc(block.grammar)}</div>
+        ${renderPlanLessonStep(level, blockId, lessonId, planLessonStep, { block, lesson, words, text, maxStep })}
+      </section>
+    </div>
+  `;
+}
+
+function renderPlanLessonStep(level, blockId, lessonId, step, payload) {
+  if (step === 1) {
+    return `
+      <div class="plan-content-text" style="margin-top:18px;">${planClickableText(payload.text, payload.words)}</div>
+      <div class="btn-row"><button class="btn btn-gold" onclick="planLessonStep=2;renderPlan()">Далее →</button></div>
+    `;
+  }
+  if (step === 2) {
+    return `
+      <div class="plan-question-list" style="margin-top:18px;">${buildPlanLessonExercises(payload.words).map((q, index) => renderPlanExercise(q, index)).join('')}</div>
+      <div class="btn-row"><button class="btn btn-gold" onclick="planLessonStep=3;renderPlan()">Далее →</button></div>
+    `;
+  }
+  if (step === 3) {
+    return `
+      <div class="plan-word-grid" style="margin-top:18px;">
+        ${payload.words.map((word) => `
+          <div class="plan-word-card">
+            <div class="plan-word-title">${esc(word.word)} <span class="reading-badge">${esc(word.level)}</span></div>
+            <div>🇷🇺 ${esc(word.translationRU)} · 🇬🇧 ${esc(word.translationEN)}</div>
+            <div class="plan-status">${esc(word.example)}</div>
+            <button class="btn btn-gold btn-sm" onclick="addPlanWordToVocabulary(${jsString(word.word)},this)">+ В мой словарь</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="${payload.words.map((word) => `addPlanWordToVocabulary(${jsString(word.word)})`).join(';')};toast('Слова добавлены')">Добавить все</button>
+        <button class="btn btn-gold" onclick="${payload.maxStep === 4 ? 'planLessonStep=4;renderPlan()' : `completeSimplePlanLesson(${jsString(level)},${jsString(blockId)},${lessonId})`}">${payload.maxStep === 4 ? 'Далее →' : 'Завершить урок →'}</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="plan-sub" style="margin-top:18px;">Напиши 2-3 предложения по теме урока.</div>
+    <textarea class="module-textarea" id="planWriting"></textarea>
+    <div class="btn-row"><button class="btn btn-gold" onclick="completeSimplePlanLesson(${jsString(level)},${jsString(blockId)},${lessonId})">Завершить урок →</button></div>
+  `;
+}
+
+function buildPlanLessonExercises(words) {
+  return [
+    { type: 'mc', q: `Что значит ${words[0].word}?`, options: [words[0].translationRU, words[1].translationRU, words[2].translationRU, 'окно'], answer: 0, explain: 'Смотри перевод в карточке слова.' },
+    { type: 'input', q: `Вставь слово: Ich ___ heute.`, answer: 'arbeite', explain: 'После ich форма часто заканчивается на -e.' },
+    { type: 'tf', q: `${words[1].word} относится к теме урока.`, answer: true, explain: 'Это новое слово из шага 1.' },
+    { type: 'build', q: 'Составь предложение', words: ['Ich', 'besuche', 'das', 'Museum'], answer: 'Ich besuche das Museum', explain: 'Глагол стоит на втором месте.' },
+    { type: 'translate', q: words[2].example, optionsRU: [words[2].exampleRU, words[3].exampleRU, words[4].exampleRU, 'Я читаю книгу.'], optionsEN: [words[2].exampleEN, words[3].exampleEN, words[4].exampleEN, 'I read a book.'], answer: 0, explain: 'Перевод совпадает с примером.' },
+  ];
+}
+
+function renderPlanExercise(q, index) {
+  if (q.type === 'input') {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><input class="module-input" id="planEx${index}"><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},${jsString(q.type)},${jsString(q.answer)},${jsString(q.explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
+  }
+  if (q.type === 'tf') {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'tf','true',${jsString(q.explain)},'true')">Верно</button><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'tf','true',${jsString(q.explain)},'false')">Неверно</button></div><div id="planFb${index}"></div></div>`;
+  }
+  if (q.type === 'build') {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><input class="module-input" id="planEx${index}" placeholder="Ich ..."><div class="module-word-list">${q.words.map((word) => `<button class="module-word-chip" onclick="document.getElementById('planEx${index}').value=(document.getElementById('planEx${index}').value+' ${esc(word)}').trim()">${esc(word)}</button>`).join('')}</div><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'input',${jsString(q.answer)},${jsString(q.explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
+  }
+  if (q.type === 'translate') {
+    const opts = planTranslateLang === 'RU' ? q.optionsRU : q.optionsEN;
+    return `<div class="plan-word-card"><div class="plan-card-top"><div>${index + 1}. ${esc(q.q)}</div><div><button class="vf-btn ${planTranslateLang === 'RU' ? 'on' : ''}" onclick="planTranslateLang='RU';renderPlan()">🇷🇺 RU</button><button class="vf-btn ${planTranslateLang === 'EN' ? 'on' : ''}" onclick="planTranslateLang='EN';renderPlan()">🇬🇧 EN</button></div></div><div class="module-options">${opts.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice','0',${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+  }
+  return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><div class="module-options">${q.options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(q.answer))},${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+}
+
+function checkPlanExercise(index, type, answer, explain, chosen = null) {
+  const value = chosen !== null ? chosen : document.getElementById(`planEx${index}`)?.value || '';
+  const ok = type === 'input' ? normalizePlanAnswer(value) === normalizePlanAnswer(answer) : String(value) === String(answer);
+  const fb = document.getElementById(`planFb${index}`);
+  if (fb) fb.innerHTML = `<div class="plan-feedback ${ok ? 'ok' : 'no'}">${ok ? '✓ Правильно!' : `✗ Неверно. Правильный ответ: ${esc(answer)}`} ${esc(explain || '')}</div>`;
+}
+
+function completeSimplePlanLesson(level, blockId, lessonId) {
+  const progress = getPlanProgress();
+  const done = new Set(progress.completedLessons[blockId] || []);
+  const firstTime = !done.has(Number(lessonId));
+  done.add(Number(lessonId));
+  progress.completedLessons[blockId] = [...done].sort((a, b) => a - b);
+  progress.currentLevel = level;
+  progress.currentBlock = blockId;
+  progress.currentLesson = Math.min(Number(lessonId) + 1, 10);
+  savePlanProgress(progress);
+  if (firstTime) {
+    addXP(10, 'plan-lesson');
+    showModuleProgressFlash(10);
+  }
+  renderSimplePlanBlock(level, blockId);
+  updateDash();
+}
+
+function buildPlanTestQuestions(level, blockId) {
+  const block = getPlanBlock(level, blockId);
+  const words = planWordSet(level, blockId, 1);
+  return Array.from({ length: 10 }, (_, index) => {
+    if (index < 3) return { type: 'input', q: `${index + 1}. Вставь форму: Ich ___ heute.`, answer: index === 0 ? 'arbeite' : index === 1 ? 'bin' : 'habe', topic: block.grammar };
+    if (index < 6) return { type: 'choice', q: `${index + 1}. Перевод ${words[index - 3].word}`, options: [words[index - 3].translationRU, words[4].translationRU, 'окно', 'дорога'], answer: 0, topic: 'лексика' };
+    if (index < 8) return { type: 'choice', q: `${index + 1}. По тексту: тема блока — ${block.title}?`, options: ['Да', 'Нет', 'Неизвестно', 'Только частично'], answer: 0, topic: 'понимание текста' };
+    return { type: 'input', q: `${index + 1}. Составь: Ich besuche das Museum`, answer: 'Ich besuche das Museum', topic: 'порядок слов' };
+  });
+}
+
+function renderSimplePlanBlockTest(level, blockId) {
+  const root = document.getElementById('planRoot');
+  const block = getPlanBlock(level, blockId);
+  const questions = buildPlanTestQuestions(level, blockId);
+  root.innerHTML = `
+    <div class="simple-plan">
+      <button class="module-back" onclick="openSimplePlanBlock(${jsString(level)},${jsString(blockId)})">← Назад к блоку</button>
+      <section class="plan-screen-card">
+        <div class="plan-title">Тест блока: ${esc(block.title)}</div>
+        <div class="plan-sub">10 вопросов · нужно 7/10 · без ограничения времени</div>
+        <div class="plan-question-list" style="margin-top:18px;">
+          ${questions.map((q, index) => q.type === 'choice'
+            ? `<div class="plan-word-card"><div>${esc(q.q)}</div><input type="hidden" id="bt${index}"><div class="module-options">${q.options.map((option, oi) => `<button class="module-option" onclick="document.getElementById('bt${index}').value='${oi}';this.parentElement.querySelectorAll('.module-option').forEach(b=>b.classList.remove('selected'));this.classList.add('selected')">${esc(option)}</button>`).join('')}</div></div>`
+            : `<div class="plan-word-card"><div>${esc(q.q)}</div><input class="module-input" id="bt${index}"></div>`).join('')}
+        </div>
+        <div id="blockTestResult" class="module-checks"></div>
+        <button class="btn btn-gold" onclick="submitSimplePlanBlockTest(${jsString(level)},${jsString(blockId)})">Проверить тест</button>
+      </section>
+    </div>
+  `;
+}
+
+function submitSimplePlanBlockTest(level, blockId) {
+  const questions = buildPlanTestQuestions(level, blockId);
+  let correct = 0;
+  const misses = {};
+  questions.forEach((q, index) => {
+    const value = document.getElementById(`bt${index}`)?.value || '';
+    const ok = q.type === 'choice' ? Number(value) === q.answer : normalizePlanAnswer(value) === normalizePlanAnswer(q.answer);
+    if (ok) correct += 1;
+    else misses[q.topic] = (misses[q.topic] || 0) + 1;
+  });
+  const score = Math.round((correct / questions.length) * 100);
+  const passed = score >= 70;
+  const progress = getPlanProgress();
+  progress.blockAttempts[blockId] = (progress.blockAttempts[blockId] || 0) + 1;
+  if (passed) {
+    progress.blockTests[blockId] = { score, passed: true };
+    savePlanProgress(progress);
+    const xp = progress.blockAttempts[blockId] === 1 ? 75 : 50;
+    addXP(xp, 'plan-block-test');
+    showModuleProgressFlash(xp);
+  } else {
+    savePlanProgress(progress);
+  }
+  const result = document.getElementById('blockTestResult');
+  if (result) result.innerHTML = `
+    <div class="module-check ${passed ? 'ok' : 'warn'}">${passed ? `Блок завершён! +${progress.blockAttempts[blockId] === 1 ? 75 : 50} XP 🎉` : 'Повтори материал и попробуй снова'} · Результат: ${correct}/10</div>
+    ${Object.keys(misses).length ? `<div class="module-check warn">Обрати внимание на: ${Object.entries(misses).map(([topic, count]) => `${esc(topic)} — ${count} ошибки`).join(', ')}</div>` : ''}
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="openSimplePlanBlock(${jsString(level)},${jsString(blockId)})">Повторить блок</button>
+      <button class="btn btn-gold" onclick="${passed ? `simplePlanScreen={mode:'main'};renderPlanMain(${jsString(level)})` : `openSimplePlanBlockTest(${jsString(level)},${jsString(blockId)})`}">${passed ? 'Дальше →' : 'Пересдать тест'}</button>
+    </div>
+  `;
+  updateDash();
+}
+
+function renderSimplePlanExam(level) {
+  const root = document.getElementById('planRoot');
+  const words = planWordSet(level, `${level.toLowerCase()}_b1`, 1);
+  const text = `In diesem Niveau kann der Lernende einfache und klare Situationen verstehen. Er liest Texte, hört kurze Nachrichten und schreibt eigene Sätze. Verantwortung, Familie und Arbeit erscheinen in realistischen Beispielen.`;
+  root.innerHTML = `
+    <div class="simple-plan">
+      <button class="module-back" onclick="simplePlanScreen={mode:'main'};renderPlanMain(${jsString(level)})">← Назад</button>
+      <section class="plan-screen-card">
+        <div class="plan-title">Goethe-экзамен уровня ${level}</div>
+        <div class="plan-sub">4 части · нужно минимум 60% в каждой</div>
+        <div class="plan-exam-grid">
+          <section class="plan-word-card">
+            <div class="plan-exam-part-head"><div class="module-row-title">Часть 1 — Lesen</div><span class="plan-pill">25%</span></div>
+            <div class="plan-content-text">${planClickableText(text, words)}</div>
+            ${[0,1,2,3,4].map((i) => `<div style="margin-top:10px;">${i + 1}. Главная тема текста?<input type="hidden" id="examRead${i}"><div class="module-options"><button class="module-option" onclick="document.getElementById('examRead${i}').value='1'">Обучение и ситуации</button><button class="module-option" onclick="document.getElementById('examRead${i}').value='0'">Спорт</button><button class="module-option" onclick="document.getElementById('examRead${i}').value='0'">Погода</button><button class="module-option" onclick="document.getElementById('examRead${i}').value='0'">Музыка</button></div></div>`).join('')}
+          </section>
+          <section class="plan-word-card">
+            <div class="plan-exam-part-head"><div class="module-row-title">Часть 2 — Hören</div><span class="plan-pill">25%</span></div>
+            <button class="btn btn-gold" onclick="speakWordOnly(${jsString(text)})">▶ Прослушать</button>
+            <button class="btn btn-ghost" onclick="speakWordOnly(${jsString(text)})">↩ Прослушать снова</button>
+            ${[0,1,2,3,4].map((i) => `<div>${i + 1}. Текст о немецком уровне?<input class="module-input" id="examHear${i}" placeholder="ja/nein"></div>`).join('')}
+          </section>
+          <section class="plan-word-card">
+            <div class="plan-exam-part-head"><div class="module-row-title">Часть 3 — Grammatik</div><span class="plan-pill">25%</span></div>
+            ${Array.from({ length: 10 }, (_, i) => `<div>${i + 1}. Ich ___ bereit.<input class="module-input" id="examGram${i}" placeholder="форма"></div>`).join('')}
+          </section>
+          <section class="plan-word-card">
+            <div class="plan-exam-part-head"><div class="module-row-title">Часть 4 — Schreiben</div><span class="plan-pill">25%</span></div>
+            <div class="plan-sub">${level === 'A1' ? '30-50' : level === 'A2' ? '50-80' : level === 'B1' ? '100-150' : '150-200'} слов: напиши о темах уровня ${level}.</div>
+            <textarea class="module-textarea" id="examWriting"></textarea>
+          </section>
+        </div>
+        <div id="examResult" class="module-checks"></div>
+        <button class="btn btn-gold" onclick="submitSimplePlanExam(${jsString(level)})">Завершить экзамен</button>
+      </section>
+    </div>
+  `;
+}
+
+function submitSimplePlanExam(level) {
+  const read = [0,1,2,3,4].filter((i) => document.getElementById(`examRead${i}`)?.value === '1').length * 20;
+  const hear = [0,1,2,3,4].filter((i) => ['ja', 'да', 'yes'].includes(normalizePlanAnswer(document.getElementById(`examHear${i}`)?.value || ''))).length * 20;
+  const gram = Array.from({ length: 10 }, (_, i) => normalizePlanAnswer(document.getElementById(`examGram${i}`)?.value || '')).filter((value) => ['bin', 'bereit'].includes(value)).length * 10;
+  const writingWords = countModuleWords(document.getElementById('examWriting')?.value || '');
+  const minWords = level === 'A1' ? 30 : level === 'A2' ? 50 : level === 'B1' ? 100 : 150;
+  const write = Math.min(100, Math.round((writingWords / minWords) * 100));
+  const parts = { Lesen: read, Hören: hear, Grammatik: gram, Schreiben: write };
+  const passed = Object.values(parts).every((score) => score >= 60);
+  const average = Math.round(Object.values(parts).reduce((sum, score) => sum + score, 0) / 4);
+  const progress = getPlanProgress();
+  progress.examAttempts[level] = (progress.examAttempts[level] || 0) + 1;
+  if (passed) {
+    progress.levelExams[level] = { score: average, passed: true };
+    const next = PLAN_LEVELS[PLAN_LEVELS.indexOf(level) + 1];
+    if (next) {
+      progress.currentLevel = next;
+      progress.currentBlock = planData[next].blocks[0].id;
+      progress.currentLesson = 1;
+    }
+    savePlanProgress(progress);
+    const xp = progress.examAttempts[level] === 1 ? 300 : 200;
+    addXP(xp, 'plan-level-exam');
+    fireConfetti();
+  } else {
+    savePlanProgress(progress);
+  }
+  const failed = Object.entries(parts).filter(([, score]) => score < 60);
+  const result = document.getElementById('examResult');
+  if (result) result.innerHTML = passed ? `
+    <div class="plan-victory">
+      <div class="module-victory-title">Поздравляем! Уровень ${level} пройден 🎓</div>
+      <div>Твой результат: ${average}% · +${progress.examAttempts[level] === 1 ? 300 : 200} XP</div>
+      <button class="btn btn-gold" onclick="simplePlanScreen={mode:'main'};renderPlanMain(${jsString(PLAN_LEVELS[PLAN_LEVELS.indexOf(level) + 1] || level)})">Начать ${PLAN_LEVELS[PLAN_LEVELS.indexOf(level) + 1] || level} →</button>
+    </div>
+  ` : `
+    <div class="module-check warn">Слабые места: ${failed.map(([name, score]) => `${name} (${score}%)`).join(', ')}</div>
+    <div class="module-check warn">Рекомендация: повтори блоки уровня ${level} и пересдай экзамен.</div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="simplePlanScreen={mode:'main'};renderPlanMain(${jsString(level)})">Повторить слабые места</button><button class="btn btn-gold" onclick="openSimplePlanExam(${jsString(level)})">Пересдать экзамен</button></div>
+  `;
+  updateDash();
+}
+
+function showModuleProgressFlash(xp) {
+  const flash = document.createElement('div');
+  flash.className = 'module-flash';
+  const bubble = document.createElement('div');
+  bubble.className = 'module-xp-float';
+  bubble.textContent = `+${xp} XP`;
+  document.body.appendChild(flash);
+  document.body.appendChild(bubble);
+  setTimeout(() => flash.remove(), 750);
+  setTimeout(() => bubble.remove(), 1200);
 }
 
 const TODAY = new Date();
