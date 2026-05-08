@@ -118,7 +118,7 @@ body.light {
   --wl-c1: rgba(240,192,96,.34);
   --wl-c2: rgba(240,85,85,.32);
 }
-*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 html{overflow-x:hidden;}
 body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100vh;overflow-x:hidden;}
 a,button,input,textarea,select{font:inherit;}
@@ -161,7 +161,7 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
 
 /* ── PAGE ── */
 .page{display:none;}
-.page.on{display:block;animation:fadeIn .3s ease;}
+.page.on{display:block;animation:fadeIn .15s ease;}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
 /* ── ONBOARDING OVERLAY ── */
@@ -1187,6 +1187,117 @@ a,button,input,textarea,select{font-family:inherit;}
   font-weight:800;
 }
 
+#mobile-tabbar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  z-index: 99999;
+  pointer-events: all;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 4px;
+  min-height: 64px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: all;
+  transition: opacity 0.1s;
+}
+
+.tab-btn:active { opacity: 0.6; }
+.tab-icon { font-size: 20px; line-height: 1; }
+.tab-label { font-size: 10px; color: var(--text-muted); }
+.tab-btn.active .tab-label { color: var(--accent-primary); }
+.tab-btn.active .tab-icon { filter: brightness(1.3); }
+
+.more-btn { position: relative; }
+.more-badge {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  background: var(--accent-primary);
+  color: black;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 1px 5px;
+  min-width: 16px;
+  text-align: center;
+}
+.more-badge.on { display: block; }
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 64px;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  z-index: 99998;
+  padding: 12px 16px 20px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.bottom-sheet.open { transform: translateY(0); }
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.sheet-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--text-primary);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99997;
+}
+
+.hidden { display: none; }
+
 .container{
   width:100%;
   max-width:1240px;
@@ -1901,6 +2012,22 @@ a,button,input,textarea,select{font-family:inherit;}
   .vocab-wrap{overflow-x:auto;}
 }
 
+@media (max-width: 768px) {
+  body.app-active #mobile-tabbar { display: flex; }
+  #appNav.nav { display: none !important; }
+  .mobile-more-btn,
+  .mobile-more-menu { display: none !important; }
+  body{padding-bottom:74px;}
+  .main-content,
+  .content-area,
+  #app-content,
+  main {
+    padding-bottom: 74px !important;
+    padding-top: 52px !important;
+  }
+  #appMain{padding-bottom:74px!important;}
+  .container{padding-bottom:74px!important;}
+}
 </style>
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -2106,6 +2233,44 @@ window.initDeutschFirebaseChat();
   <button class="nav-btn mobile-tab" data-page="login" data-title="Профиль" onclick="goPage('login')"><span class="nav-icon"><i data-lucide="user" aria-hidden="true"></i></span><span class="nav-text">Профиль</span></button>
   <button class="nav-btn" data-page="settings" data-title="Настройки" onclick="goPage('settings')"><span class="nav-icon"><i data-lucide="settings" aria-hidden="true"></i></span><span class="nav-text">Настройки</span></button>
 </nav>
+
+<nav id="mobile-tabbar">
+  <button class="tab-btn active" data-section="home">
+    <span class="tab-icon">🏠</span>
+    <span class="tab-label">Главная</span>
+  </button>
+  <button class="tab-btn" data-section="reading">
+    <span class="tab-icon">📰</span>
+    <span class="tab-label">Чтение</span>
+  </button>
+  <button class="tab-btn" data-section="vocabulary">
+    <span class="tab-icon">📚</span>
+    <span class="tab-label">Словарь</span>
+  </button>
+  <button class="tab-btn" data-section="practice">
+    <span class="tab-icon">🤖</span>
+    <span class="tab-label">Практика</span>
+  </button>
+  <button class="tab-btn more-btn" data-section="more">
+    <span class="tab-icon">☰</span>
+    <span class="tab-label">Ещё</span>
+    <span class="more-badge" id="chatMoreBadge">0</span>
+  </button>
+</nav>
+
+<div id="more-menu" class="bottom-sheet hidden">
+  <div class="sheet-handle"></div>
+  <div class="sheet-grid">
+    <button data-section="plan">🗺 План</button>
+    <button data-section="tasks">✏️ Задания</button>
+    <button data-section="phrases">💬 Фразы</button>
+    <button data-section="repeat">🔄 Повторение</button>
+    <button data-section="chat">💬 Чат</button>
+    <button data-section="profile">👤 Профиль</button>
+    <button data-section="settings">⚙️ Настройки</button>
+  </div>
+</div>
+<div id="sheet-overlay" class="hidden"></div>
 
 <div id="appMain" style="display:none;">
 
@@ -4574,6 +4739,7 @@ function finishOnboarding(openLessonId) {
   S.levelTestState = null;
   saveS();
   document.getElementById('onboarding').classList.add('hidden');
+  document.body.classList.add('app-active');
   document.getElementById('appHdr').style.display = '';
   document.getElementById('appNav').style.display = '';
   document.getElementById('appMain').style.display = '';
@@ -6477,6 +6643,87 @@ async function initApp() {
   checkWeeklyReport();
 }
 
+const MOBILE_SECTION_TO_PAGE = {
+  home: 'dashboard',
+  reading: 'reading',
+  vocabulary: 'vocab',
+  practice: 'practice',
+  plan: 'plan',
+  tasks: 'homework',
+  phrases: 'phrases',
+  repeat: 'repetition',
+  chat: 'chat',
+  profile: 'login',
+  settings: 'settings',
+};
+
+const PAGE_TO_MOBILE_SECTION = {
+  dashboard: 'home',
+  reading: 'reading',
+  vocab: 'vocabulary',
+  practice: 'practice',
+};
+
+function syncMobileTabbar(name) {
+  const section = PAGE_TO_MOBILE_SECTION[name];
+  document.querySelectorAll('#mobile-tabbar .tab-btn').forEach((btn) => {
+    btn.classList.toggle('active', !!section && btn.dataset.section === section);
+  });
+}
+
+function closeMoreMenu() {
+  const menu = document.getElementById('more-menu');
+  const overlay = document.getElementById('sheet-overlay');
+  menu?.classList.remove('open');
+  menu?.classList.add('hidden');
+  overlay?.classList.add('hidden');
+}
+
+function toggleMoreMenu() {
+  const menu = document.getElementById('more-menu');
+  const overlay = document.getElementById('sheet-overlay');
+  if (!menu || !overlay) return;
+  const willOpen = menu.classList.contains('hidden') || !menu.classList.contains('open');
+  menu.classList.toggle('hidden', !willOpen);
+  overlay.classList.toggle('hidden', !willOpen);
+  requestAnimationFrame(() => menu.classList.toggle('open', willOpen));
+}
+
+function navigateTo(section) {
+  const page = MOBILE_SECTION_TO_PAGE[section] || section;
+  goPage(page);
+}
+
+document.getElementById('mobile-tabbar')
+  ?.addEventListener('click', function(e) {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+
+    const section = btn.dataset.section;
+
+    if (section === 'more') {
+      toggleMoreMenu();
+      return;
+    }
+
+    document.querySelectorAll('#mobile-tabbar .tab-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    closeMoreMenu();
+    navigateTo(section);
+  });
+
+document.getElementById('sheet-overlay')
+  ?.addEventListener('click', closeMoreMenu);
+
+document.getElementById('more-menu')
+  ?.addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-section]');
+    if (!btn) return;
+    closeMoreMenu();
+    navigateTo(btn.dataset.section);
+  });
+
 function goPage(name) {
   if (name !== 'reading') {
     stopReadingAudio();
@@ -6487,6 +6734,8 @@ function goPage(name) {
   document.getElementById(`page-${name}`).classList.add('on');
   document.querySelector(`.nav-btn[data-page="${name}"]`)?.classList.add('on');
   document.getElementById('mobileMoreMenu')?.classList.remove('on');
+  closeMoreMenu();
+  syncMobileTabbar(name);
 
   if (name === 'reading') renderReading();
   if (name === 'plan') renderPlan();
@@ -6502,7 +6751,7 @@ function goPage(name) {
 }
 
 function toggleMobileMore() {
-  document.getElementById('mobileMoreMenu')?.classList.toggle('on');
+  toggleMoreMenu();
 }
 
 function syncTopbarTitle(name = 'dashboard') {
@@ -6956,7 +7205,7 @@ function resetCommunityUnread() {
 
 function updateCommunityBadge() {
   const count = communityChat.unreadCount;
-  ['chatNavBadge', 'chatMobileBadge', 'chatHeaderBadge'].forEach((id) => {
+  ['chatNavBadge', 'chatMobileBadge', 'chatHeaderBadge', 'chatMoreBadge'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.textContent = String(Math.min(count, 99));
@@ -10352,6 +10601,7 @@ function autoResize(el) {
 // ══════════════════════════════════════════
 if(S.onboardingDone){
   document.getElementById('onboarding').classList.add('hidden');
+  document.body.classList.add('app-active');
   document.getElementById('appHdr').style.display='';
   document.getElementById('appNav').style.display='';
   document.getElementById('appMain').style.display='';
