@@ -685,6 +685,54 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .reading-popup-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;}
 .reading-popup-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--gold);margin-bottom:8px;}
 .reading-popup-body{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:12px;}
+#word-popup {
+  position: fixed;
+  bottom: 64px;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 12px 20px 24px;
+  z-index: 99990;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  box-shadow:0 -18px 70px rgba(0,0,0,.38);
+}
+#word-popup.open { transform: translateY(0); }
+#word-popup-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  z-index:99989;
+}
+.word-popup-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.word-popup-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
+.word-popup-title{font-size:20px;font-weight:800;line-height:1.1;color:var(--text-primary);}
+.word-popup-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.word-popup-speak,.vocab-card-icon{border:0;background:transparent;color:var(--text-primary);font-size:18px;cursor:pointer;padding:4px;}
+.word-popup-base{font-style:italic;color:var(--text-primary);font-size:14px;margin-bottom:4px;}
+.word-popup-translation{color:var(--text-secondary);font-size:15px;margin-bottom:16px;}
+.word-popup-example-title{font-size:13px;font-weight:800;color:var(--text-primary);margin-bottom:8px;}
+.word-popup-example{display:grid;gap:5px;margin-bottom:18px;font-size:14px;line-height:1.5;}
+.word-popup-example-ru{color:var(--text-muted);}
+.word-popup-add{width:100%;min-height:46px;border:0;border-radius:12px;background:var(--accent-primary);color:#000;font-weight:800;cursor:pointer;}
+.word-popup-add.saved,.word-popup-add:disabled{background:var(--bg-card);color:var(--text-muted);cursor:default;}
+.word-popup-add.added{background:var(--green);color:#000;}
+.vocab-search{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:13px 14px;border-radius:10px;margin-bottom:12px;outline:none;}
+.vocab-card-list{display:grid;gap:12px;}
+.vocab-card{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:16px;display:grid;gap:10px;}
+.vocab-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.vocab-card-word{font-size:18px;font-weight:800;color:var(--text-primary);}
+.vocab-card-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.vocab-card-translation{font-size:15px;color:var(--text-primary);}
+.vocab-card-example{font-style:italic;color:var(--text-secondary);line-height:1.5;}
+.vocab-card-example-ru{font-size:13px;color:var(--text-muted);line-height:1.45;}
+.vocab-card-date{font-size:12px;color:var(--text-muted);}
+.vocab-empty{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:34px 20px;text-align:center;display:grid;gap:12px;justify-items:center;}
+.vocab-empty-icon{font-size:38px;}
+.vocab-empty-title{font-size:20px;font-weight:800;color:var(--text-primary);}
+.vocab-empty-copy{color:var(--text-muted);line-height:1.5;max-width:320px;}
 
 /* Misc */
 .tag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 9px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);letter-spacing:1px;}
@@ -1837,7 +1885,7 @@ a,button,input,textarea,select{font-family:inherit;}
     position:static;
     font-size:18px;
   }
-  .topbar-stats,.theme-toggle,.hdr-name,.hdr-level,.mobile-chat-btn{
+  .topbar-stats,.theme-toggle,.hdr-name,.hdr-level{
     display:none!important;
   }
   .topbar-title{
@@ -1858,6 +1906,18 @@ a,button,input,textarea,select{font-family:inherit;}
   }
   .hdr{background:var(--hdr-bg);border-bottom:1px solid var(--border);}
   .mobile-more-btn{display:flex!important;}
+  .mobile-chat-btn{
+    display:flex!important;
+    align-items:center;
+    justify-content:center;
+    min-width:38px;
+    min-height:38px;
+    background:var(--bg-secondary);
+    color:var(--text-primary);
+    border-color:var(--border);
+    box-shadow:none;
+    font-size:19px;
+  }
   .mobile-streak{
     display:inline-flex;
     align-items:center;
@@ -2202,7 +2262,7 @@ window.initDeutschFirebaseChat();
       <div class="topbar-pill topbar-xp" id="topbarXp">0 XP</div>
     </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Переключить тему">☀️</button>
-    <div class="mobile-streak" id="mobileStreak">🔥 0</div>
+    <button class="mobile-chat-btn" id="mobileChatBtn" onclick="navigateTo('chat')" aria-label="Чат">💬</button>
     <button class="mobile-more-btn" id="mobileMoreBtn" onclick="toggleMobileMore()" aria-label="Меню">☰</button>
     <div class="mobile-more-menu" id="mobileMoreMenu">
       <button class="mobile-menu-item" onclick="goPage('plan')"><span class="mobile-menu-icon"><i data-lucide="map" aria-hidden="true"></i></span>План</button>
@@ -2302,6 +2362,7 @@ window.initDeutschFirebaseChat();
               <div class="kpi"><div class="kpi-val" id="kpi-words">0</div><div class="kpi-label">Слов</div></div>
               <div class="kpi"><div class="kpi-val" id="kpi-lessons">0</div><div class="kpi-label">Уроков</div></div>
               <div class="kpi"><div class="kpi-val" id="kpi-hw">0</div><div class="kpi-label">Заданий</div></div>
+              <div class="kpi"><div class="kpi-val" id="kpi-xp">0</div><div class="kpi-label">XP</div></div>
               <div class="kpi"><div class="kpi-val" id="kpi-streak">🔥 0</div><div class="kpi-label">Серия</div></div>
             </div>
           </section>
@@ -2364,9 +2425,9 @@ window.initDeutschFirebaseChat();
     <div class="container">
       <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px;margin-bottom:8px;">Словарь</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:24px;">Все слова по темам, включая контекст из статей и интервальное повторение</div>
+      <input class="vocab-search" id="vocabSearch" type="search" placeholder="Поиск по слову" oninput="setVocabSearch(this.value)">
       <div class="vocab-filter" id="vocabFilter"></div>
-      <div id="vocabDetail"></div>
-      <div class="vocab-wrap"><table class="vocab-table"><thead><tr><th>Немецкий</th><th>Уровень</th><th>Перевод / определение</th><th>Контекст</th><th>Теги</th></tr></thead><tbody id="vocabBody"></tbody></table></div>
+      <div class="vocab-card-list" id="vocabBody"></div>
     </div>
   </div>
 
@@ -3929,6 +3990,7 @@ const DEFAULT_STATE = {
   completedArticles: [],
   completedReadingSections: [],
   savedReadingWords: [],
+  userVocabulary: [],
   readingDiary: {},
   diary: [],
   grammarPatterns: {},
@@ -3974,6 +4036,7 @@ function normalizeStoredReadingWord(item) {
   if (!word) return null;
   const articleId = item.context?.articleId || item.articleId || '';
   const articleTitle = item.context?.articleTitle || item.articleTitle || 'Личный словарь';
+  const example = item.example || item.context?.sentence || (Array.isArray(item.examples) ? item.examples[0] : '') || '';
   const slug = String(word).toLowerCase().replace(/[^\p{L}\d]+/gu, '-').replace(/^-+|-+$/g, '') || 'word';
   return {
     id: item.id || `reading_${articleId || 'manual'}_${slug}`,
@@ -3983,6 +4046,8 @@ function normalizeStoredReadingWord(item) {
     translation: item.translation || item.ru || '',
     ru: item.ru || item.translation || '',
     definition: item.definition || '',
+    example,
+    exampleTranslation: item.exampleTranslation || item.exampleRu || '',
     pronunciation: item.pronunciation || '',
     level: item.level || 'A1',
     context: {
@@ -4026,6 +4091,7 @@ function normalizeState(state) {
   next.completedArticles = Array.isArray(next.completedArticles) ? next.completedArticles : [];
   next.completedReadingSections = Array.isArray(next.completedReadingSections) ? next.completedReadingSections : [];
   next.savedReadingWords = Array.isArray(next.savedReadingWords) ? next.savedReadingWords.map(normalizeStoredReadingWord).filter(Boolean) : [];
+  next.userVocabulary = Array.isArray(next.userVocabulary) ? next.userVocabulary.map(normalizeStoredReadingWord).filter(Boolean) : [];
   next.readingDiary = next.readingDiary && typeof next.readingDiary === 'object' ? next.readingDiary : {};
   next.diary = Array.isArray(next.diary) ? next.diary.map(normalizeStoredDiaryEntry).filter(Boolean) : [];
   next.grammarPatterns = next.grammarPatterns && typeof next.grammarPatterns === 'object' ? next.grammarPatterns : {};
@@ -4040,7 +4106,8 @@ function normalizeState(state) {
 
   const storedAchievements = readJSONKey('achievements', []);
   const storedFavorites = readJSONKey('favorites', []);
-  const storedReadingWords = readJSONKey('readingWords', []);
+  const storedUserVocabulary = readJSONKey('userVocabulary', null);
+  const storedReadingWords = Array.isArray(storedUserVocabulary) ? storedUserVocabulary : readJSONKey('readingWords', []);
   const storedErrors = readJSONKey('errorHistory', []);
   const storedCardProgress = readJSONKey('cardProgress', {});
   const storedDiary = readJSONKey('diary', []);
@@ -4065,12 +4132,14 @@ function normalizeState(state) {
   if (Array.isArray(storedArticleHistory)) next.articleHistory = [...next.articleHistory, ...storedArticleHistory];
   if (Array.isArray(storedXpLog)) next.xpLog = [...next.xpLog, ...storedXpLog];
   const mergedWords = [
+    ...next.userVocabulary,
     ...next.savedReadingWords,
     ...(Array.isArray(storedReadingWords) ? storedReadingWords.map(normalizeStoredReadingWord).filter(Boolean) : []),
   ];
   const wordMap = new Map();
   mergedWords.forEach((item) => wordMap.set(item.id || `${item.word}|${item.context?.articleId || ''}`, item));
   next.savedReadingWords = [...wordMap.values()];
+  next.userVocabulary = [...next.savedReadingWords];
   if (Array.isArray(storedErrors) && storedErrors.length) {
     const seenErrors = new Set(next.errorHistory.map((item) => `${item.date}|${item.question}`));
     storedErrors.forEach((item) => {
@@ -4147,7 +4216,7 @@ function setStorageKey(key, value) {
 }
 
 function syncContentStorage() {
-  if (typeof vocabularyData !== 'undefined') setStorageKey('vocabulary', JSON.stringify(vocabularyData));
+  setStorageKey('vocabulary', JSON.stringify([]));
   if (typeof lessonsData !== 'undefined') setStorageKey('lessons', JSON.stringify(lessonsData));
 }
 
@@ -4165,6 +4234,7 @@ function saveS(){
   setStorageKey('achievements', JSON.stringify(S.achievements));
   setStorageKey('favorites', JSON.stringify(S.favorites || []));
   setStorageKey('readingWords', JSON.stringify(S.savedReadingWords || []));
+  setStorageKey('userVocabulary', JSON.stringify(S.userVocabulary || S.savedReadingWords || []));
   setStorageKey('diary', JSON.stringify(S.diary || []));
   setStorageKey('grammarPatterns', JSON.stringify(S.grammarPatterns || {}));
   setStorageKey('weeklyReports', JSON.stringify(S.weeklyReports || []));
@@ -4912,6 +4982,8 @@ function articleVocabMap(article) {
   (article.vocabulary || []).forEach((item) => {
     const raw = cleanTerm(item.word);
     map.set(raw, item);
+    if (raw.endsWith('en') && raw.length > 4) map.set(`${raw.slice(0, -2)}t`, item);
+    if (raw.endsWith('n') && raw.length > 4) map.set(`${raw.slice(0, -1)}t`, item);
     raw.split(' ').forEach((part) => {
       if (!['der', 'die', 'das', 'ein', 'eine'].includes(part)) map.set(part, item);
     });
@@ -4977,6 +5049,13 @@ function articleSentenceForTerm(article, term) {
   return splitSentences(article?.text || '').find((sentence) => cleanTerm(sentence).includes(needle)) || splitSentences(article?.text || '')[0] || '';
 }
 
+function articleSentenceTranslationForTerm(article, sentence) {
+  const deSentences = splitSentences(article?.text || '');
+  const ruSentences = splitSentences(article?.translation || '');
+  const index = deSentences.findIndex((item) => item === sentence);
+  return index >= 0 ? (ruSentences[index] || '') : '';
+}
+
 function normalizeStoredReadingWord(item) {
   if (!item) return null;
   const articleId = item.context?.articleId || item.articleId || '';
@@ -4985,7 +5064,9 @@ function normalizeStoredReadingWord(item) {
   if (!rawWord) return null;
   const vocabItem = article ? articleVocabMap(article).get(cleanTerm(rawWord)) : null;
   const word = vocabItem?.word || rawWord;
-  const sentence = item.context?.sentence || item.example || articleSentenceForTerm(article, word);
+  const sentence = item.example || item.context?.sentence || articleSentenceForTerm(article, word);
+  const examples = Array.isArray(item.examples) ? item.examples : (vocabItem?.examples || []);
+  const example = sentence || examples[0] || '';
   const articleTitle = item.context?.articleTitle || article?.title || item.articleTitle || 'Личный словарь';
   const level = normalizeLevelName(item.level || article?.level || highestLevelForText(word));
   const tags = Array.isArray(item.tags) && item.tags.length
@@ -5001,13 +5082,15 @@ function normalizeStoredReadingWord(item) {
     definition: item.definition || vocabItem?.definition || '',
     pronunciation: item.pronunciation || vocabItem?.pronunciation || estimatePronunciation(word),
     level,
+    example,
+    exampleTranslation: item.exampleTranslation || item.exampleRu || item.translationExample || '',
     context: {
       articleId,
       articleTitle,
       sentence,
     },
     tags,
-    examples: Array.isArray(item.examples) ? item.examples : (vocabItem?.examples || []),
+    examples,
     addedDate: Number(item.addedDate || Date.now()),
     leitnerLevel: Math.max(1, Math.min(3, Number(item.leitnerLevel || 1))),
     phrase: !!item.phrase,
@@ -5020,18 +5103,23 @@ function makeReadingWordRecord(term, articleId, isPhrase = false) {
   const item = article ? articleVocabMap(article).get(cleanTerm(term)) : null;
   const word = item?.word || term;
   const sentence = articleSentenceForTerm(article, word);
+  const example = item?.example || item?.examples?.[0] || sentence || '';
+  const exampleTranslation = item?.exampleTranslation || item?.exampleRu || articleSentenceTranslationForTerm(article, sentence);
   const articleTitle = article?.title || 'Личный словарь';
   const level = normalizeLevelName(article?.level || highestLevelForText(word));
+  const translation = isPhrase ? phraseTranslation(term) : (item?.translation || item?.ru || 'Перевод недоступен');
   return {
     id: `reading_${articleId || 'manual'}_${slugTerm(word)}`,
     word,
     de: word,
     wordClass: item?.wordClass || (isPhrase ? 'Phrase' : 'Wort'),
-    translation: isPhrase ? phraseTranslation(term) : (item?.translation || ''),
-    ru: isPhrase ? phraseTranslation(term) : (item?.translation || item?.definition || ''),
+    translation,
+    ru: translation,
     definition: item?.definition || '',
     pronunciation: item?.pronunciation || estimatePronunciation(word),
     level,
+    example,
+    exampleTranslation,
     context: {
       articleId,
       articleTitle,
@@ -5516,38 +5604,90 @@ function bindReadingArticleEvents() {
 }
 
 function ensureReadingPopup() {
-  let popup = document.getElementById('readingPopup');
+  let overlay = document.getElementById('word-popup-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'word-popup-overlay';
+    overlay.className = 'hidden';
+    overlay.addEventListener('click', hideReadingPopup);
+    document.body.appendChild(overlay);
+  }
+  let popup = document.getElementById('word-popup');
   if (!popup) {
     popup = document.createElement('div');
-    popup.id = 'readingPopup';
-    popup.className = 'reading-popup';
+    popup.id = 'word-popup';
+    popup.addEventListener('touchstart', (event) => {
+      popup.dataset.touchStartY = String(event.touches?.[0]?.clientY || 0);
+    }, { passive: true });
+    popup.addEventListener('touchend', (event) => {
+      const start = Number(popup.dataset.touchStartY || 0);
+      const end = Number(event.changedTouches?.[0]?.clientY || 0);
+      if (end - start > 55) hideReadingPopup();
+    }, { passive: true });
     document.body.appendChild(popup);
   }
   return popup;
 }
 
 function positionReadingPopup(popup, rect) {
-  const top = Math.max(12, rect.top - popup.offsetHeight - 10);
-  const left = Math.min(window.innerWidth - popup.offsetWidth - 12, Math.max(12, rect.left + rect.width / 2 - popup.offsetWidth / 2));
-  popup.style.top = `${top}px`;
-  popup.style.left = `${left}px`;
+  return popup;
+}
+
+function isSavedVocabularyWord(word) {
+  const key = cleanTerm(word);
+  return (S.savedReadingWords || []).some((item) => cleanTerm(item.word || item.de || item.term) === key);
+}
+
+function speakWordOnly(word) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(String(word || ''));
+  utterance.lang = 'de-DE';
+  window.speechSynthesis.speak(utterance);
+}
+
+function wordPopupMarkup(item, article, isPhrase = false) {
+  const base = item.word || '';
+  const saved = isSavedVocabularyWord(base);
+  const level = normalizeLevelName(item.level || article?.level || getWordLevel(base));
+  const translation = item.translation || item.ru || item.definition || 'Перевод недоступен';
+  const example = item.example || item.examples?.[0] || articleSentenceForTerm(article, base);
+  const exampleTranslation = item.exampleTranslation || articleSentenceTranslationForTerm(article, example);
+  return `
+    <div class="word-popup-handle"></div>
+    <div class="word-popup-head">
+      <div class="word-popup-title">${esc(item.clickedWord || base)}</div>
+      <div class="word-popup-actions">
+        <span class="reading-badge">${esc(level)}</span>
+        <button class="word-popup-speak" onclick="speakWordOnly(${jsString(base)})" aria-label="Озвучить">🔊</button>
+      </div>
+    </div>
+    <div class="word-popup-base">${esc(base)}${item.wordClass ? ` — ${esc(item.wordClass)}` : ''}</div>
+    <div class="word-popup-translation">${esc(translation)}</div>
+    <div class="word-popup-example-title">📖 Пример:</div>
+    <div class="word-popup-example">
+      <div>«${esc(example || base)}»</div>
+      <div class="word-popup-example-ru">«${esc(exampleTranslation || 'Перевод примера недоступен')}»</div>
+    </div>
+    <button class="word-popup-add${saved ? ' saved' : ''}" ${saved ? 'disabled' : ''} onclick="addReadingTerm(${jsString(base)},${jsString(article?.id || activeReadingArticleId)},${isPhrase ? 'true' : 'false'},this)">
+      ${saved ? '✓ В словаре' : '+ Добавить в словарь'}
+    </button>
+  `;
 }
 
 function readingWordClick(event, span) {
   const article = getReadingArticle(activeReadingArticleId);
   const vocab = articleVocabMap(article);
   const word = span.dataset.word || span.textContent;
-  const item = vocab.get(cleanTerm(word)) || { word, wordClass: 'das Wort', translation: 'нет в локальном словаре', definition: 'kein lokaler Eintrag', examples: [], pronunciation: estimatePronunciation(word) };
-  speakReadingSnippet(word);
+  const sentence = articleSentenceForTerm(article, word);
+  const vocabItem = vocab.get(cleanTerm(word));
+  const item = vocabItem
+    ? { ...vocabItem, clickedWord: word, level: article?.level, example: vocabItem.examples?.[0] || sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence) }
+    : { word, clickedWord: word, wordClass: 'Wort', translation: 'Перевод недоступен', definition: '', example: sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence), examples: [], pronunciation: estimatePronunciation(word), level: getWordLevel(word) };
   const popup = ensureReadingPopup();
-  const isEasy = normalizeLevelName(article.level).startsWith('A');
-  popup.innerHTML = `
-    <div class="reading-popup-title">${esc(item.word || word)}</div>
-    <div class="reading-popup-sub">${esc(item.pronunciation || estimatePronunciation(word))}</div>
-    <div class="reading-popup-body">${esc(getMeaningText(item, article.level))}</div>
-    <button class="btn btn-gold btn-sm" onclick='addReadingTerm(${jsString(item.word || word)},${jsString(article.id)})'>+ В словарь</button>
-  `;
-  popup.classList.add('on');
+  popup.innerHTML = wordPopupMarkup(item, article, false);
+  document.getElementById('word-popup-overlay')?.classList.remove('hidden');
+  requestAnimationFrame(() => popup.classList.add('open'));
   positionReadingPopup(popup, span.getBoundingClientRect());
 }
 
@@ -5558,35 +5698,79 @@ function showSelectionPopup() {
   const range = selection.getRangeAt(0);
   const rect = range.getBoundingClientRect();
   if (!rect.width && !rect.height) return;
+  const item = makeReadingWordRecord(text, activeReadingArticleId, true);
   const popup = ensureReadingPopup();
-  popup.innerHTML = `
-    <div class="reading-popup-title">${esc(text)}</div>
-    <div class="reading-popup-sub">выражение</div>
-    <div class="reading-popup-body">${esc(phraseTranslation(text))}</div>
-    <button class="btn btn-gold btn-sm" onclick='addReadingTerm(${jsString(text)},${jsString(activeReadingArticleId)},true)'>+ В словарь как фраза</button>
-  `;
-  popup.classList.add('on');
+  popup.innerHTML = wordPopupMarkup({ ...item, clickedWord: text }, getReadingArticle(activeReadingArticleId), true);
+  document.getElementById('word-popup-overlay')?.classList.remove('hidden');
+  requestAnimationFrame(() => popup.classList.add('open'));
   positionReadingPopup(popup, rect);
 }
 
 function hideReadingPopup() {
   document.getElementById('readingPopup')?.classList.remove('on');
+  document.getElementById('word-popup')?.classList.remove('open');
+  document.getElementById('word-popup-overlay')?.classList.add('hidden');
 }
 
 function hideReadingPopupOnOutside(event) {
-  if (!event.target.closest?.('.reading-popup') && !event.target.closest?.('.read-word')) hideReadingPopup();
+  if (!event.target.closest?.('#word-popup') && !event.target.closest?.('.reading-popup') && !event.target.closest?.('.read-word')) hideReadingPopup();
 }
 
-function addReadingTerm(term, articleId, isPhrase = false) {
+async function syncUserVocabularyWord(word) {
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready || !firebase.user?.uid) return;
+  const { ref, set } = firebase.api;
+  await set(ref(firebase.db, `users/${firebase.user.uid}/vocabulary/${word.id}`), word);
+}
+
+async function loadUserVocabularyFromFirebase() {
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready || !firebase.user?.uid) return;
+  const { ref, onValue } = firebase.api;
+  onValue(ref(firebase.db, `users/${firebase.user.uid}/vocabulary`), (snapshot) => {
+    const data = snapshot.val() || {};
+    const remoteWords = Object.values(data).map(normalizeStoredReadingWord).filter(Boolean);
+    if (!remoteWords.length) return;
+    const map = new Map((S.savedReadingWords || []).map((item) => [cleanTerm(item.word || item.de), item]));
+    remoteWords.forEach((item) => map.set(cleanTerm(item.word || item.de), item));
+    S.savedReadingWords = [...map.values()];
+    S.userVocabulary = [...S.savedReadingWords];
+    saveS();
+    renderVocab();
+  }, { onlyOnce: true });
+}
+
+async function removeUserVocabularyWord(id) {
+  const firebase = await window.initDeutschFirebaseChat?.();
+  if (!firebase?.ready || !firebase.user?.uid) return;
+  const { ref, remove } = firebase.api;
+  await remove(ref(firebase.db, `users/${firebase.user.uid}/vocabulary/${id}`));
+}
+
+function addReadingTerm(term, articleId, isPhrase = false, button = null) {
   const payload = makeReadingWordRecord(term, articleId, isPhrase);
   S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
+  S.userVocabulary = Array.isArray(S.userVocabulary) ? S.userVocabulary : S.savedReadingWords;
   if (!S.savedReadingWords.some((saved) => saved.id === payload.id || cleanTerm(saved.word || saved.term || saved.de) === cleanTerm(payload.word))) {
     S.savedReadingWords.push(payload);
+    S.userVocabulary = [...S.savedReadingWords];
     saveS();
-    toast('✓ Добавлено в словарь');
+    syncUserVocabularyWord(payload).catch(() => {});
+    if (button) {
+      button.textContent = '✓ Добавлено!';
+      button.classList.add('added');
+      setTimeout(() => {
+        button.textContent = '✓ В словаре';
+        button.classList.remove('added');
+        button.classList.add('saved');
+        button.disabled = true;
+      }, 1500);
+    } else {
+      toast('✓ Добавлено в словарь');
+    }
   }
-  hideReadingPopup();
   renderReadingArticle(articleId);
+  renderVocab();
 }
 
 function renderReadingExercise() {
@@ -5826,6 +6010,7 @@ function normalizeWord(word) {
     ex,
     cat,
     example: word.example || word.ex || ex,
+    exampleTranslation: word.exampleTranslation || word.exampleRu || '',
     category: word.category || word.cat || cat,
     context: word.context || { articleId: '', articleTitle: cat, sentence: ex },
     tags: Array.isArray(word.tags) && word.tags.length ? word.tags : [cat],
@@ -6633,6 +6818,7 @@ async function initApp() {
   renderVocab();
   renderPhrases();
   renderCommunityChatShell(false);
+  loadUserVocabularyFromFirebase().catch(() => {});
   updateCommunityBadge();
   if (navigator.onLine) startCommunityUnreadListeners();
   renderLogin();
@@ -7253,15 +7439,14 @@ function updateDash() {
   renderKPI('kpi-words', learnedWords, '0');
   renderKPI('kpi-lessons', completedLessons, '0');
   renderKPI('kpi-hw', doneHW, '0');
+  renderKPI('kpi-xp', S.points || S.xp || 0, '0');
   const streakEl = document.getElementById('kpi-streak');
   streakEl.textContent = (S.streakCount || 0) > 0 ? `🔥 ${S.streakCount}` : '0';
   streakEl.classList.toggle('empty', !(S.streakCount > 0));
   const topbarStreak = document.getElementById('topbarStreak');
   const topbarXp = document.getElementById('topbarXp');
-  const mobileStreak = document.getElementById('mobileStreak');
   if (topbarStreak) topbarStreak.textContent = `🔥 ${S.streakCount || 0}`;
   if (topbarXp) topbarXp.textContent = `${S.points || 0} XP`;
-  if (mobileStreak) mobileStreak.textContent = `🔥 ${S.streakCount || 0}`;
 
   const levelInfo = getXPLevelInfo();
   const xpPanel = document.getElementById('xpPanel');
@@ -9125,53 +9310,35 @@ function toggleHWDone(id) {
   updateDash();
 }
 
-let curVocabFilter = 'all';
 let curVocabLevelFilter = 'all';
-let curVocabDateFilter = 'all';
+let curVocabSearch = '';
 let selectedVocabId = null;
 
 function getAllVocab() {
-  const primary = typeof vocabularyData !== 'undefined' ? vocabularyData.map(normalizeWord) : APP_LESSONS.flatMap((lesson) => lesson.words);
-  const spec = S.specs.flatMap((specId) => SPEC_VOCAB[specId] || []).map(normalizeWord);
-  const savedReading = (S.savedReadingWords || []).map(normalizeStoredReadingWord).filter(Boolean).map(normalizeWord);
+  const savedReading = (S.userVocabulary || S.savedReadingWords || []).map(normalizeStoredReadingWord).filter(Boolean).map(normalizeWord);
   const seen = new Set();
-  const words = [...primary, ...spec, ...savedReading].filter((word) => {
-    const key = word.id || `${word.de}|${word.cat}`;
+  const words = savedReading.filter((word) => {
+    const key = cleanTerm(word.word || word.de);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
-  const userRank = levelRank(getUserLevel());
   return words.sort((a, b) => {
-    const rankA = levelRank(a.level || highestLevelForText(a.de));
-    const rankB = levelRank(b.level || highestLevelForText(b.de));
-    const bucketA = rankA >= userRank ? 0 : 1;
-    const bucketB = rankB >= userRank ? 0 : 1;
-    return (Number(b.addedDate || 0) - Number(a.addedDate || 0)) || bucketA - bucketB || rankA - rankB || a.de.localeCompare(b.de);
+    return (Number(b.addedDate || 0) - Number(a.addedDate || 0)) || (a.de || a.word).localeCompare(b.de || b.word);
   });
 }
 
-function vocabDateMatches(word) {
-  if (curVocabDateFilter === 'all') return true;
-  if (!word.addedDate) return false;
-  const diffDays = (Date.now() - Number(word.addedDate)) / 86400000;
-  if (curVocabDateFilter === 'today') return diffDays < 1;
-  if (curVocabDateFilter === 'week') return diffDays <= 7;
-  if (curVocabDateFilter === 'month') return diffDays <= 30;
-  return true;
-}
-
 function vocabMatchesFilters(word) {
-  const tags = Array.isArray(word.tags) && word.tags.length ? word.tags : [word.cat];
-  const tagOk = curVocabFilter === 'all' || tags.includes(curVocabFilter) || word.cat === curVocabFilter;
   const levelOk = curVocabLevelFilter === 'all' || normalizeLevelName(word.level) === curVocabLevelFilter;
-  return tagOk && levelOk && vocabDateMatches(word);
+  const q = cleanTerm(curVocabSearch);
+  const searchOk = !q || cleanTerm(word.word || word.de).includes(q);
+  return levelOk && searchOk;
 }
 
 function renderVocabFilterGroup(label, values, active, onClickName) {
   return `
     <div class="vocab-filter-group">
-      <span class="vocab-filter-label">${esc(label)}</span>
+      ${label ? `<span class="vocab-filter-label">${esc(label)}</span>` : ''}
       ${values.map((item) => `
         <button class="vf-btn ${item.value === active ? 'on' : ''}" onclick="${onClickName}(${jsString(item.value)})">${esc(item.label)}</button>
       `).join('')}
@@ -9179,9 +9346,9 @@ function renderVocabFilterGroup(label, values, active, onClickName) {
   `;
 }
 
-function setVocabTagFilter(value) {
-  curVocabFilter = value;
-  renderVocab();
+function formatVocabDate(timestamp) {
+  const date = timestamp ? new Date(Number(timestamp)) : new Date();
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
 }
 
 function setVocabLevelFilter(value) {
@@ -9189,113 +9356,75 @@ function setVocabLevelFilter(value) {
   renderVocab();
 }
 
-function setVocabDateFilter(value) {
-  curVocabDateFilter = value;
+function setVocabSearch(value) {
+  curVocabSearch = value || '';
   renderVocab();
-}
-
-function openVocabDetail(id) {
-  selectedVocabId = id;
-  renderVocab();
-}
-
-function canRemoveVocabWord(word) {
-  return !!word && (S.savedReadingWords || []).some((item) => item.id === word.id);
 }
 
 function removeVocabWord(id) {
   const before = (S.savedReadingWords || []).length;
   S.savedReadingWords = (S.savedReadingWords || []).filter((item) => item.id !== id);
+  S.userVocabulary = (S.userVocabulary || []).filter((item) => item.id !== id);
   if (S.savedReadingWords.length !== before) {
     selectedVocabId = null;
     saveS();
+    removeUserVocabularyWord(id).catch(() => {});
     toast('Слово удалено из словаря');
     renderVocab();
     updateDash();
   }
 }
 
-function renderVocabDetail(words) {
-  const wrap = document.getElementById('vocabDetail');
-  if (!wrap) return;
-  const word = words.find((item) => item.id === selectedVocabId);
-  if (!word) {
-    wrap.innerHTML = '';
-    return;
-  }
-  const context = word.context || {};
-  const articleTitle = context.articleTitle || word.cat || 'Словарь';
-  const sentence = context.sentence || word.ex || '';
-  const meaning = getMeaningText(word, word.level);
-  wrap.innerHTML = `
-    <div class="vocab-detail">
-      <div class="vocab-detail-head">
-        <div>
-          <div class="vocab-detail-word">${esc(word.word || word.de)}</div>
-          <div class="vocab-detail-meta">
-            <span class="reading-badge">${esc(word.level || 'A1')}</span>
-            <span class="reading-badge">${esc(word.wordClass || 'Wort')}</span>
-            ${(word.tags || []).slice(0, 3).map((tag) => `<span class="reading-badge">${esc(tag)}</span>`).join('')}
-          </div>
-        </div>
-        <div class="btn-row" style="margin-top:0;">
-          ${canRemoveVocabWord(word) ? `<button class="btn btn-red btn-sm" onclick="removeVocabWord(${jsString(word.id)})">Удалить</button>` : ''}
-          <button class="btn btn-ghost btn-sm" onclick="selectedVocabId=null;renderVocab()">Закрыть</button>
-        </div>
-      </div>
-      <div style="font-size:14px;line-height:1.7;">${esc(meaning || 'Нет значения')}</div>
-      <div class="vocab-context">
-        <div><strong>Из статьи:</strong> ${esc(articleTitle)}</div>
-        <div><strong>В предложении:</strong> ${highlightContextSentence(sentence, word.word || word.de)}</div>
-      </div>
-    </div>
-  `;
-}
-
 function renderVocab(filter) {
-  if (filter !== undefined) curVocabFilter = filter;
+  if (filter !== undefined) curVocabLevelFilter = filter;
 
   const filterWrap = document.getElementById('vocabFilter');
   const allWords = getAllVocab();
-  const tagValues = ['all', ...new Set(allWords.flatMap((word) => (Array.isArray(word.tags) && word.tags.length ? word.tags : [word.cat])).filter(Boolean))];
-  const levelValues = ['all', ...CEFR_LEVELS.filter((level) => level !== 'A0' && allWords.some((word) => normalizeLevelName(word.level) === level))];
-  if (!tagValues.includes(curVocabFilter)) curVocabFilter = 'all';
+  const levelValues = ['all', 'A1', 'A2', 'B1', 'B2'];
   if (!levelValues.includes(curVocabLevelFilter)) curVocabLevelFilter = 'all';
   filterWrap.innerHTML = `
-    ${renderVocabFilterGroup('Тег статьи', tagValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabFilter, 'setVocabTagFilter')}
-    ${renderVocabFilterGroup('Уровень', levelValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabLevelFilter, 'setVocabLevelFilter')}
-    ${renderVocabFilterGroup('Дата', [
-      { value: 'all', label: 'Все даты' },
-      { value: 'today', label: 'Сегодня' },
-      { value: 'week', label: '7 дней' },
-      { value: 'month', label: '30 дней' },
-    ], curVocabDateFilter, 'setVocabDateFilter')}
+    ${renderVocabFilterGroup('', levelValues.map((value) => ({ value, label: value === 'all' ? 'Все' : value })), curVocabLevelFilter, 'setVocabLevelFilter')}
   `;
 
   const words = allWords.filter(vocabMatchesFilters);
-  renderVocabDetail(allWords);
-
   const body = document.getElementById('vocabBody');
+  const search = document.getElementById('vocabSearch');
+  if (search && search.value !== curVocabSearch) search.value = curVocabSearch;
   body.innerHTML = '';
   if (!words.length) {
-    body.innerHTML = `<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">Нет слов под выбранные фильтры.</td></tr>`;
+    body.innerHTML = `
+      <div class="vocab-empty">
+        <div class="vocab-empty-icon">📚</div>
+        <div class="vocab-empty-title">Твой словарь пуст</div>
+        <div class="vocab-empty-copy">Нажимай на слова в текстах статей чтобы добавлять их сюда</div>
+        <button class="btn btn-gold" onclick="navigateTo('reading')">Перейти к чтению →</button>
+      </div>
+    `;
     return;
   }
   words.forEach((word) => {
-    const row = document.createElement('tr');
-    row.className = `vocab-row${word.id === selectedVocabId ? ' active' : ''}`;
-    row.onclick = () => openVocabDetail(word.id);
+    const card = document.createElement('div');
+    card.className = 'vocab-card';
     const meaning = getMeaningText(word, word.level);
-    const contextTitle = word.context?.articleTitle || word.cat;
-    const tags = (word.tags || [word.cat]).slice(0, 3);
-    row.innerHTML = `
-      <td><span class="vt-de">${esc(word.de)}</span> <button onclick="event.stopPropagation();speak(${jsString(word.de)})" style="background:none;border:none;cursor:pointer;font-size:14px;">🔊</button></td>
-      <td><span class="reading-badge">${esc(word.level || 'A1')}</span></td>
-      <td class="vt-ru">${esc(meaning || '')}</td>
-      <td class="vt-ex">${esc(contextTitle || '')}<br>${highlightContextSentence(word.context?.sentence || word.ex || '', word.word || word.de)}</td>
-      <td>${tags.map((tag) => `<span class="vt-tag">${esc(tag)}</span>`).join(' ')}</td>
+    const example = word.example || word.context?.sentence || word.ex || '';
+    const exampleTranslation = word.exampleTranslation || '';
+    card.innerHTML = `
+      <div class="vocab-card-top">
+        <div>
+          <span class="vocab-card-word">${esc(word.word || word.de)}</span>
+          <span class="reading-badge">${esc(word.level || 'A1')}</span>
+        </div>
+        <div class="vocab-card-actions">
+          <button class="vocab-card-icon" onclick="speakWordOnly(${jsString(word.word || word.de)})" aria-label="Озвучить">🔊</button>
+          <button class="vocab-card-icon" onclick="removeVocabWord(${jsString(word.id)})" aria-label="Удалить">🗑</button>
+        </div>
+      </div>
+      <div class="vocab-card-translation">${esc(meaning || 'Перевод недоступен')}</div>
+      <div class="vocab-card-example">${esc(example || '')}</div>
+      <div class="vocab-card-example-ru">${esc(exampleTranslation || '')}</div>
+      <div class="vocab-card-date">Добавлено: ${formatVocabDate(word.addedDate)} · из статьи</div>
     `;
-    body.appendChild(row);
+    body.appendChild(card);
   });
 }
 
