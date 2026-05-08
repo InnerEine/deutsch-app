@@ -5093,7 +5093,15 @@ function slugTerm(term) {
 }
 
 function jsString(value) {
-  return JSON.stringify(String(value ?? '')).replace(/</g, '\\u003c');
+  return `'${String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\x22')
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+    .replace(/</g, '\\u003c')}'`;
 }
 
 function highestLevelForText(text) {
@@ -12025,7 +12033,7 @@ if(S.onboardingDone){
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=7-finexa-ui')
+  navigator.serviceWorker.register('./sw.js?v=8-plan-buttons')
     .then(reg => console.log('SW registered'))
     .catch(err => console.log('SW registration failed'));
 }

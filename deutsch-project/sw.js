@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deutsch-app-v6-finexa-ui';
+const CACHE_NAME = 'deutsch-app-v8-plan-buttons';
 const urlsToCache = [
   './',
   './index.html',
