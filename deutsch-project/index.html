@@ -347,11 +347,13 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .module-test-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:8px;padding:16px;margin-top:12px;}
 .module-text{font-size:18px;line-height:1.95;color:var(--text);}
 .module-speaker{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 16px;}
-.module-word{border:0;background:transparent;color:inherit;font:inherit;padding:0 2px;border-radius:5px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(240,192,96,.35);text-underline-offset:4px;}
-.module-word.a1{background:rgba(61,214,140,.09);}
-.module-word.a2{background:rgba(104,180,255,.1);}
-.module-word.b1{background:rgba(240,192,96,.12);}
-.module-word.b2{background:rgba(197,132,255,.12);}
+.module-word{border:0;background:transparent;color:inherit;font:inherit;padding:0 2px;border-radius:5px;cursor:pointer;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;}
+.module-word.a1,.module-word.word-a1{color:#9CA3AF;text-decoration-color:#9CA3AF;background:none;}
+.module-word.a2,.module-word.word-a2{color:#A78BFA;text-decoration-color:#A78BFA;background:none;}
+.module-word.b1,.module-word.word-b1{color:#60A5FA;text-decoration-color:#60A5FA;background:none;}
+.module-word.b2,.module-word.word-b2{color:#34D399;text-decoration-color:#34D399;background:none;}
+.module-word.c1,.module-word.word-c1{color:#FBBF24;text-decoration-color:#FBBF24;background:none;}
+.module-word.c2,.module-word.word-c2{color:#F87171;text-decoration-color:#F87171;background:none;}
 .module-word.mark{box-shadow:inset 0 -0.72em rgba(240,192,96,.28);text-decoration:none;}
 .module-word-pop{position:fixed;z-index:1200;max-width:min(320px,92vw);border:1px solid var(--border2);background:var(--bg2);box-shadow:0 18px 50px rgba(0,0,0,.32);border-radius:8px;padding:14px;display:none;}
 .module-word-pop.on{display:block;}
@@ -581,25 +583,31 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .lesson-example{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
 .lesson-example-de{font-family:'IBM Plex Mono',monospace;color:var(--gold);font-size:13px;margin-bottom:5px;}
 .lesson-example-ru{font-size:12px;color:var(--muted);}
-.word-mark{border-radius:4px;padding:.02em .16em;box-decoration-break:clone;-webkit-box-decoration-break:clone;transition:filter .2s,box-shadow .2s,opacity .2s;}
+.word-mark{border-radius:4px;padding:.02em .16em;box-decoration-break:clone;-webkit-box-decoration-break:clone;transition:filter .2s,box-shadow .2s,opacity .2s;background:none;}
+.word-a1,.word-level-a1{color:#9CA3AF;text-decoration:underline;text-decoration-color:#9CA3AF;text-decoration-thickness:1.5px;text-underline-offset:3px;background:none;}
+.word-a2,.word-level-a2{color:#A78BFA;text-decoration:underline;text-decoration-color:#A78BFA;text-decoration-thickness:1.5px;text-underline-offset:3px;background:none;}
+.word-b1,.word-level-b1{color:#60A5FA;text-decoration:underline;text-decoration-color:#60A5FA;text-decoration-thickness:1.5px;text-underline-offset:3px;background:none;}
+.word-b2,.word-level-b2{color:#34D399;text-decoration:underline;text-decoration-color:#34D399;text-decoration-thickness:1.5px;text-underline-offset:3px;background:none;}
+.word-c1,.word-level-c1{color:#FBBF24;text-decoration:underline;text-decoration-color:#FBBF24;text-decoration-thickness:1.5px;text-underline-offset:3px;background:none;}
+.word-c2,.word-level-c2{color:#F87171;text-decoration:underline;text-decoration-color:#F87171;text-decoration-thickness:1.5px;text-underline-offset:3px;background:none;}
 .word-level-a0{padding:0;background:none;}
-.word-level-a1{background:var(--wl-a1);}
-.word-level-a2{background:var(--wl-a2);}
-.word-level-b1{background:var(--wl-b1);}
-.word-level-b2{background:var(--wl-b2);}
-.word-level-c1{background:var(--wl-c1);}
-.word-level-c2{background:var(--wl-c2);}
-.word-dim{opacity:.58;}
-.word-bright{opacity:1;font-weight:650;filter:saturate(1.35);box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 14px rgba(91,158,240,.12);}
+.word-known,.word-dim{opacity:.6;}
+.word-new,.word-bright{opacity:1;font-weight:500;filter:none;box-shadow:none;}
+body.light .word-a1,body.light .word-level-a1,.theme-light .word-a1,.theme-light .word-level-a1{color:#6B7280;text-decoration-color:#6B7280;}
+body.light .word-a2,body.light .word-level-a2,.theme-light .word-a2,.theme-light .word-level-a2{color:#7C3AED;text-decoration-color:#7C3AED;}
+body.light .word-b1,body.light .word-level-b1,.theme-light .word-b1,.theme-light .word-level-b1{color:#2563EB;text-decoration-color:#2563EB;}
+body.light .word-b2,body.light .word-level-b2,.theme-light .word-b2,.theme-light .word-level-b2{color:#059669;text-decoration-color:#059669;}
+body.light .word-c1,body.light .word-level-c1,.theme-light .word-c1,.theme-light .word-level-c1{color:#D97706;text-decoration-color:#D97706;}
+body.light .word-c2,body.light .word-level-c2,.theme-light .word-c2,.theme-light .word-level-c2{color:#DC2626;text-decoration-color:#DC2626;}
 .word-legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 22px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;}
 .word-legend-item{display:inline-flex;align-items:center;gap:4px;}
 .word-swatch{width:13px;height:13px;border-radius:3px;border:1px solid var(--border2);display:inline-block;background:transparent;}
-.word-swatch.a1{background:var(--wl-a1);}
-.word-swatch.a2{background:var(--wl-a2);}
-.word-swatch.b1{background:var(--wl-b1);}
-.word-swatch.b2{background:var(--wl-b2);}
-.word-swatch.c1{background:var(--wl-c1);}
-.word-swatch.c2{background:var(--wl-c2);}
+.word-swatch.a1{background:#9CA3AF;}
+.word-swatch.a2{background:#A78BFA;}
+.word-swatch.b1{background:#60A5FA;}
+.word-swatch.b2{background:#34D399;}
+.word-swatch.c1{background:#FBBF24;}
+.word-swatch.c2{background:#F87171;}
 
 /* READING */
 .reading-shell{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;}
@@ -678,6 +686,14 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .diary-review-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.55;}
 .diary-review-item.ok{border-color:rgba(61,214,140,.35);background:rgba(61,214,140,.07);}
 .diary-review-item.warn{border-color:rgba(240,192,96,.35);background:rgba(240,192,96,.07);}
+.writing-review{border:1px solid var(--border);background:var(--bg2);border-radius:12px;padding:14px 16px;margin-top:14px;display:grid;gap:12px;}
+.writing-review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;}
+.writing-review-block{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px 14px;display:grid;gap:8px;}
+.writing-review-title{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;}
+.writing-review-list{display:grid;gap:8px;margin:0;padding-left:18px;font-size:13px;line-height:1.45;}
+.writing-review-list li::marker{color:var(--gold);}
+.writing-error-text{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.8;white-space:pre-wrap;}
+.writing-error-mark{text-decoration:underline wavy var(--red);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:pointer;color:var(--text);background:rgba(240,85,85,.08);border-radius:4px;padding:0 .12em;}
 .pattern-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:13px;line-height:1.65;}
 .pattern-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--gold);margin-bottom:6px;}
 .reading-popup{position:fixed;z-index:1200;max-width:min(340px,92vw);background:var(--bg2);border:1px solid var(--gold);box-shadow:0 18px 70px rgba(0,0,0,.32);border-radius:12px;padding:14px;display:none;}
@@ -757,11 +773,19 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
 .plan-lesson-card.current .plan-lesson-dot{color:var(--gold);border-color:rgba(240,192,96,.55);background:rgba(240,192,96,.08);}
 .plan-step-head{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:14px;}
 .plan-content-text{font-size:17px;line-height:1.9;}
-.plan-word{border:1px solid transparent;background:var(--wl-a1);color:inherit;font:inherit;padding:1px 4px;border-radius:6px;cursor:pointer;text-decoration:none;transition:background .18s,border-color .18s,color .18s;}
-.plan-word.level-a1{background:var(--wl-a1);}
-.plan-word.level-a2{background:var(--wl-a2);}
-.plan-word.level-b1{background:var(--wl-b1);}
-.plan-word.level-b2{background:var(--wl-b2);}
+.plan-word{border:1px solid transparent;background:none;color:inherit;font:inherit;padding:1px 4px;border-radius:6px;cursor:pointer;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px;transition:opacity .18s,color .18s;}
+.plan-word.level-a1{color:#9CA3AF;text-decoration-color:#9CA3AF;background:none;}
+.plan-word.level-a2{color:#A78BFA;text-decoration-color:#A78BFA;background:none;}
+.plan-word.level-b1{color:#60A5FA;text-decoration-color:#60A5FA;background:none;}
+.plan-word.level-b2{color:#34D399;text-decoration-color:#34D399;background:none;}
+.plan-word.level-c1{color:#FBBF24;text-decoration-color:#FBBF24;background:none;}
+.plan-word.level-c2{color:#F87171;text-decoration-color:#F87171;background:none;}
+body.light .plan-word.level-a1,.theme-light .plan-word.level-a1{color:#6B7280;text-decoration-color:#6B7280;}
+body.light .plan-word.level-a2,.theme-light .plan-word.level-a2{color:#7C3AED;text-decoration-color:#7C3AED;}
+body.light .plan-word.level-b1,.theme-light .plan-word.level-b1{color:#2563EB;text-decoration-color:#2563EB;}
+body.light .plan-word.level-b2,.theme-light .plan-word.level-b2{color:#059669;text-decoration-color:#059669;}
+body.light .plan-word.level-c1,.theme-light .plan-word.level-c1{color:#D97706;text-decoration-color:#D97706;}
+body.light .plan-word.level-c2,.theme-light .plan-word.level-c2{color:#DC2626;text-decoration-color:#DC2626;}
 .plan-word.speaking{background:#ffe36a;color:#111;border-color:#ffd43b;}
 .plan-preview-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:18px 0;}
 .plan-preview-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px;font-weight:800;}
@@ -4840,12 +4864,14 @@ function analyzeWriting(text) {
     if (/en$/.test(word)) endings.add('-en');
     if (/t$/.test(word)) endings.add('-t');
   });
-  return [
+  const checks = [
     { id: 'length', ok: text.trim().length >= 80, label: `Длина текста: ${text.trim().length}/80 символов` },
     { id: 'unique', ok: unique.size >= 15, label: `Уникальные слова: ${unique.size}/15` },
     { id: 'comma', ok: /,/.test(text), label: 'Есть хотя бы одна запятая' },
     { id: 'verbs', ok: endings.size >= 2, label: `Формы глаголов найдены: ${endings.size}/2` },
   ];
+  checks.review = buildWritingReview(text, { minChars: 80 });
+  return checks;
 }
 
 function renderWritingChecks(checks) {
@@ -4853,7 +4879,7 @@ function renderWritingChecks(checks) {
   if (!wrap) return;
   wrap.innerHTML = checks.map((check) => `
     <div class="lt-check ${check.ok ? 'ok' : 'no'}">${check.ok ? '✓' : '×'} ${ltEsc(check.label)}</div>
-  `).join('');
+  `).join('') + renderWritingReview(checks.review);
 }
 
 function submitWritingStage() {
@@ -4999,6 +5025,11 @@ function getUserLevel() {
   return normalizeLevelName(localStorage.getItem('userLevel') || S.level || 'A1');
 }
 
+function wordToneClass(level) {
+  if (!level || normalizeLevelName(level) === 'A0') return '';
+  return levelRank(level) > levelRank(getUserLevel()) ? ' word-new' : ' word-known';
+}
+
 function getLessonLevel(lesson) {
   if (lesson.level) return normalizeLevelName(lesson.level);
   const matches = [...String(lesson.type || '').toUpperCase().matchAll(/\b(A1|A2|B1|B2|C1|C2)\b/g)].map((item) => item[1]);
@@ -5030,6 +5061,19 @@ function wordLevelLegendHtml() {
       <span class="word-legend-item"><span class="word-swatch b2"></span>🟢B2</span>
       <span class="word-legend-item"><span class="word-swatch c1"></span>🟡C1</span>
       <span class="word-legend-item"><span class="word-swatch c2"></span>🔴C2</span>
+    </div>
+  `;
+}
+
+function wordLevelLegendHtml() {
+  return `
+    <div class="word-legend" aria-label="Легенда уровней слов">
+      <span class="word-legend-item"><span class="word-swatch a1"></span>⬜ A1</span>
+      <span class="word-legend-item"><span class="word-swatch a2"></span>🟣 A2</span>
+      <span class="word-legend-item"><span class="word-swatch b1"></span>🔵 B1</span>
+      <span class="word-legend-item"><span class="word-swatch b2"></span>🟢 B2</span>
+      <span class="word-legend-item"><span class="word-swatch c1"></span>🟡 C1</span>
+      <span class="word-legend-item"><span class="word-swatch c2"></span>🔴 C2</span>
     </div>
   `;
 }
@@ -5068,8 +5112,8 @@ function highlightText(text) {
         return esc(token).replace(/\r?\n/g, '<br>');
       }
       const level = getWordLevel(token);
-      const tone = level === 'A0' ? '' : (levelRank(level) > userRank ? ' word-bright' : ' word-dim');
-      return `<span class="word-mark word-level-${level.toLowerCase()}${tone}" data-level="${level}">${esc(token)}</span>`;
+      const tone = level === 'A0' ? '' : (levelRank(level) > userRank ? ' word-new' : ' word-known');
+      return `<span class="word-mark word-${level.toLowerCase()} word-level-${level.toLowerCase()}${tone}" data-level="${level}">${esc(token)}</span>`;
     })
     .join('');
 }
@@ -5101,6 +5145,186 @@ function readingMinutes(text) {
 
 function cleanTerm(term) {
   return String(term || '').toLowerCase().replace(/[^\p{L}\s-]/gu, '').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeClickedWord(word) {
+  return String(word || '')
+    .toLowerCase()
+    .replace(/[.,!?;:«»"'()]/g, '')
+    .trim();
+}
+
+function lookupWordCandidates(word) {
+  const clean = normalizeClickedWord(word);
+  const candidates = [clean];
+  if (clean.endsWith('es') && clean.length > 4) candidates.push(clean.slice(0, -2));
+  if (clean.endsWith('en') && clean.length > 4) candidates.push(clean.slice(0, -2));
+  if (clean.endsWith('er') && clean.length > 4) candidates.push(clean.slice(0, -2));
+  if (clean.endsWith('e') && clean.length > 3) candidates.push(clean.slice(0, -1));
+  if (clean.endsWith('s') && clean.length > 3) candidates.push(clean.slice(0, -1));
+  if (clean.endsWith('n') && clean.length > 3) candidates.push(clean.slice(0, -1));
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function findUserDictionaryEntry(word) {
+  const candidates = lookupWordCandidates(word);
+  const words = [...(S.userVocabulary || []), ...(S.savedReadingWords || [])].map(normalizeStoredReadingWord).filter(Boolean);
+  for (const candidate of candidates) {
+    const found = words.find((item) => {
+      const term = item.word || item.de || item.term;
+      const itemCandidates = lookupWordCandidates(term);
+      cleanTerm(term).split(' ').forEach((part) => {
+        if (!['der', 'die', 'das', 'ein', 'eine'].includes(part)) itemCandidates.push(part);
+      });
+      return itemCandidates.includes(candidate);
+    });
+    if (found) {
+      return {
+        ru: found.translationRU || found.ru || found.translation || found.definition || '',
+        en: found.translationEN || found.exampleEN || found.definition || '',
+        level: found.level || 'custom',
+        base: found.word || found.de || candidate,
+        example: found.example || found.context?.sentence || '',
+      };
+    }
+  }
+  return null;
+}
+
+const germanErrors = [
+  {
+    id: 'word-order',
+    pattern: /ich\s+\w+\s+(bin|habe|komme|gehe|lerne|arbeite)/i,
+    title: 'Порядок слов',
+    message: 'Порядок слов: глагол должен стоять на 2-м месте',
+    example: '❌ Ich heute arbeite → ✓ Ich arbeite heute',
+  },
+  {
+    id: 'seit-dativ',
+    pattern: /seit\s+(einen|den|die|das)\s+\w+/i,
+    title: 'seit + Dativ',
+    message: "После 'seit' нужен Dativ, не Akkusativ",
+    example: '❌ seit einen Jahr → ✓ seit einem Jahr',
+  },
+  {
+    id: 'noun-capital',
+    pattern: /\b(haus|auto|buch|schule|arbeit|familie|wasser|mann|frau|kind|stadt|land)\b/,
+    title: 'Существительные с большой буквы',
+    message: 'Существительные в немецком пишутся с большой буквы',
+    example: '❌ das haus → ✓ das Haus',
+  },
+  {
+    id: 'duration-seit',
+    pattern: /vor\s+\d+\s+(jahre|monate|wochen|tage)/i,
+    title: 'Длительность с seit',
+    message: "Для длящегося действия используй 'seit', не 'vor'",
+    example: '❌ Ich lerne vor drei Jahren → ✓ Ich lerne seit drei Jahren',
+  },
+  {
+    id: 'perfekt-sein',
+    pattern: /\b(habe|hat|haben)\s+\w*(gegangen|gefahren|gekommen|geblieben|geworden)\b/i,
+    title: "Perfekt с 'sein'",
+    message: "Глаголы движения образуют Perfekt с 'sein', не 'haben'",
+    example: '❌ Ich habe gegangen → ✓ Ich bin gegangen',
+  },
+  {
+    id: 'proper-article',
+    pattern: /\b(der|die|das)\s+[A-ZÄÖÜ][a-zäöüß]+(?:a|i|o|u|e)\b/,
+    title: 'Имена без артикля',
+    message: 'Имена людей пишутся без артикля',
+    example: '❌ der Aziz → ✓ Aziz',
+  },
+];
+
+function analyzeGermanTextErrors(text) {
+  const value = String(text || '');
+  return germanErrors.flatMap((rule) => {
+    const regex = new RegExp(rule.pattern.source, rule.pattern.flags.includes('g') ? rule.pattern.flags : `${rule.pattern.flags}g`);
+    const matches = [];
+    let match;
+    while ((match = regex.exec(value)) && matches.length < 8) {
+      matches.push({
+        id: rule.id,
+        title: rule.title,
+        message: rule.message,
+        example: rule.example,
+        match: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+      });
+      if (match.index === regex.lastIndex) regex.lastIndex += 1;
+    }
+    return matches;
+  });
+}
+
+function writingPositiveChecks(text, context = {}) {
+  const value = String(text || '');
+  const positives = [];
+  if (/\b(bin|ist|sind|war|waren)\s+ge\w+/i.test(value) && !/\b(habe|hat|haben)\s+\w*(gegangen|gefahren|gekommen|geblieben|geworden)\b/i.test(value)) positives.push('Использовал Perfekt правильно');
+  if (value.trim().length >= Number(context.minChars || 80)) positives.push('Длина текста достаточная');
+  if (context.grammarUsed) positives.push('Использована грамматика урока');
+  if (/,/.test(value)) positives.push('Есть запятая в сложной фразе');
+  if (/\bIch\b/.test(value)) positives.push("'Ich' пишется с большой буквы");
+  return positives.length ? positives : ['Текст написан и готов к разбору'];
+}
+
+function buildWritingReview(text, context = {}) {
+  return {
+    good: writingPositiveChecks(text, context),
+    errors: analyzeGermanTextErrors(text),
+    highlighted: highlightWritingErrors(text, analyzeGermanTextErrors(text)),
+  };
+}
+
+function highlightWritingErrors(text, errors) {
+  const value = String(text || '');
+  if (!errors?.length) return esc(value).replace(/\r?\n/g, '<br>');
+  const ordered = [...errors].sort((a, b) => a.start - b.start);
+  let cursor = 0;
+  let html = '';
+  ordered.forEach((error, index) => {
+    if (error.start < cursor) return;
+    html += esc(value.slice(cursor, error.start)).replace(/\r?\n/g, '<br>');
+    html += `<span class="writing-error-mark" onclick="showWritingErrorPopup(${jsString(error.title)},${jsString(error.message)},${jsString(error.example || '')})">${esc(value.slice(error.start, error.end))}</span>`;
+    cursor = error.end;
+  });
+  html += esc(value.slice(cursor)).replace(/\r?\n/g, '<br>');
+  return html;
+}
+
+function renderWritingReview(review) {
+  if (!review) return '';
+  const errors = review.errors || [];
+  return `
+    <div class="writing-review">
+      <div class="writing-review-grid">
+        <section class="writing-review-block">
+          <div class="writing-review-title">✅ Что хорошо:</div>
+          <ul class="writing-review-list">${(review.good || []).map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
+        </section>
+        <section class="writing-review-block">
+          <div class="writing-review-title">⚠️ Обрати внимание:</div>
+          ${errors.length
+            ? `<ol class="writing-review-list">${errors.map((error) => `<li><strong>${esc(error.title)}</strong><br>${esc(error.message)}<br>${esc(error.example || '')}</li>`).join('')}</ol>`
+            : '<div class="diary-review-item ok">Явных типичных ошибок не найдено.</div>'}
+        </section>
+      </div>
+      <div class="writing-error-text">${review.highlighted || ''}</div>
+    </div>
+  `;
+}
+
+function showWritingErrorPopup(title, message, example = '') {
+  const popup = ensureReadingPopup();
+  popup.innerHTML = `
+    <div class="word-popup-handle"></div>
+    <div class="word-popup-title">${esc(title)}</div>
+    <div class="word-popup-translation">${esc(message)}</div>
+    ${example ? `<div class="word-popup-example"><div>${esc(example)}</div></div>` : ''}
+  `;
+  document.getElementById('word-popup-overlay')?.classList.remove('hidden');
+  requestAnimationFrame(() => popup.classList.add('open'));
 }
 
 const germanDict = {
@@ -5536,18 +5760,18 @@ const germanDict = {
 });
 
 function getWordTranslation(clickedWord) {
-  const word = String(clickedWord || '').toLowerCase();
-  if (germanDict[word]) return germanDict[word];
-  const clean = word.replace(/[.,!?;:«»"']/g, '').trim();
-  if (germanDict[clean]) return germanDict[clean];
-  const normalized = cleanTerm(clean);
-  if (germanDict[normalized]) return germanDict[normalized];
+  const candidates = lookupWordCandidates(clickedWord);
+  for (const candidate of candidates) {
+    if (germanDict[candidate]) return { ...germanDict[candidate], base: candidate };
+  }
+  const userEntry = findUserDictionaryEntry(clickedWord);
+  if (userEntry) return userEntry;
   return {
     ru: 'Перевод не найден',
     en: 'Translation not found',
     level: '?',
     missing: true,
-    word: clean || word,
+    word: candidates[0] || String(clickedWord || ''),
   };
 }
 
@@ -5590,6 +5814,7 @@ function articleVocabMap(article) {
   (article.vocabulary || []).forEach((item) => {
     const raw = cleanTerm(item.word);
     map.set(raw, item);
+    lookupWordCandidates(raw).forEach((candidate) => map.set(candidate, item));
     if (raw.endsWith('en') && raw.length > 4) map.set(`${raw.slice(0, -2)}t`, item);
     if (raw.endsWith('n') && raw.length > 4) map.set(`${raw.slice(0, -1)}t`, item);
     raw.split(' ').forEach((part) => {
@@ -5887,11 +6112,11 @@ function renderArticleText(article) {
       const key = cleanTerm(token);
       const vocabItem = vocab.get(key);
       const level = getWordLevel(token);
-      const tone = level === 'A0' ? '' : (levelRank(level) > levelRank(getUserLevel()) ? ' word-bright' : ' word-dim');
+      const tone = level === 'A0' ? '' : wordToneClass(level);
       const savedClass = saved.has(key) || (vocabItem && saved.has(cleanTerm(vocabItem.word))) ? ' saved' : '';
       const current = index;
       index += 1;
-      return `<span class="word-mark read-word word-level-${level.toLowerCase()}${tone}${savedClass}" data-word="${esc(token)}" data-index="${current}" data-level="${level}">${esc(token)}</span>`;
+      return `<span class="word-mark read-word word-${level.toLowerCase()} word-level-${level.toLowerCase()}${tone}${savedClass}" data-word="${esc(token)}" data-index="${current}" data-level="${level}">${esc(token)}</span>`;
     })
     .join('');
 }
@@ -6001,6 +6226,7 @@ function getLatestDiaryForArticle(articleId) {
 
 function renderDiaryReview(review) {
   if (!review) return '';
+  if (review.good || review.errors) return renderWritingReview(review);
   return `
     <div class="diary-review">
       ${review.items.map((item) => `
@@ -6137,6 +6363,7 @@ function analyzeReadingDiary(text, article) {
   });
   patterns.forEach((id) => items.push({ ok: false, text: `${DIARY_PATTERN_INFO[id].short}: ${DIARY_PATTERN_INFO[id].example}` }));
   if (!patterns.length) items.push({ ok: true, text: 'Типичные ошибки русскоязычных не найдены' });
+  const writingReview = buildWritingReview(text, { grammarUsed, minChars: 80 });
   return {
     date: Date.now(),
     sectionGrammar: section?.grammar || '',
@@ -6145,6 +6372,9 @@ function analyzeReadingDiary(text, article) {
     averageWordsPerSentence: Number(avgWords.toFixed(1)),
     patterns,
     items,
+    good: writingReview.good,
+    errors: writingReview.errors,
+    highlighted: writingReview.highlighted,
   };
 }
 
@@ -6310,7 +6540,7 @@ function readingWordClick(event, span) {
   const dictEntry = getWordTranslation(word);
   const item = vocabItem
     ? { ...vocabItem, clickedWord: word, level: article?.level, example: vocabItem.examples?.[0] || sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence) }
-    : { word, clickedWord: word, wordClass: 'Wort', translation: dictEntry.missing ? '' : dictEntry.ru, ru: dictEntry.missing ? '' : dictEntry.ru, definition: dictEntry.missing ? '' : dictEntry.en, example: sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence), examples: [], pronunciation: estimatePronunciation(word), level: dictEntry.level || getWordLevel(word) };
+    : { word: dictEntry.base || word, clickedWord: word, wordClass: 'Wort', translation: dictEntry.missing ? '' : dictEntry.ru, ru: dictEntry.missing ? '' : dictEntry.ru, definition: dictEntry.missing ? '' : dictEntry.en, example: dictEntry.example || sentence, exampleTranslation: articleSentenceTranslationForTerm(article, sentence), examples: dictEntry.example ? [dictEntry.example] : [], pronunciation: estimatePronunciation(dictEntry.base || word), level: dictEntry.level || getWordLevel(word) };
   const popup = ensureReadingPopup();
   popup.innerHTML = wordPopupMarkup(item, article, false);
   document.getElementById('word-popup-overlay')?.classList.remove('hidden');
@@ -6618,6 +6848,7 @@ const ACHIEVEMENTS = [
 ];
 
 function normalizeWord(word) {
+  if (typeof word === 'string') return normalizeClickedWord(word);
   const de = word.de || word.word || word.term || '';
   const ru = word.ru || word.translation || '';
   const ex = word.ex || word.example || word.context?.sentence || '';
@@ -8828,7 +9059,8 @@ function moduleWordInfo(term, module) {
 }
 
 function moduleLevelClass(level) {
-  return String(level || 'A1').toLowerCase();
+  const normalized = normalizeLevelName(level);
+  return `word-${normalized.toLowerCase()} ${wordToneClass(normalized).trim()}`;
 }
 
 function renderModuleInteractiveText(text, module, markers = []) {
@@ -10266,7 +10498,8 @@ function planClickableText(text, words, prefix = '') {
     if (!/[A-Za-zÄÖÜäöüß]/.test(token)) return esc(token).replace(/\r?\n/g, '<br>');
     const id = prefix ? `${prefix}-w${index++}` : '';
     const level = normalizeLevelName(found.level || getWordLevel(found.word)).toLowerCase();
-    return `<button class="plan-word level-${esc(level)}" ${id ? `id="${esc(id)}"` : ''} onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
+    const tone = wordToneClass(level.toUpperCase()).trim();
+    return `<button class="plan-word level-${esc(level)} word-${esc(level)} ${esc(tone)}" ${id ? `id="${esc(id)}"` : ''} onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
   }).join('');
 }
 
