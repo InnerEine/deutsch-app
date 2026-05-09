@@ -3138,11 +3138,6 @@ window.initDeutschFirebaseChat();
             <option value="purple">Фиолетовый</option>
           </select>
         </div>
-        <div style="margin-top:16px;">
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Gemini API key</label>
-          <input class="ob-input" id="settingsGeminiKey" type="password" autocomplete="off" placeholder="Оставь пустым, чтобы использовать офлайн-уроки">
-          <div class="plan-status" id="geminiKeyStatus" style="margin-top:8px;"></div>
-        </div>
       </div>
       <div class="section-label">Специальности</div>
       <div class="spec-grid" id="settingsSpecGrid"></div>
@@ -5896,6 +5891,14 @@ async function buildAIWritingReview(text, grammarTopic, level, context = {}) {
   }
   try {
     const raw = await checkTextWithAI(text, grammarTopic || 'Письменная практика', level || S.level || 'A1');
+    if (!raw) {
+      return {
+        ...fallback,
+        score: fallback.errors.length ? 70 : 86,
+        tip: 'AI-проверка сейчас недоступна, поэтому показан локальный разбор.',
+        aiError: true,
+      };
+    }
     return normalizeAIWritingReview(raw, text, fallback);
   } catch (error) {
     console.warn('Gemini text check failed:', error);
@@ -5940,11 +5943,10 @@ function renderWritingReview(review) {
     <div class="writing-review">
       ${hasScore ? `
         <div class="writing-review-head">
-          <div class="writing-review-title">Результат проверки</div>
+          <div class="writing-review-title">Проверка AI ✨</div>
           <div class="writing-review-score">${score}/100</div>
         </div>
         <div class="writing-scorebar" aria-label="Оценка ${score} из 100"><div class="writing-scorefill" style="width:${score}%"></div></div>
-        <div class="writing-ai-chip">AI ✨</div>
       ` : ''}
       <div class="writing-review-grid">
         <section class="writing-review-block">
@@ -5956,8 +5958,8 @@ function renderWritingReview(review) {
           ${errors.length
             ? `<ol class="writing-review-list">${errors.map((error) => `
               <li class="writing-ai-error">
-                <div class="writing-ai-rule">${esc(error.rule || error.title || 'Ошибка')}</div>
-                ${error.wrong || error.match ? `<div class="writing-ai-wrong">✗ ${esc(error.wrong || error.match)}</div>` : ''}
+                ${error.rule && !/^Ошибка\s+\d+$/i.test(error.rule) ? `<div class="writing-ai-rule">${esc(error.rule)}</div>` : ''}
+                ${error.wrong || error.match ? `<div class="writing-ai-wrong">❌ ${esc(error.wrong || error.match)}</div>` : ''}
                 ${error.correct ? `<div class="writing-ai-correct">✓ ${esc(error.correct)}</div>` : ''}
                 <div>📖 ${esc(error.explanation || error.message || '')}</div>
               </li>
@@ -9636,28 +9638,16 @@ let planLessonError = null;
 let planLessonRequestId = 0;
 const generatedPlanLessons = new Map();
 const planLessonFallbackKeys = new Set();
-const GEMINI_KEY_STORAGE = 'deutschGeminiApiKey';
+const GEMINI_API_KEY = 'AIzaSyAqsyiAsfrVoPKvJcJALklKdLSXMZiRFAU';
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 function getConfiguredGeminiApiKey() {
-  const configKey = String(BACKEND_CONFIG.geminiApiKey || '').trim();
-  const storedKey = String(localStorage.getItem(GEMINI_KEY_STORAGE) || localStorage.getItem('geminiApiKey') || '').trim();
-  return configKey || storedKey;
+  return String(GEMINI_API_KEY || '').trim();
 }
 
 function hasGeminiApiKey() {
   return !!getConfiguredGeminiApiKey();
-}
-
-function setGeminiApiKey(value) {
-  const key = String(value || '').trim();
-  if (key) {
-    localStorage.setItem(GEMINI_KEY_STORAGE, key);
-  } else {
-    localStorage.removeItem(GEMINI_KEY_STORAGE);
-    localStorage.removeItem('geminiApiKey');
-  }
 }
 
 function parseGeminiJsonText(text) {
@@ -9669,13 +9659,12 @@ function parseGeminiJsonText(text) {
 }
 
 async function postGeminiPrompt(prompt, generationConfig = {}) {
-  const geminiApiKey = getConfiguredGeminiApiKey();
-  if (!geminiApiKey) {
+  if (!GEMINI_API_KEY) {
     const error = new Error('Gemini API key is not configured.');
     error.code = 'GEMINI_KEY_MISSING';
     throw error;
   }
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(geminiApiKey)}`, {
+  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -9694,43 +9683,47 @@ async function checkTextWithAI(userText, grammarTopic, level) {
   const prompt = `
 Ты репетитор по немецкому языку.
 Проверь текст студента уровня ${level}.
-Тема урока: ${grammarTopic}
+Тема: ${grammarTopic}
+Текст: "${userText}"
 
-Текст студента:
-"${userText}"
-
-Верни ТОЛЬКО JSON без markdown:
+Верни ТОЛЬКО JSON:
 {
   "score": 75,
-  "good": [
-    "что конкретно хорошо сделано"
-  ],
+  "good": ["что хорошо сделано"],
   "errors": [
     {
-      "wrong": "неправильная фраза из текста",
+      "wrong": "неправильная фраза",
       "correct": "правильный вариант",
-      "explanation": "короткое объяснение на русском",
-      "rule": "название правила"
+      "explanation": "объяснение на русском"
     }
   ],
-  "tip": "один конкретный совет для улучшения"
+  "tip": "один совет"
 }
 
-ПРАВИЛА ПРОВЕРКИ:
-- Находи только реальные грамматические ошибки
-- Не придумывай ошибки которых нет
-- Uni = университет, это НЕ имя человека
-- Объясняй просто и по-русски
-- Максимум 4 ошибки за раз
-- score от 0 до 100
+Правила:
+- Только реальные грамматические ошибки
+- Uni = университет, не имя
+- Максимум 4 ошибки
+- Объяснения на русском
 `;
 
-  const text = await postGeminiPrompt(prompt, {
-    temperature: 0.3,
-    maxOutputTokens: 1000,
-    responseMimeType: 'application/json',
-  });
-  return parseGeminiJsonText(text);
+  try {
+    const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1000 },
+      }),
+    });
+    if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return parseGeminiJsonText(text);
+  } catch (error) {
+    console.warn('Gemini text check failed:', error);
+    return null;
+  }
 }
 
 async function generateLesson(blockTitle, grammarTopic, lessonTitle, lessonNumber, level) {
@@ -11675,10 +11668,6 @@ function renderSettings() {
   if (translationSelect) translationSelect.value = getTranslationLang();
   const themeSelect = document.getElementById('settingsThemeSelect');
   if (themeSelect) themeSelect.value = ['light', 'purple'].includes(S.theme) ? S.theme : 'dark';
-  const geminiInput = document.getElementById('settingsGeminiKey');
-  if (geminiInput) geminiInput.value = localStorage.getItem(GEMINI_KEY_STORAGE) || '';
-  const geminiStatus = document.getElementById('geminiKeyStatus');
-  if (geminiStatus) geminiStatus.textContent = hasGeminiApiKey() ? 'Gemini подключён для генерации уроков.' : 'Без ключа уроки открываются в офлайн-режиме.';
   const grid = document.getElementById('settingsSpecGrid');
   grid.innerHTML = '';
 
@@ -11706,7 +11695,6 @@ function saveSettings() {
   if (newName) S.name = newName;
   S.translationLang = document.getElementById('translationLangSelect')?.value === 'de' ? 'de' : 'ru';
   applyTheme(document.getElementById('settingsThemeSelect')?.value || 'dark');
-  setGeminiApiKey(document.getElementById('settingsGeminiKey')?.value || '');
   S.specs = SPECIALIZATIONS
     .filter((spec) => document.getElementById(`spec-${spec.id}`).checked)
     .map((spec) => spec.id);
