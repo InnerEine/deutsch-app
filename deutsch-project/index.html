@@ -694,7 +694,18 @@ body.light .word-c2,body.light .word-level-c2,.theme-light .word-c2,.theme-light
 .writing-review-list{display:grid;gap:8px;margin:0;padding-left:18px;font-size:13px;line-height:1.45;}
 .writing-review-list li::marker{color:var(--gold);}
 .writing-error-text{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.8;white-space:pre-wrap;}
-.writing-error-mark{text-decoration:underline wavy var(--red);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:pointer;color:var(--text);background:rgba(240,85,85,.08);border-radius:4px;padding:0 .12em;}
+.writing-error-mark{text-decoration:underline wavy #EF4444;text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:pointer;color:var(--text);background:rgba(239,68,68,.08);border-radius:4px;padding:0 .12em;}
+.writing-review-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.writing-review-score{font-family:'IBM Plex Mono',monospace;font-weight:900;color:var(--gold);font-size:18px;}
+.writing-scorebar{height:12px;border:1px solid var(--border2);background:var(--bg3);border-radius:999px;overflow:hidden;}
+.writing-scorefill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:999px;transition:width .35s ease;}
+.writing-ai-chip{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);}
+.writing-ai-error{display:grid;gap:6px;}
+.writing-ai-wrong{color:var(--red);}
+.writing-ai-correct{color:var(--green);}
+.writing-ai-rule{font-weight:900;color:var(--text);}
+.writing-ai-tip{border-top:1px solid var(--border);padding-top:10px;color:var(--gold);font-weight:800;line-height:1.55;}
+.writing-loading{border:1px solid rgba(240,192,96,.32);background:rgba(240,192,96,.07);border-radius:12px;padding:14px 16px;color:var(--gold);font-weight:800;}
 .pattern-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:13px;line-height:1.65;}
 .pattern-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--gold);margin-bottom:6px;}
 .reading-popup{position:fixed;z-index:1200;max-width:min(340px,92vw);background:var(--bg2);border:1px solid var(--gold);box-shadow:0 18px 70px rgba(0,0,0,.32);border-radius:12px;padding:14px;display:none;}
@@ -5797,47 +5808,165 @@ function writingPositiveChecks(text, context = {}) {
 }
 
 function buildWritingReview(text, context = {}) {
+  const errors = analyzeGermanTextErrors(text);
   return {
     good: writingPositiveChecks(text, context),
-    errors: analyzeGermanTextErrors(text),
-    highlighted: highlightWritingErrors(text, analyzeGermanTextErrors(text)),
+    errors,
+    highlighted: highlightWritingErrors(text, errors),
   };
+}
+
+function clampAIScore(value, fallback = 0) {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function findTextRange(value, phrase, usedRanges = []) {
+  const text = String(value || '');
+  const needle = String(phrase || '').trim();
+  if (!needle) return null;
+  const variants = [
+    needle,
+    needle.replace(/\s+/g, ' '),
+    needle.replace(/[.!?;,:"'«»]+$/g, ''),
+  ].filter(Boolean);
+  for (const variant of variants) {
+    const start = text.indexOf(variant);
+    if (start >= 0) {
+      const end = start + variant.length;
+      if (!usedRanges.some((range) => start < range.end && end > range.start)) return { start, end };
+    }
+    const lowerStart = text.toLowerCase().indexOf(variant.toLowerCase());
+    if (lowerStart >= 0) {
+      const end = lowerStart + variant.length;
+      if (!usedRanges.some((range) => lowerStart < range.end && end > range.start)) return { start: lowerStart, end };
+    }
+  }
+  return null;
+}
+
+function normalizeAIWritingReview(raw, text, fallbackReview = null) {
+  const fallback = fallbackReview || buildWritingReview(text);
+  const usedRanges = [];
+  const errors = (Array.isArray(raw?.errors) ? raw.errors : [])
+    .slice(0, 4)
+    .map((item, index) => {
+      const wrong = String(item?.wrong || '').trim();
+      const correct = String(item?.correct || '').trim();
+      const explanation = String(item?.explanation || '').trim();
+      const rule = String(item?.rule || item?.title || `Ошибка ${index + 1}`).trim();
+      const range = findTextRange(text, wrong, usedRanges);
+      if (range) usedRanges.push(range);
+      return {
+        id: `ai-${index}`,
+        title: rule || `Ошибка ${index + 1}`,
+        rule: rule || `Ошибка ${index + 1}`,
+        wrong,
+        correct,
+        explanation,
+        message: explanation,
+        example: [wrong ? `✗ ${wrong}` : '', correct ? `✓ ${correct}` : ''].filter(Boolean).join('\n'),
+        match: wrong,
+        start: range?.start,
+        end: range?.end,
+      };
+    })
+    .filter((item) => item.wrong || item.explanation || item.correct);
+  const review = {
+    ai: true,
+    score: clampAIScore(raw?.score, fallback.score ?? Math.max(45, 100 - errors.length * 12)),
+    good: Array.isArray(raw?.good) && raw.good.length ? raw.good.map((item) => String(item).trim()).filter(Boolean) : fallback.good,
+    errors,
+    tip: String(raw?.tip || '').trim(),
+  };
+  review.highlighted = highlightWritingErrors(text, errors);
+  return review;
+}
+
+async function buildAIWritingReview(text, grammarTopic, level, context = {}) {
+  const fallback = buildWritingReview(text, context);
+  if (!hasGeminiApiKey()) {
+    return {
+      ...fallback,
+      score: fallback.errors.length ? 72 : 88,
+      tip: 'Gemini-ключ не задан. Добавь ключ в настройках, чтобы получить AI-разбор.',
+      aiMissing: true,
+    };
+  }
+  try {
+    const raw = await checkTextWithAI(text, grammarTopic || 'Письменная практика', level || S.level || 'A1');
+    return normalizeAIWritingReview(raw, text, fallback);
+  } catch (error) {
+    console.warn('Gemini text check failed:', error);
+    return {
+      ...fallback,
+      score: fallback.errors.length ? 70 : 86,
+      tip: `AI-проверка сейчас недоступна: ${error.message || error}`,
+      aiError: true,
+    };
+  }
 }
 
 function highlightWritingErrors(text, errors) {
   const value = String(text || '');
   if (!errors?.length) return esc(value).replace(/\r?\n/g, '<br>');
-  const ordered = [...errors].sort((a, b) => a.start - b.start);
+  const ordered = [...errors]
+    .filter((error) => Number.isFinite(Number(error.start)) && Number.isFinite(Number(error.end)) && Number(error.end) > Number(error.start))
+    .sort((a, b) => a.start - b.start);
+  if (!ordered.length) return esc(value).replace(/\r?\n/g, '<br>');
   let cursor = 0;
   let html = '';
   ordered.forEach((error, index) => {
     if (error.start < cursor) return;
     html += esc(value.slice(cursor, error.start)).replace(/\r?\n/g, '<br>');
-    html += `<span class="writing-error-mark" onclick="showWritingErrorPopup(${jsString(error.title)},${jsString(error.message)},${jsString(error.example || '')})">${esc(value.slice(error.start, error.end))}</span>`;
+    html += `<span class="writing-error-mark" onclick="showWritingErrorPopup(${jsString(error.rule || error.title)},${jsString(error.explanation || error.message)},${jsString(error.correct || error.example || '')})">${esc(value.slice(error.start, error.end))}</span>`;
     cursor = error.end;
   });
   html += esc(value.slice(cursor)).replace(/\r?\n/g, '<br>');
   return html;
 }
 
+function renderWritingLoading(text = 'AI проверяет текст...') {
+  return `<div class="writing-loading">${esc(text)}</div>`;
+}
+
 function renderWritingReview(review) {
   if (!review) return '';
   const errors = review.errors || [];
+  const hasScore = Number.isFinite(Number(review.score));
+  const score = clampAIScore(review.score, 0);
   return `
     <div class="writing-review">
+      ${hasScore ? `
+        <div class="writing-review-head">
+          <div class="writing-review-title">Результат проверки</div>
+          <div class="writing-review-score">${score}/100</div>
+        </div>
+        <div class="writing-scorebar" aria-label="Оценка ${score} из 100"><div class="writing-scorefill" style="width:${score}%"></div></div>
+        <div class="writing-ai-chip">AI ✨</div>
+      ` : ''}
       <div class="writing-review-grid">
         <section class="writing-review-block">
           <div class="writing-review-title">✅ Что хорошо:</div>
           <ul class="writing-review-list">${(review.good || []).map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
         </section>
         <section class="writing-review-block">
-          <div class="writing-review-title">⚠️ Обрати внимание:</div>
+          <div class="writing-review-title">⚠️ Ошибки:</div>
           ${errors.length
-            ? `<ol class="writing-review-list">${errors.map((error) => `<li><strong>${esc(error.title)}</strong><br>${esc(error.message)}<br>${esc(error.example || '')}</li>`).join('')}</ol>`
+            ? `<ol class="writing-review-list">${errors.map((error) => `
+              <li class="writing-ai-error">
+                <div class="writing-ai-rule">${esc(error.rule || error.title || 'Ошибка')}</div>
+                ${error.wrong || error.match ? `<div class="writing-ai-wrong">✗ ${esc(error.wrong || error.match)}</div>` : ''}
+                ${error.correct ? `<div class="writing-ai-correct">✓ ${esc(error.correct)}</div>` : ''}
+                <div>📖 ${esc(error.explanation || error.message || '')}</div>
+              </li>
+            `).join('')}</ol>`
             : '<div class="diary-review-item ok">Явных типичных ошибок не найдено.</div>'}
         </section>
       </div>
       <div class="writing-error-text">${review.highlighted || ''}</div>
+      ${review.tip ? `<div class="writing-ai-tip">💡 Совет: ${esc(review.tip)}</div>` : ''}
     </div>
   `;
 }
@@ -5848,10 +5977,24 @@ function showWritingErrorPopup(title, message, example = '') {
     <div class="word-popup-handle"></div>
     <div class="word-popup-title">${esc(title)}</div>
     <div class="word-popup-translation">${esc(message)}</div>
-    ${example ? `<div class="word-popup-example"><div>${esc(example)}</div></div>` : ''}
+    ${example ? `<div class="word-popup-example"><div>${esc(example).replace(/\r?\n/g, '<br>')}</div></div>` : ''}
   `;
   document.getElementById('word-popup-overlay')?.classList.remove('hidden');
   requestAnimationFrame(() => popup.classList.add('open'));
+}
+
+function rememberWritingReviewErrors(review, context = {}) {
+  if (!review?.errors?.length) return;
+  review.errors.forEach((error) => {
+    recordError({
+      type: context.type || 'writing',
+      topic: error.rule || error.title || context.topic || 'Письмо',
+      question: context.question || context.topic || 'Письменный ответ',
+      userAnswer: error.wrong || error.match || '',
+      correctAnswer: error.correct || '',
+      options: [error.correct, error.wrong || error.match].filter(Boolean),
+    });
+  });
 }
 
 const germanDict = {
@@ -6967,12 +7110,26 @@ function recomputeGrammarPatterns() {
   return counts;
 }
 
-function saveReadingDiary(articleId) {
+async function saveReadingDiary(articleId) {
   const article = getReadingArticle(articleId);
   const text = document.getElementById('readingDiaryText')?.value || '';
   if (!article) return;
   if (countDiarySentences(text) < 3) return toast('Нужно минимум 3 предложения');
-  const review = analyzeReadingDiary(text, article);
+  const section = getReadingSection(article.sectionId);
+  const localReview = analyzeReadingDiary(text, article);
+  const wrap = document.getElementById('diaryReviewWrap');
+  if (wrap) wrap.innerHTML = renderWritingLoading('AI проверяет дневник...');
+  const aiReview = await buildAIWritingReview(text, section?.grammar || 'Дневник по статье', S.level || 'A1', {
+    grammarUsed: localReview.grammarUsed,
+    minChars: 80,
+  });
+  const review = {
+    ...localReview,
+    ...aiReview,
+    grammarUsed: localReview.grammarUsed,
+    patterns: localReview.patterns,
+    items: localReview.items,
+  };
   const entry = {
     id: `diary_${articleId}_${Date.now()}`,
     date: Date.now(),
@@ -6991,7 +7148,8 @@ function saveReadingDiary(articleId) {
   recordStudyActivity();
   addXP(10 + (review.grammarUsed ? 5 : 0), 'diary');
   saveS();
-  document.getElementById('diaryReviewWrap').innerHTML = renderDiaryReview(review);
+  if (wrap) wrap.innerHTML = renderDiaryReview(review);
+  rememberWritingReviewErrors(review, { type: 'diary', topic: section?.grammar || 'Дневник', question: article.title });
   toast(`✓ Дневник сохранён · +${10 + (review.grammarUsed ? 5 : 0)} XP`);
   updateDash();
 }
@@ -9502,14 +9660,80 @@ function setGeminiApiKey(value) {
   }
 }
 
-async function generateLesson(blockTitle, grammarTopic, lessonTitle, lessonNumber, level) {
+function parseGeminiJsonText(text) {
+  const clean = String(text || '').replace(/```json|```/g, '').trim();
+  const firstBrace = clean.indexOf('{');
+  const lastBrace = clean.lastIndexOf('}');
+  const jsonText = firstBrace >= 0 && lastBrace > firstBrace ? clean.slice(firstBrace, lastBrace + 1) : clean;
+  return JSON.parse(jsonText);
+}
+
+async function postGeminiPrompt(prompt, generationConfig = {}) {
   const geminiApiKey = getConfiguredGeminiApiKey();
   if (!geminiApiKey) {
     const error = new Error('Gemini API key is not configured.');
     error.code = 'GEMINI_KEY_MISSING';
     throw error;
   }
+  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(geminiApiKey)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig,
+    }),
+  });
+  if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
+  const data = await response.json();
+  const text = (data?.candidates?.[0]?.content?.parts || []).map((part) => part.text || '').join('\n').trim();
+  if (!text) throw new Error('Gemini вернул пустой ответ');
+  return text;
+}
 
+async function checkTextWithAI(userText, grammarTopic, level) {
+  const prompt = `
+Ты репетитор по немецкому языку.
+Проверь текст студента уровня ${level}.
+Тема урока: ${grammarTopic}
+
+Текст студента:
+"${userText}"
+
+Верни ТОЛЬКО JSON без markdown:
+{
+  "score": 75,
+  "good": [
+    "что конкретно хорошо сделано"
+  ],
+  "errors": [
+    {
+      "wrong": "неправильная фраза из текста",
+      "correct": "правильный вариант",
+      "explanation": "короткое объяснение на русском",
+      "rule": "название правила"
+    }
+  ],
+  "tip": "один конкретный совет для улучшения"
+}
+
+ПРАВИЛА ПРОВЕРКИ:
+- Находи только реальные грамматические ошибки
+- Не придумывай ошибки которых нет
+- Uni = университет, это НЕ имя человека
+- Объясняй просто и по-русски
+- Максимум 4 ошибки за раз
+- score от 0 до 100
+`;
+
+  const text = await postGeminiPrompt(prompt, {
+    temperature: 0.3,
+    maxOutputTokens: 1000,
+    responseMimeType: 'application/json',
+  });
+  return parseGeminiJsonText(text);
+}
+
+async function generateLesson(blockTitle, grammarTopic, lessonTitle, lessonNumber, level) {
   const prompt = `
 Ты методист по немецкому языку. Создай урок строго в JSON формате.
 Не добавляй ничего кроме JSON.
@@ -9601,30 +9825,12 @@ async function generateLesson(blockTitle, grammarTopic, lessonTitle, lessonNumbe
 - Грамматические формы выделять: обернуть в <b> теги
 `;
 
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(geminiApiKey)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 4096,
-        responseMimeType: 'application/json',
-      },
-    }),
+  const text = await postGeminiPrompt(prompt, {
+    temperature: 0.7,
+    maxOutputTokens: 4096,
+    responseMimeType: 'application/json',
   });
-
-  if (!response.ok) {
-    throw new Error(`Gemini API error ${response.status}`);
-  }
-  const data = await response.json();
-  const text = (data?.candidates?.[0]?.content?.parts || []).map((part) => part.text || '').join('\n').trim();
-  if (!text) throw new Error('Gemini вернул пустой урок');
-  const clean = text.replace(/```json|```/g, '').trim();
-  const firstBrace = clean.indexOf('{');
-  const lastBrace = clean.lastIndexOf('}');
-  const jsonText = firstBrace >= 0 && lastBrace > firstBrace ? clean.slice(firstBrace, lastBrace + 1) : clean;
-  return JSON.parse(jsonText);
+  return parseGeminiJsonText(text);
 }
 
 function planLessonCacheKey(level, blockId, lessonNumber) {
@@ -10773,21 +10979,37 @@ function renderPlanWritingTask(level, blockId, lessonId, writing) {
       <textarea class="module-textarea" id="planWriting" placeholder="Ich würde..."></textarea>
       <div id="planWritingFeedback"></div>
       <div class="btn-row">
-        <button class="btn btn-ghost" onclick="checkPlanWritingTask(${jsString((writing.terms || []).join('|'))})">Проверить</button>
+        <button class="btn btn-ghost" onclick="checkPlanWritingTask(${jsString((writing.terms || []).join('|'))},${jsString(level)},${jsString(blockId)},${lessonId})">Проверить</button>
         <button class="btn btn-gold" onclick="completeSimplePlanLesson(${jsString(level)},${jsString(blockId)},${lessonId})">Завершить урок →</button>
       </div>
     </div>
   `;
 }
 
-function checkPlanWritingTask(rawTerms = '') {
-  const text = normalizePlanAnswer(document.getElementById('planWriting')?.value || '');
+async function checkPlanWritingTask(rawTerms = '', level = simplePlanScreen.level || S.level || 'A1', blockId = simplePlanScreen.blockId || '', lessonId = simplePlanScreen.lessonId || 0) {
+  const rawText = document.getElementById('planWriting')?.value || '';
+  const text = normalizePlanAnswer(rawText);
   const terms = String(rawTerms || '').split('|').filter(Boolean);
   const used = terms.filter((term) => text.includes(normalizePlanAnswer(term)));
   const fb = document.getElementById('planWritingFeedback');
   if (!fb) return;
-  const ok = used.length >= 2;
-  fb.innerHTML = `<div class="plan-feedback ${ok ? 'ok' : 'no'}">${ok ? '✓ Отлично! Konjunktiv II использован' : '⚠️ Попробуй использовать: würde, könnte, wäre'}</div>`;
+  if (!rawText.trim()) {
+    fb.innerHTML = `<div class="plan-feedback no">Напиши текст перед проверкой.</div>`;
+    return;
+  }
+  const block = getPlanBlock(level, blockId);
+  const lesson = getPlanLesson(level, blockId, lessonId);
+  const grammarTopic = block?.grammar || lesson?.title || 'Письменная практика';
+  fb.innerHTML = renderWritingLoading('AI проверяет письменный ответ...');
+  const review = await buildAIWritingReview(rawText, grammarTopic, level, {
+    grammarUsed: used.length >= Math.min(2, terms.length || 2),
+    minChars: 40,
+  });
+  if (!review.tip && terms.length && used.length < Math.min(2, terms.length)) {
+    review.tip = `Добавь формы из темы урока: ${terms.slice(0, 5).join(', ')}`;
+  }
+  fb.innerHTML = renderWritingReview(review);
+  rememberWritingReviewErrors(review, { type: 'plan-writing', topic: grammarTopic, question: lesson?.title || 'Шаг 4 урока' });
 }
 
 function completeSimplePlanLesson(level, blockId, lessonId) {
@@ -10915,13 +11137,21 @@ function renderSimplePlanExam(level) {
   `;
 }
 
-function submitSimplePlanExam(level) {
+async function submitSimplePlanExam(level) {
   const read = [0,1,2,3,4].filter((i) => document.getElementById(`examRead${i}`)?.value === '1').length * 20;
   const hear = [0,1,2,3,4].filter((i) => ['ja', 'да', 'yes'].includes(normalizePlanAnswer(document.getElementById(`examHear${i}`)?.value || ''))).length * 20;
   const gram = Array.from({ length: 10 }, (_, i) => normalizePlanAnswer(document.getElementById(`examGram${i}`)?.value || '')).filter((value) => ['bin', 'bereit'].includes(value)).length * 10;
-  const writingWords = countModuleWords(document.getElementById('examWriting')?.value || '');
+  const writingText = document.getElementById('examWriting')?.value || '';
+  const writingWords = countModuleWords(writingText);
   const minWords = level === 'A1' ? 30 : level === 'A2' ? 50 : level === 'B1' ? 100 : 150;
-  const write = Math.min(100, Math.round((writingWords / minWords) * 100));
+  const fallbackWrite = Math.min(100, Math.round((writingWords / minWords) * 100));
+  const result = document.getElementById('examResult');
+  let writingReview = null;
+  if (writingText.trim()) {
+    if (result) result.innerHTML = renderWritingLoading('AI проверяет письменную часть экзамена...');
+    writingReview = await buildAIWritingReview(writingText, `Письменная часть экзамена ${level}`, level, { minChars: minWords * 5 });
+  }
+  const write = writingReview && Number.isFinite(Number(writingReview.score)) ? clampAIScore(writingReview.score, fallbackWrite) : fallbackWrite;
   const parts = { Lesen: read, Hören: hear, Grammatik: gram, Schreiben: write };
   const passed = Object.values(parts).every((score) => score >= 60);
   const average = Math.round(Object.values(parts).reduce((sum, score) => sum + score, 0) / 4);
@@ -10954,8 +11184,7 @@ function submitSimplePlanExam(level) {
     savePlanProgress(progress);
   }
   const failed = Object.entries(parts).filter(([, score]) => score < 60);
-  const result = document.getElementById('examResult');
-  if (result) result.innerHTML = passed ? `
+  const summaryHtml = passed ? `
     <div class="plan-victory">
       <div class="module-victory-title">Поздравляем! Уровень ${level} пройден 🎓</div>
       <div>Твой результат: ${average}% · +${progress.examAttempts[level] === 1 ? 300 : 200} XP</div>
@@ -10966,6 +11195,8 @@ function submitSimplePlanExam(level) {
     <div class="module-check warn">Рекомендация: повтори блоки уровня ${level} и пересдай экзамен.</div>
     <div class="btn-row"><button class="btn btn-ghost" onclick="simplePlanScreen={mode:'main'};renderPlanMain(${jsString(level)})">Повторить слабые места</button><button class="btn btn-gold" onclick="openSimplePlanExam(${jsString(level)})">Пересдать экзамен</button></div>
   `;
+  if (result) result.innerHTML = `${writingReview ? renderWritingReview(writingReview) : ''}${summaryHtml}`;
+  rememberWritingReviewErrors(writingReview, { type: 'exam-writing', topic: `Экзамен ${level}`, question: 'Schreiben' });
   updateDash();
 }
 
