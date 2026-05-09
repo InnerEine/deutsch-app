@@ -12689,16 +12689,6 @@ function renderScenarios() {
   if (!grid) return;
 
   grid.innerHTML = '';
-  if (typeof hasBackend === 'function' && !hasBackend()) {
-    grid.innerHTML = `
-      <div class="profile-panel" style="grid-column:1/-1;">
-        <div class="profile-title">AI-практика отключена</div>
-        <div class="profile-sub">Статическая версия работает без личного сервера: уроки, словарь, задания и повторение доступны офлайн, а AI можно вернуть позже через backend или serverless API.</div>
-      </div>
-    `;
-    return;
-  }
-
   const relevant = getRelevantScenarios();
   const diffLabel = {
     easy: 'A1 · Лёгкий',
@@ -12726,11 +12716,6 @@ function renderScenarios() {
 }
 
 function startScenario(scenario) {
-  if (typeof hasBackend === 'function' && !hasBackend()) {
-    toast('AI-практика доступна только с подключённым backend');
-    return;
-  }
-
   activeScenario = scenario;
   chatHistory = [];
   document.getElementById('practiceScenarios').style.display = 'none';
@@ -12847,27 +12832,73 @@ async function requestFeedback() {
   addMessage('system', feedback);
 }
 
+function buildGeminiPracticePrompt(systemPrompt, userMessage, history = []) {
+  const recentHistory = (history || [])
+    .slice(-10)
+    .map((message) => {
+      const role = message.role === 'assistant' ? 'AI' : 'Lernender';
+      return `${role}: ${message.content}`;
+    })
+    .join('\n');
+  return `
+${systemPrompt}
+
+Du bist der AI-Partner im Bereich "AI Практика" der Deutsch-App.
+Halte die Rolle des Szenarios konsequent ein.
+Antworte in einfachem Deutsch passend zum Niveau ${S.level || 'A1'}.
+Wenn der Lernende Russisch schreibt, hilf kurz auf Russisch und gib 1-2 deutsche Formulierungen.
+Wenn du einen echten Fehler korrigierst, nutze dieses Format:
+❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
+Antworte maximal 3 kurze Sätze.
+
+Bisheriger Dialog:
+${recentHistory || 'Noch kein Dialog.'}
+
+Neue Nachricht des Lernenden:
+${userMessage}
+`;
+}
+
+async function callBackendAI(systemPrompt, userMessage, history) {
+  const response = await apiRequest(
+    '/ai/chat',
+    {
+      system: systemPrompt,
+      message: userMessage,
+      history: history || [],
+      max_tokens: 400,
+    },
+    'POST'
+  );
+  if (response && response.text) return response.text;
+  if (response && response.error) return `⚠️ Ошибка AI: ${response.error}`;
+  return '';
+}
+
 async function callClaude(systemPrompt, userMessage, history) {
   isTyping = true;
   const sendBtn = document.getElementById('sendBtn');
   if (sendBtn) sendBtn.disabled = true;
 
   try {
-    const response = await apiRequest(
-      '/ai/chat',
-      {
-        system: systemPrompt,
-        message: userMessage,
-        history: history || [],
-        max_tokens: 400,
-      },
-      'POST'
-    );
-    if (response && response.text) return response.text;
-    if (response && response.error) return `⚠️ Ошибка AI: ${response.error}`;
-    return '⚠️ Не удалось получить ответ от AI.';
+    if (hasGeminiApiKey()) {
+      const prompt = buildGeminiPracticePrompt(systemPrompt, userMessage, history);
+      const reply = await postGeminiPrompt(prompt, { temperature: 0.55, maxOutputTokens: 500 });
+      if (reply) return reply.replace(/```[a-z]*|```/gi, '').trim();
+    }
+    if (typeof hasBackend === 'function' && hasBackend()) {
+      const backendReply = await callBackendAI(systemPrompt, userMessage, history);
+      if (backendReply) return backendReply;
+    }
+    return '⚠️ AI сейчас недоступен. Проверь Gemini API key или подключение к интернету.';
   } catch (error) {
-    return `⚠️ Ошибка соединения: ${error.message}`;
+    if (typeof hasBackend === 'function' && hasBackend()) {
+      try {
+        const backendReply = await callBackendAI(systemPrompt, userMessage, history);
+        if (backendReply) return backendReply;
+      } catch {}
+    }
+    return `⚠️ Ошибка AI: ${error.message}`;
   } finally {
     isTyping = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -12959,7 +12990,7 @@ if(S.onboardingDone){
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=9-gemini-mobile')
+  navigator.serviceWorker.register('./sw.js?v=10-gemini-practice')
     .then(reg => console.log('SW registered'))
     .catch(err => console.log('SW registration failed'));
 }

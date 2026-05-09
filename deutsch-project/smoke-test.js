@@ -282,7 +282,8 @@ async function main() {
     await sleep(300);
 
     const aiState = await evalJs(`({
-      disabledMessage: document.getElementById('scenarioGrid').textContent.includes('AI-практика отключена')
+      disabledMessage: document.getElementById('scenarioGrid').textContent.includes('AI-практика отключена'),
+      scenarioCards: document.querySelectorAll('#scenarioGrid .pr-card').length
     })`);
 
     await evalJs(`
@@ -418,7 +419,8 @@ async function main() {
       !loginState?.noApiUrl ||
       loginState?.token ||
       !loginState?.exportVisible ||
-      !aiState?.disabledMessage ||
+      aiState?.disabledMessage ||
+      !aiState?.scenarioCards ||
       !mobileState?.tabbarVisible ||
       !mobileState?.moreVisible ||
       !mobileState?.moreHit ||
