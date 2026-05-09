@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deutsch · Azamat</title>
+<title>DEUTSCH.app — учи немецкий под себя</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -458,7 +458,7 @@ button:disabled,.btn:disabled{opacity:.52;cursor:not-allowed;transform:none!impo
   #page-chat .container{padding-bottom:0;}
   .community-chat-shell{height:calc(100vh - 132px);min-height:0;border-radius:0;border-left:0;border-right:0;margin:0 -12px;display:flex;flex-direction:column;overflow:visible;}
   .community-chat-head{padding:12px;}
-  .community-messages{flex:1;min-height:0;padding:14px 12px 150px;overflow-y:auto;}
+  .community-messages{flex:1;min-height:0;padding:14px 12px calc(180px + env(safe-area-inset-bottom));overflow-y:auto;}
   .community-msg{width:75vw;max-width:75%;grid-template-columns:28px minmax(0,1fr);}
   .community-msg.mine{grid-template-columns:minmax(0,1fr) 28px;}
   .community-avatar{width:28px;height:28px;}
@@ -1077,7 +1077,8 @@ p,div,span,h1,h2,h3,h4{overflow-wrap:anywhere;}
   #practiceChat{padding-bottom:138px;}
   #practiceChat .pr-messages{max-height:none;height:calc(100vh - 360px);min-height:260px;padding-bottom:132px;}
   #practiceChat .pr-input-wrap{position:fixed;left:0;right:0;bottom:64px;z-index:170;border-radius:16px 16px 0 0;background:var(--bg-secondary);box-shadow:0 12px 46px rgba(0,0,0,.35);}
-  .pr-actions{display:grid;grid-template-columns:1fr;}
+  .pr-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  .pr-action-btn{padding:8px 6px;font-size:10px;letter-spacing:0;white-space:normal;text-align:center;line-height:1.25;min-height:40px;}
   .profile-title{font-size:22px;}
   .profile-summary-row{flex-direction:column;align-items:flex-start;}
   .profile-summary-value{text-align:left;}
@@ -2770,7 +2771,7 @@ window.initDeutschFirebaseChat();
     </div>
     <div style="margin-bottom:20px;">
       <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Как тебя зовут?</label>
-      <input class="ob-input" id="nameInput" placeholder="Например: Азамат" maxlength="30">
+      <input class="ob-input" id="nameInput" placeholder="Например: Ирина" maxlength="30">
     </div>
     <div class="btn-row">
       <button class="btn btn-gold" onclick="obNext(2)">Начать →</button>
@@ -2856,7 +2857,7 @@ window.initDeutschFirebaseChat();
     </div>
     <div class="hdr-user" onclick="goPage('login')" role="button" tabindex="0" aria-label="Профиль" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goPage('login');}">
       <div class="hdr-avatar" id="hdrAvatar">A</div>
-      <div class="hdr-name" id="hdrName">Азамат</div>
+      <div class="hdr-name" id="hdrName">Гость</div>
       <div class="hdr-level" id="hdrLevel">A1</div>
     </div>
   </div>
@@ -2925,7 +2926,7 @@ window.initDeutschFirebaseChat();
       <div class="dashboard-grid">
         <div class="dashboard-col">
           <section class="dash-card dash-welcome">
-            <div class="dash-greeting">Привет, <em id="dName">Азамат</em>! <span aria-hidden="true">👋</span></div>
+            <div class="dash-greeting">Привет, <em id="dName">друг</em>! <span aria-hidden="true">👋</span></div>
             <div class="dash-meta" id="dMeta">уровень A1 · немецкий с нуля</div>
           </section>
 
@@ -3044,7 +3045,7 @@ window.initDeutschFirebaseChat();
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
             <button class="btn btn-ghost btn-sm" onclick="endChat()">← Сценарии</button>
-            <button class="btn btn-ghost btn-sm" onclick="clearChat()" style="color:var(--red);border-color:var(--red);">Сбросить</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearChat()" title="Сбросить диалог и начать сценарий заново">↻ Сбросить</button>
           </div>
         </div>
         <div class="pr-tip" id="prTip"></div>
@@ -4556,7 +4557,7 @@ const BACKEND_CONFIG = window.DEUTSCH_CONFIG || {};
 const CONFIG_API_URL = String(BACKEND_CONFIG.apiUrl || '').replace(/\/$/, '');
 
 const DEFAULT_STATE = {
-  name: 'Азамат',
+  name: '',
   specs: [],
   level: 'A1',
   levelScore: 0,
@@ -4993,7 +4994,7 @@ function showOnboardingStep(step) {
 }
 
 function resumeOnboarding() {
-  if (S.name && S.name !== 'Азамат') document.getElementById('nameInput').value = S.name;
+  if (S.name) document.getElementById('nameInput').value = S.name;
   const step = ['ob1', 'ob2', 'ob3', 'ob3b', 'ob4'].includes(S.onboardingStep) ? S.onboardingStep : 'ob1';
   if (step === 'ob2') buildSpecGrid();
   if (step === 'ob3b' || step === 'ob4') {
@@ -5053,7 +5054,7 @@ function obNext(step) {
     return;
   }
   if (step === 2) {
-    S.name = document.getElementById('nameInput').value.trim() || 'Азамат';
+    S.name = document.getElementById('nameInput').value.trim() || 'Гость';
     S.onboardingStep = 'ob2';
     saveS();
   }
@@ -8383,9 +8384,9 @@ async function initApp() {
   applyTheme(S.theme || 'dark');
   refreshStreakForMissedDay();
   document.getElementById('hdrAvatar').textContent = avatarLetter(S.name);
-  document.getElementById('hdrName').textContent = S.name || 'Azamat';
+  document.getElementById('hdrName').textContent = S.name || 'Гость';
   updateHeaderLevel();
-  document.getElementById('dName').textContent = S.name || 'Azamat';
+  document.getElementById('dName').textContent = S.name || 'друг';
 
   const specLabel = SPECIALIZATIONS
     .filter((item) => S.specs.includes(item.id))
@@ -9638,12 +9639,22 @@ let planLessonError = null;
 let planLessonRequestId = 0;
 const generatedPlanLessons = new Map();
 const planLessonFallbackKeys = new Set();
-const GEMINI_API_KEY = 'AIzaSyAqsyiAsfrVoPKvJcJALklKdLSXMZiRFAU';
+// Gemini configuration. Default key is a fallback that ships with the app so the
+// PWA works out of the box. Power users can override it by running in the browser
+// console: localStorage.setItem('geminiApiKey', '<your key>'); location.reload();
+// The `DEUTSCH_CONFIG.geminiApiKey` from js/config.js also takes precedence if set.
+const GEMINI_API_KEY_FALLBACK = 'AIzaSyAqsyiAsfrVoPKvJcJALklKdLSXMZiRFAU';
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 function getConfiguredGeminiApiKey() {
-  return String(GEMINI_API_KEY || '').trim();
+  try {
+    const stored = localStorage.getItem('geminiApiKey');
+    if (stored && stored.trim()) return stored.trim();
+  } catch {}
+  const fromConfig = (window.DEUTSCH_CONFIG && window.DEUTSCH_CONFIG.geminiApiKey) || '';
+  if (fromConfig && String(fromConfig).trim()) return String(fromConfig).trim();
+  return String(GEMINI_API_KEY_FALLBACK || '').trim();
 }
 
 function hasGeminiApiKey() {
@@ -9659,12 +9670,13 @@ function parseGeminiJsonText(text) {
 }
 
 async function postGeminiPrompt(prompt, generationConfig = {}) {
-  if (!GEMINI_API_KEY) {
+  const apiKey = getConfiguredGeminiApiKey();
+  if (!apiKey) {
     const error = new Error('Gemini API key is not configured.');
     error.code = 'GEMINI_KEY_MISSING';
     throw error;
   }
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
+  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -9708,7 +9720,9 @@ async function checkTextWithAI(userText, grammarTopic, level) {
 `;
 
   try {
-    const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
+    const apiKey = getConfiguredGeminiApiKey();
+    if (!apiKey) return null;
+    const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -12543,7 +12557,7 @@ const SCENARIOS = [
     desc: 'Познакомься с немецким коллегой и коротко расскажи о себе.',
     tip: 'Используй: Hallo, ich bin... · Ich komme aus... · Ich arbeite als...',
     system: `Du bist ein freundlicher deutscher Kollege namens Klaus. Du sprichst nur Deutsch.
-Der Lernende heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Lernende heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Führe ein natürliches Vorstellungsgespräch und stelle einfache Fragen zu Name, Herkunft und Beruf.
 Wenn der Lernende Fehler macht, korrigiere freundlich im Format:
 ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
@@ -12558,7 +12572,7 @@ Antworte knapp, maximal 3 Sätze.`,
     desc: 'Закажи еду и напитки в немецком кафе.',
     tip: 'Используй: Ich möchte... · Wie viel kostet...? · Danke schön!',
     system: `Du bist ein Kellner in einem deutschen Café. Du sprichst nur Deutsch.
-Der Gast heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Gast heißt ${S.name || 'Gast'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Begrüße den Gast, stelle Rückfragen und nenne einfache Preise.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
 Antworte kurz, maximal 3 Sätze.`,
@@ -12572,7 +12586,7 @@ Antworte kurz, maximal 3 Sätze.`,
     desc: 'Попроси прохожего подсказать дорогу в немецком городе.',
     tip: 'Используй: Entschuldigung... · Wo ist...? · Wie komme ich zu...?',
     system: `Du bist ein hilfsbereiter Passant in einer deutschen Stadt. Du sprichst nur Deutsch.
-Der Tourist heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Tourist heißt ${S.name || 'Tourist/-in'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Erkläre den Weg mit links, rechts, geradeaus, neben und gegenüber.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
 Antworte klar und kurz.`,
@@ -12586,7 +12600,7 @@ Antworte klar und kurz.`,
     desc: 'Объясни руководителю, что случилось с сервером.',
     tip: 'Используй: Der Server ist ausgefallen · Die Verbindung ist unterbrochen · Wir haben eine Störung',
     system: `Du bist ein deutscher IT-Manager. Du sprichst nur Deutsch.
-Der Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Mitarbeiter heißt ${S.name || 'Kollege/-in'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Frage nach Ursache, Zeitpunkt, betroffenen Systemen und nächsten Schritten.
 Verwende IT-Wörter wie Netzwerk, Server, Firewall, Zugriff, Sicherung.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
@@ -12600,7 +12614,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Помоги пользователю решить простую IT-проблему.',
     tip: 'Используй: Haben Sie...? · Bitte starten Sie... · Das Kennwort ist...',
     system: `Du bist ein deutschsprachiger Benutzer mit einem IT-Problem. Du sprichst nur Deutsch.
-Der Support-Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Support-Mitarbeiter heißt ${S.name || 'Support-Kollege/-in'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Beschreibe ein einfaches Problem mit Drucker oder Zugang und antworte auf Rückfragen.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -12613,7 +12627,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Собеседование на позицию сисадмина в немецкой компании.',
     tip: 'Используй: Ich habe Erfahrung mit... · Ich kann... · In meiner bisherigen Stelle...',
     system: `Du bist ein HR-Manager einer deutschen IT-Firma. Du sprichst nur Deutsch.
-Der Bewerber heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Bewerber heißt ${S.name || 'Bewerber/-in'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Frage nach Erfahrung, Linux, Windows Server, Netzwerk, Motivation und Arbeitsweise.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -12626,7 +12640,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Открой счёт в немецком банке.',
     tip: 'Используй: Ich möchte ein Konto eröffnen · die Rechnung · der Kredit',
     system: `Du bist ein Bankangestellter in Deutschland. Du sprichst nur Deutsch.
-Der Kunde heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Kunde heißt ${S.name || 'Kunde/Kundin'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Hilf beim Eröffnen eines Kontos und frage nach Name, Adresse und Beschäftigung.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -12639,7 +12653,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Обсуди условия контракта с немецким партнёром.',
     tip: 'Используй: Unser Angebot ist... · Wir schlagen vor... · Das Budget beträgt...',
     system: `Du bist ein deutscher Geschäftspartner in Vertragsverhandlungen. Du sprichst nur Deutsch.
-Der Verhandlungspartner heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Verhandlungspartner heißt ${S.name || 'Verhandlungspartner/-in'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Diskutiere Preis, Lieferzeit und Zahlungsbedingungen in professionellem Ton.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -12652,7 +12666,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Поговори с врачом о симптомах на немецком.',
     tip: 'Используй: Ich habe Schmerzen · Mir ist nicht gut · Seit wann...?',
     system: `Du bist ein Arzt in Deutschland. Du sprichst nur Deutsch.
-Der Patient heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Patient heißt ${S.name || 'Patient/-in'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Frage nach Symptomen, Dauer und möglichen Begleiterscheinungen.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -12747,7 +12761,7 @@ function clearChat() {
 
 async function aiOpen(scenario) {
   showTyping();
-  const openingPrompt = `Eröffne das Gespräch auf Deutsch. Begrüße ${S.name || 'Azamat'} und starte das Szenario "${scenario.title}". Maximal 2 Sätze.`;
+  const openingPrompt = `Eröffne das Gespräch auf Deutsch. Begrüße ${S.name || 'den Lernenden'} und starte das Szenario "${scenario.title}". Maximal 2 Sätze.`;
   const reply = await callClaude(scenario.system, openingPrompt, []);
   hideTyping();
   addMessage('ai', reply);
@@ -12924,7 +12938,12 @@ function addMessage(role, text) {
       return `<div class="pr-correction"><b>❌ Ошибка:</b>${wrong}<br><b>✅ Правильно:</b>${right}</div>`;
     })
     .replace(/\r?\n/g, '<br>');
-  formattedText = formatInlineCorrections(formattedText);
+  // System messages (переводы, подсказки, фидбек) содержат стрелки в формате
+  // "слово → значение" внутри перечислений ключевых слов; применение
+  // formatInlineCorrections там обрезает перевод и ломает вёрстку.
+  if (role !== 'system') {
+    formattedText = formatInlineCorrections(formattedText);
+  }
 
   if (role === 'system') {
     div.innerHTML = `<div class="pr-bubble" style="max-width:100%;">${formattedText}</div>`;

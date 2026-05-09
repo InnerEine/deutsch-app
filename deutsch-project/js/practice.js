@@ -10,7 +10,7 @@ const SCENARIOS = [
     desc: 'Познакомься с немецким коллегой и коротко расскажи о себе.',
     tip: 'Используй: Hallo, ich bin... · Ich komme aus... · Ich arbeite als...',
     system: `Du bist ein freundlicher deutscher Kollege namens Klaus. Du sprichst nur Deutsch.
-Der Lernende heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Lernende heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Führe ein natürliches Vorstellungsgespräch und stelle einfache Fragen zu Name, Herkunft und Beruf.
 Wenn der Lernende Fehler macht, korrigiere freundlich im Format:
 ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
@@ -25,7 +25,7 @@ Antworte knapp, maximal 3 Sätze.`,
     desc: 'Закажи еду и напитки в немецком кафе.',
     tip: 'Используй: Ich möchte... · Wie viel kostet...? · Danke schön!',
     system: `Du bist ein Kellner in einem deutschen Café. Du sprichst nur Deutsch.
-Der Gast heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Gast heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Begrüße den Gast, stelle Rückfragen und nenne einfache Preise.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
 Antworte kurz, maximal 3 Sätze.`,
@@ -39,7 +39,7 @@ Antworte kurz, maximal 3 Sätze.`,
     desc: 'Попроси прохожего подсказать дорогу в немецком городе.',
     tip: 'Используй: Entschuldigung... · Wo ist...? · Wie komme ich zu...?',
     system: `Du bist ein hilfsbereiter Passant in einer deutschen Stadt. Du sprichst nur Deutsch.
-Der Tourist heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Tourist heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Erkläre den Weg mit links, rechts, geradeaus, neben und gegenüber.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
 Antworte klar und kurz.`,
@@ -53,7 +53,7 @@ Antworte klar und kurz.`,
     desc: 'Объясни руководителю, что случилось с сервером.',
     tip: 'Используй: Der Server ist ausgefallen · Die Verbindung ist unterbrochen · Wir haben eine Störung',
     system: `Du bist ein deutscher IT-Manager. Du sprichst nur Deutsch.
-Der Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Mitarbeiter heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Frage nach Ursache, Zeitpunkt, betroffenen Systemen und nächsten Schritten.
 Verwende IT-Wörter wie Netzwerk, Server, Firewall, Zugriff, Sicherung.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
@@ -67,7 +67,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Помоги пользователю решить простую IT-проблему.',
     tip: 'Используй: Haben Sie...? · Bitte starten Sie... · Das Kennwort ist...',
     system: `Du bist ein deutschsprachiger Benutzer mit einem IT-Problem. Du sprichst nur Deutsch.
-Der Support-Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Support-Mitarbeiter heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Beschreibe ein einfaches Problem mit Drucker oder Zugang und antworte auf Rückfragen.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -80,7 +80,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Собеседование на позицию сисадмина в немецкой компании.',
     tip: 'Используй: Ich habe Erfahrung mit... · Ich kann... · In meiner bisherigen Stelle...',
     system: `Du bist ein HR-Manager einer deutschen IT-Firma. Du sprichst nur Deutsch.
-Der Bewerber heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Bewerber heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Frage nach Erfahrung, Linux, Windows Server, Netzwerk, Motivation und Arbeitsweise.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -93,7 +93,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Открой счёт в немецком банке.',
     tip: 'Используй: Ich möchte ein Konto eröffnen · die Rechnung · der Kredit',
     system: `Du bist ein Bankangestellter in Deutschland. Du sprichst nur Deutsch.
-Der Kunde heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Kunde heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Hilf beim Eröffnen eines Kontos und frage nach Name, Adresse und Beschäftigung.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -106,7 +106,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Обсуди условия контракта с немецким партнёром.',
     tip: 'Используй: Unser Angebot ist... · Wir schlagen vor... · Das Budget beträgt...',
     system: `Du bist ein deutscher Geschäftspartner in Vertragsverhandlungen. Du sprichst nur Deutsch.
-Der Verhandlungspartner heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Verhandlungspartner heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Diskutiere Preis, Lieferzeit und Zahlungsbedingungen in professionellem Ton.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -119,7 +119,7 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     desc: 'Поговори с врачом о симптомах на немецком.',
     tip: 'Используй: Ich habe Schmerzen · Mir ist nicht gut · Seit wann...?',
     system: `Du bist ein Arzt in Deutschland. Du sprichst nur Deutsch.
-Der Patient heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+Der Patient heißt ${S.name || 'Lernende/-r'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
 Frage nach Symptomen, Dauer und möglichen Begleiterscheinungen.
 Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
   },
@@ -229,7 +229,7 @@ function clearChat() {
 
 async function aiOpen(scenario) {
   showTyping();
-  const openingPrompt = `Eröffne das Gespräch auf Deutsch. Begrüße ${S.name || 'Azamat'} und starte das Szenario "${scenario.title}". Maximal 2 Sätze.`;
+  const openingPrompt = `Eröffne das Gespräch auf Deutsch. Begrüße ${S.name || 'Lernende/-r'} und starte das Szenario "${scenario.title}". Maximal 2 Sätze.`;
   const reply = await callClaude(scenario.system, openingPrompt, []);
   hideTyping();
   addMessage('ai', reply);

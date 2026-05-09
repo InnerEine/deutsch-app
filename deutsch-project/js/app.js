@@ -333,9 +333,9 @@ async function initApp() {
   applyTheme(S.theme || 'dark');
   refreshStreakForMissedDay();
   document.getElementById('hdrAvatar').textContent = avatarLetter(S.name);
-  document.getElementById('hdrName').textContent = S.name || 'Azamat';
+  document.getElementById('hdrName').textContent = S.name || 'Гость';
   updateHeaderLevel();
-  document.getElementById('dName').textContent = S.name || 'Azamat';
+  document.getElementById('dName').textContent = S.name || 'друг';
 
   const specLabel = SPECIALIZATIONS
     .filter((item) => S.specs.includes(item.id))

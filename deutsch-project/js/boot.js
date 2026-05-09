@@ -13,7 +13,7 @@ if(S.onboardingDone){
   initApp();
 } else {
   // prefill name if saved
-  if(S.name && S.name!=='Азамат') document.getElementById('nameInput').value=S.name;
+  if(S.name) document.getElementById('nameInput').value=S.name;
 }
 
 // Register service worker for PWA
