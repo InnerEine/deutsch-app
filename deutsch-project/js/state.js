@@ -9,7 +9,7 @@ const BACKEND_CONFIG = window.DEUTSCH_CONFIG || {};
 const CONFIG_API_URL = String(BACKEND_CONFIG.apiUrl || '').replace(/\/$/, '');
 
 const DEFAULT_STATE = {
-  name: 'Азамат',
+  name: '',
   specs: [],
   level: 'A1',
   levelScore: 0,
