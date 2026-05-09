@@ -57,7 +57,7 @@ function obNext(step) {
     return;
   }
   if (step === 2) {
-    S.name = document.getElementById('nameInput').value.trim() || 'Азамат';
+    S.name = document.getElementById('nameInput').value.trim();
     saveS();
   }
   if (step === 3 && S.specs.length === 0) {

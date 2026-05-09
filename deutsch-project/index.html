@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deutsch · Azamat</title>
+<title>DEUTSCH.app</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2770,7 +2770,7 @@ window.initDeutschFirebaseChat();
     </div>
     <div style="margin-bottom:20px;">
       <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Как тебя зовут?</label>
-      <input class="ob-input" id="nameInput" placeholder="Например: Азамат" maxlength="30">
+      <input class="ob-input" id="nameInput" placeholder="Как к тебе обращаться?" maxlength="30">
     </div>
     <div class="btn-row">
       <button class="btn btn-gold" onclick="obNext(2)">Начать →</button>
@@ -2855,8 +2855,8 @@ window.initDeutschFirebaseChat();
       <button class="mobile-menu-item" onclick="goPage('settings')"><span class="mobile-menu-icon"><i data-lucide="settings" aria-hidden="true"></i></span>Настройки</button>
     </div>
     <div class="hdr-user" onclick="goPage('login')" role="button" tabindex="0" aria-label="Профиль" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goPage('login');}">
-      <div class="hdr-avatar" id="hdrAvatar">A</div>
-      <div class="hdr-name" id="hdrName">Азамат</div>
+      <div class="hdr-avatar" id="hdrAvatar">D</div>
+      <div class="hdr-name" id="hdrName">Deutsch</div>
       <div class="hdr-level" id="hdrLevel">A1</div>
     </div>
   </div>
@@ -2925,7 +2925,7 @@ window.initDeutschFirebaseChat();
       <div class="dashboard-grid">
         <div class="dashboard-col">
           <section class="dash-card dash-welcome">
-            <div class="dash-greeting">Привет, <em id="dName">Азамат</em>! <span aria-hidden="true">👋</span></div>
+            <div class="dash-greeting">Привет, <em id="dName">друг</em>! <span aria-hidden="true">👋</span></div>
             <div class="dash-meta" id="dMeta">уровень A1 · немецкий с нуля</div>
           </section>
 
@@ -4556,7 +4556,7 @@ const BACKEND_CONFIG = window.DEUTSCH_CONFIG || {};
 const CONFIG_API_URL = String(BACKEND_CONFIG.apiUrl || '').replace(/\/$/, '');
 
 const DEFAULT_STATE = {
-  name: 'Азамат',
+  name: '',
   specs: [],
   level: 'A1',
   levelScore: 0,
@@ -5053,7 +5053,7 @@ function obNext(step) {
     return;
   }
   if (step === 2) {
-    S.name = document.getElementById('nameInput').value.trim() || 'Азамат';
+    S.name = document.getElementById('nameInput').value.trim();
     S.onboardingStep = 'ob2';
     saveS();
   }
@@ -5475,6 +5475,20 @@ function finishOnboarding(openLessonId) {
   S.onboardingStep = 'done';
   S.levelTestState = null;
   saveS();
+
+  // Safety net: если план ещё не выровнен с текущим S.level (например, из-за
+  // альтернативного пути входа в finishOnboarding), применяем уровень здесь.
+  // applyPlacementLevelToPlan идемпотентна и может быть вызвана повторно без вреда.
+  try {
+    const targetLevel = normalizeLevelName(S.level || 'A1');
+    const storedCurrentLevel = localStorage.getItem('currentLevel');
+    if (storedCurrentLevel !== targetLevel) {
+      applyPlacementLevelToPlan(targetLevel, targetLevel !== 'A1');
+    }
+  } catch (error) {
+    console.warn('finishOnboarding: failed to sync plan with user level', error);
+  }
+
   document.getElementById('onboarding').classList.add('hidden');
   document.body.classList.add('app-active');
   document.getElementById('appHdr').style.display = '';
@@ -5681,13 +5695,49 @@ function lookupWordCandidates(word) {
   return [...new Set(candidates.filter(Boolean))];
 }
 
+// Служебные слова, которые не нужно добавлять в пользовательский словарь.
+// Полный список поддерживается согласно .kiro/steering/project-overview.md § 10.
 const stopWords = [
-  'der', 'die', 'das', 'ein', 'eine', 'einen', 'einem', 'einer',
+  // Артикли
+  'der', 'die', 'das', 'ein', 'eine', 'einen', 'einem', 'einer', 'eines',
+  'den', 'dem', 'des',
+  // Личные и возвратные местоимения
   'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr',
-  'und', 'oder', 'aber', 'in', 'an', 'auf', 'mit',
-  'von', 'zu', 'bei', 'aus', 'nach', 'für', 'um',
-  'ist', 'sind', 'war', 'hat', 'haben', 'bin',
-  'am', 'im', 'ins', 'zum', 'zur', 'beim'
+  'mich', 'dich', 'sich', 'uns', 'euch',
+  'mir', 'dir', 'ihm', 'ihnen',
+  // Притяжательные местоимения
+  'mein', 'meine', 'meinen', 'meinem', 'meiner', 'meines',
+  'dein', 'deine', 'deinen', 'deinem', 'deiner', 'deines',
+  'sein', 'seine', 'seinen', 'seinem', 'seiner', 'seines',
+  'unser', 'unsere', 'unseren', 'unserem', 'unserer', 'unseres',
+  'euer', 'eure', 'euren', 'eurem', 'eurer', 'eures',
+  // Союзы
+  'und', 'oder', 'aber', 'denn', 'weil', 'dass', 'daß', 'wenn',
+  'als', 'ob', 'damit', 'obwohl', 'sondern', 'doch',
+  // Предлоги
+  'in', 'an', 'auf', 'mit', 'von', 'zu', 'bei', 'aus',
+  'nach', 'für', 'um', 'über', 'unter', 'neben', 'zwischen',
+  'durch', 'gegen', 'ohne', 'bis', 'seit', 'vor', 'hinter',
+  // Слитные формы предлог+артикль
+  'am', 'im', 'ins', 'zum', 'zur', 'beim', 'vom', 'ans', 'aufs',
+  // Вспомогательные и модальные глаголы (частые формы)
+  'ist', 'sind', 'bist', 'war', 'waren', 'warst',
+  'hat', 'haben', 'hast', 'hatte', 'hatten', 'hattest',
+  'bin', 'seid', 'wird', 'werden', 'wirst', 'wurde', 'wurden',
+  'kann', 'kannst', 'können', 'könnt', 'konnte', 'konnten',
+  'muss', 'musst', 'müssen', 'müsst', 'musste', 'mussten',
+  'soll', 'sollst', 'sollen', 'sollt', 'sollte', 'sollten',
+  'will', 'willst', 'wollen', 'wollt', 'wollte', 'wollten',
+  'darf', 'darfst', 'dürfen', 'dürft', 'durfte', 'durften',
+  'mag', 'magst', 'mögen', 'mögt', 'mochte', 'mochten',
+  // Частицы и отрицания
+  'nicht', 'kein', 'keine', 'keinen', 'keinem', 'keiner', 'keines',
+  'auch', 'noch', 'schon', 'ja', 'nein', 'doch', 'mal',
+  'so', 'sehr', 'nur', 'aber', 'etwa', 'eben', 'halt',
+  // Указательные
+  'dies', 'diese', 'dieser', 'dieses', 'diesen', 'diesem',
+  // Служебные наречия
+  'hier', 'da', 'dort', 'jetzt', 'heute', 'dann', 'nun',
 ];
 
 function getTranslation(word) {
@@ -5885,7 +5935,7 @@ async function buildAIWritingReview(text, grammarTopic, level, context = {}) {
     return {
       ...fallback,
       score: fallback.errors.length ? 72 : 88,
-      tip: 'Gemini-ключ не задан. Добавь ключ в настройках, чтобы получить AI-разбор.',
+      tip: 'AI-проверка сейчас недоступна, показан локальный разбор.',
       aiMissing: true,
     };
   }
@@ -6493,6 +6543,10 @@ function addManualDictionaryWord(word, button = null) {
   const en = document.getElementById('manualEnInput')?.value.trim() || '';
   if (!ru && !en) return toast('Введи перевод на русском или английском');
   const key = cleanTerm(word);
+  if (isStopWord(key)) {
+    toast('Это служебное слово, его не нужно добавлять в словарь');
+    return;
+  }
   const entry = { ru: ru || en, en: en || ru, level: 'custom' };
   germanDict[key] = entry;
   const payload = {
@@ -7484,6 +7538,7 @@ function ensureArticleWordsInVocab(articleId) {
   S.savedReadingWords = Array.isArray(S.savedReadingWords) ? S.savedReadingWords : [];
   const added = [];
   article.vocabulary.forEach((item) => {
+    if (isStopWord(item.word)) return;
     const payload = makeReadingWordRecord(item.word, articleId, false);
     const exists = S.savedReadingWords.some((saved) => saved.id === payload.id);
     if (!exists) {
@@ -8383,9 +8438,9 @@ async function initApp() {
   applyTheme(S.theme || 'dark');
   refreshStreakForMissedDay();
   document.getElementById('hdrAvatar').textContent = avatarLetter(S.name);
-  document.getElementById('hdrName').textContent = S.name || 'Azamat';
+  document.getElementById('hdrName').textContent = S.name || 'Freund';
   updateHeaderLevel();
-  document.getElementById('dName').textContent = S.name || 'Azamat';
+  document.getElementById('dName').textContent = S.name || 'Freund';
 
   const specLabel = SPECIALIZATIONS
     .filter((item) => S.specs.includes(item.id))
@@ -9131,9 +9186,14 @@ function updateDash() {
   const lt = document.getElementById('levelTrack');
   lt.innerHTML = '';
 
-  levels.forEach((level) => {
-    const isCur = level === S.level;
-    const isDone = levels.indexOf(level) < levels.indexOf(S.level);
+  // Единый источник истины: читаем уровень через getUserLevel(), чтобы прогресс-бар
+  // и levelTrack показывали одинаковое значение после теста (B1 → B2, а не A1 → A2).
+  const currentLevel = getUserLevel();
+  const currentLevelIdx = levels.indexOf(currentLevel);
+
+  levels.forEach((level, idx) => {
+    const isCur = level === currentLevel;
+    const isDone = idx < currentLevelIdx;
     const item = document.createElement('div');
     item.className = `lvl-item${isCur ? ' cur' : ''}${isDone ? ' done' : ''}`;
     item.innerHTML = `
@@ -12533,6 +12593,19 @@ async function syncFromBackend() {
 // Source: js\practice.js
 // AI PRACTICE - conversational trainer
 
+// System-prompt builders: вычисляются на момент старта сценария, а не при загрузке модуля,
+// чтобы подхватывать актуальные S.name и S.level после онбординга.
+function learnerLineDe(role = 'Der Lernende') {
+  const rawName = (S.name || '').trim();
+  const hasName = rawName && rawName !== 'Азамат' && rawName !== 'Azamat';
+  const level = S.level || 'A1';
+  return hasName
+    ? `${role} heißt ${rawName} und lernt Deutsch auf Niveau ${level}.`
+    : `${role} lernt Deutsch auf Niveau ${level}. Benutze NIEMALS einen konkreten Namen wie "Azamat". Sprich den Lernenden neutral an.`;
+}
+
+const ERROR_FORMAT_LINE = 'Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]';
+
 const SCENARIOS = [
   {
     id: 's_greet',
@@ -12542,8 +12615,8 @@ const SCENARIOS = [
     diff: 'easy',
     desc: 'Познакомься с немецким коллегой и коротко расскажи о себе.',
     tip: 'Используй: Hallo, ich bin... · Ich komme aus... · Ich arbeite als...',
-    system: `Du bist ein freundlicher deutscher Kollege namens Klaus. Du sprichst nur Deutsch.
-Der Lernende heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein freundlicher deutscher Kollege namens Klaus. Du sprichst nur Deutsch.
+${learnerLineDe('Der Lernende')}
 Führe ein natürliches Vorstellungsgespräch und stelle einfache Fragen zu Name, Herkunft und Beruf.
 Wenn der Lernende Fehler macht, korrigiere freundlich im Format:
 ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
@@ -12557,10 +12630,10 @@ Antworte knapp, maximal 3 Sätze.`,
     diff: 'easy',
     desc: 'Закажи еду и напитки в немецком кафе.',
     tip: 'Используй: Ich möchte... · Wie viel kostet...? · Danke schön!',
-    system: `Du bist ein Kellner in einem deutschen Café. Du sprichst nur Deutsch.
-Der Gast heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein Kellner in einem deutschen Café. Du sprichst nur Deutsch.
+${learnerLineDe('Der Gast')}
 Begrüße den Gast, stelle Rückfragen und nenne einfache Preise.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
+${ERROR_FORMAT_LINE}
 Antworte kurz, maximal 3 Sätze.`,
   },
   {
@@ -12571,10 +12644,10 @@ Antworte kurz, maximal 3 Sätze.`,
     diff: 'med',
     desc: 'Попроси прохожего подсказать дорогу в немецком городе.',
     tip: 'Используй: Entschuldigung... · Wo ist...? · Wie komme ich zu...?',
-    system: `Du bist ein hilfsbereiter Passant in einer deutschen Stadt. Du sprichst nur Deutsch.
-Der Tourist heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein hilfsbereiter Passant in einer deutschen Stadt. Du sprichst nur Deutsch.
+${learnerLineDe('Der Tourist')}
 Erkläre den Weg mit links, rechts, geradeaus, neben und gegenüber.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]
+${ERROR_FORMAT_LINE}
 Antworte klar und kurz.`,
   },
   {
@@ -12585,11 +12658,11 @@ Antworte klar und kurz.`,
     diff: 'med',
     desc: 'Объясни руководителю, что случилось с сервером.',
     tip: 'Используй: Der Server ist ausgefallen · Die Verbindung ist unterbrochen · Wir haben eine Störung',
-    system: `Du bist ein deutscher IT-Manager. Du sprichst nur Deutsch.
-Der Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein deutscher IT-Manager. Du sprichst nur Deutsch.
+${learnerLineDe('Der Mitarbeiter')}
 Frage nach Ursache, Zeitpunkt, betroffenen Systemen und nächsten Schritten.
 Verwende IT-Wörter wie Netzwerk, Server, Firewall, Zugriff, Sicherung.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+${ERROR_FORMAT_LINE}`,
   },
   {
     id: 's_it_support',
@@ -12599,10 +12672,10 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     diff: 'easy',
     desc: 'Помоги пользователю решить простую IT-проблему.',
     tip: 'Используй: Haben Sie...? · Bitte starten Sie... · Das Kennwort ist...',
-    system: `Du bist ein deutschsprachiger Benutzer mit einem IT-Problem. Du sprichst nur Deutsch.
-Der Support-Mitarbeiter heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein deutschsprachiger Benutzer mit einem IT-Problem. Du sprichst nur Deutsch.
+${learnerLineDe('Der Support-Mitarbeiter')}
 Beschreibe ein einfaches Problem mit Drucker oder Zugang und antworte auf Rückfragen.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+${ERROR_FORMAT_LINE}`,
   },
   {
     id: 's_it_interview',
@@ -12612,10 +12685,10 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     diff: 'hard',
     desc: 'Собеседование на позицию сисадмина в немецкой компании.',
     tip: 'Используй: Ich habe Erfahrung mit... · Ich kann... · In meiner bisherigen Stelle...',
-    system: `Du bist ein HR-Manager einer deutschen IT-Firma. Du sprichst nur Deutsch.
-Der Bewerber heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein HR-Manager einer deutschen IT-Firma. Du sprichst nur Deutsch.
+${learnerLineDe('Der Bewerber')}
 Frage nach Erfahrung, Linux, Windows Server, Netzwerk, Motivation und Arbeitsweise.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+${ERROR_FORMAT_LINE}`,
   },
   {
     id: 's_bank',
@@ -12625,10 +12698,10 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     diff: 'med',
     desc: 'Открой счёт в немецком банке.',
     tip: 'Используй: Ich möchte ein Konto eröffnen · die Rechnung · der Kredit',
-    system: `Du bist ein Bankangestellter in Deutschland. Du sprichst nur Deutsch.
-Der Kunde heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein Bankangestellter in Deutschland. Du sprichst nur Deutsch.
+${learnerLineDe('Der Kunde')}
 Hilf beim Eröffnen eines Kontos und frage nach Name, Adresse und Beschäftigung.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+${ERROR_FORMAT_LINE}`,
   },
   {
     id: 's_meeting',
@@ -12638,10 +12711,10 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     diff: 'hard',
     desc: 'Обсуди условия контракта с немецким партнёром.',
     tip: 'Используй: Unser Angebot ist... · Wir schlagen vor... · Das Budget beträgt...',
-    system: `Du bist ein deutscher Geschäftspartner in Vertragsverhandlungen. Du sprichst nur Deutsch.
-Der Verhandlungspartner heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein deutscher Geschäftspartner in Vertragsverhandlungen. Du sprichst nur Deutsch.
+${learnerLineDe('Der Verhandlungspartner')}
 Diskutiere Preis, Lieferzeit und Zahlungsbedingungen in professionellem Ton.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+${ERROR_FORMAT_LINE}`,
   },
   {
     id: 's_doctor',
@@ -12651,12 +12724,21 @@ Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
     diff: 'med',
     desc: 'Поговори с врачом о симптомах на немецком.',
     tip: 'Используй: Ich habe Schmerzen · Mir ist nicht gut · Seit wann...?',
-    system: `Du bist ein Arzt in Deutschland. Du sprichst nur Deutsch.
-Der Patient heißt ${S.name || 'Azamat'} und lernt Deutsch auf Niveau ${S.level || 'A1'}.
+    buildSystem: () => `Du bist ein Arzt in Deutschland. Du sprichst nur Deutsch.
+${learnerLineDe('Der Patient')}
 Frage nach Symptomen, Dauer und möglichen Begleiterscheinungen.
-Bei Fehlern: ❌ Fehler: [falsch] → ✅ Richtig: [korrekt]`,
+${ERROR_FORMAT_LINE}`,
   },
 ];
+
+// Backwards-compat: если где-то в коде читают scenario.system напрямую,
+// возвращаем актуальный промпт из buildSystem().
+SCENARIOS.forEach((scenario) => {
+  Object.defineProperty(scenario, 'system', {
+    get() { return scenario.buildSystem(); },
+    enumerable: true,
+  });
+});
 
 let activeScenario = null;
 let chatHistory = [];
@@ -12747,7 +12829,12 @@ function clearChat() {
 
 async function aiOpen(scenario) {
   showTyping();
-  const openingPrompt = `Eröffne das Gespräch auf Deutsch. Begrüße ${S.name || 'Azamat'} und starte das Szenario "${scenario.title}". Maximal 2 Sätze.`;
+  const rawName = (S.name || '').trim();
+  const hasName = rawName && rawName !== 'Азамат' && rawName !== 'Azamat';
+  const greetingInstruction = hasName
+    ? `Begrüße den Lernenden (Name: ${rawName}) freundlich`
+    : `Begrüße den Lernenden freundlich ohne Namen`;
+  const openingPrompt = `Eröffne das Gespräch auf Deutsch. ${greetingInstruction} und starte das Szenario "${scenario.title}". Maximal 2 Sätze. Dokument-Regel: Benutze NIEMALS den Namen "Azamat".`;
   const reply = await callClaude(scenario.system, openingPrompt, []);
   hideTyping();
   addMessage('ai', reply);
