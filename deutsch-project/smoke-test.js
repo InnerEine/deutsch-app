@@ -3,7 +3,30 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+const CHROME_CANDIDATES = [
+  process.env.CHROME_PATH,
+  process.env.PUPPETEER_EXECUTABLE_PATH,
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/usr/bin/google-chrome',
+  '/usr/bin/google-chrome-stable',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+  '/snap/bin/chromium',
+].filter(Boolean);
+
+function findChrome() {
+  for (const candidate of CHROME_CANDIDATES) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {}
+  }
+  return null;
+}
+
+const CHROME = findChrome();
 const DEBUG_PORT = 9222;
 const FRONTEND_PORT = 8765;
 const BASE_URL = `http://127.0.0.1:${FRONTEND_PORT}/`;
@@ -47,6 +70,14 @@ async function startServer(command, args, options, healthUrl, label) {
 }
 
 async function main() {
+  if (!CHROME) {
+    console.log(JSON.stringify({
+      skipped: true,
+      reason: 'Chrome/Chromium executable not found. Set CHROME_PATH to enable the smoke test.',
+      tried: CHROME_CANDIDATES,
+    }, null, 2));
+    return;
+  }
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'deutsch-smoke-'));
   const frontendServer = await startServer(
     'python',

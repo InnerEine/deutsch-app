@@ -99,16 +99,16 @@ const lessonsData = [
     category: 'Everyday',
     theory: `В немецком знакомстве важны короткие устойчивые формулы: Hallo, Guten Tag, Ich heiße... и Freut mich. Для нейтральной и вежливой речи используй Sie: Wie heißen Sie? Woher kommen Sie?
 
-Если говоришь с коллегой или новым знакомым в неформальной ситуации, можно использовать du: Wie heißt du? Ich bin Azamat. В A1 достаточно назвать имя, страну и профессию одной-двумя простыми фразами.`,
+Если говоришь с коллегой или новым знакомым в неформальной ситуации, можно использовать du: Wie heißt du? Ich bin Thomas. В A1 достаточно назвать имя, страну и профессию одной-двумя простыми фразами.`,
     examples: [
-      { de: 'Hallo, ich heiße Azamat.', ru: 'Привет, меня зовут Азамат.' },
+      { de: 'Hallo, ich heiße Thomas.', ru: 'Привет, меня зовут Томас.' },
       { de: 'Guten Tag, wie heißen Sie?', ru: 'Добрый день, как вас зовут?' },
       { de: 'Ich komme aus Pakistan.', ru: 'Я из Пакистана.' },
       { de: 'Freut mich, Sie kennenzulernen.', ru: 'Приятно с вами познакомиться.' },
     ],
     quiz: [
       { question: 'Как перевести “Guten Tag”?', options: ['Добрый день', 'Доброй ночи', 'До свидания', 'Спасибо'], correct: 0 },
-      { question: 'Выбери фразу “Меня зовут Азамат”.', options: ['Ich heiße Azamat.', 'Ich habe Azamat.', 'Ich komme Azamat.', 'Ich bin aus Azamat.'], correct: 0 },
+      { question: 'Выбери фразу “Меня зовут Томас”.', options: ['Ich heiße Thomas.', 'Ich habe Thomas.', 'Ich komme Thomas.', 'Ich bin aus Thomas.'], correct: 0 },
       { question: 'Что означает “Freut mich”?', options: ['Я устал', 'Приятно познакомиться', 'Где вокзал?', 'До завтра'], correct: 1 },
     ],
   },
@@ -186,8 +186,8 @@ const GENERAL_LESSONS = [
   { id:'g1', title:'Знакомство', de:'Vorstellung', color:'c-gold', type:'Базовый A1',
     words:[
       {de:'Hallo',ru:'Привет',ex:'Hallo! Wie geht\'s?',cat:'general'},
-      {de:'Ich bin',ru:'Я / Меня зовут',ex:'Ich bin Azamat.',cat:'general'},
-      {de:'mein Name',ru:'моё имя',ex:'Mein Name ist Azamat.',cat:'general'},
+      {de:'Ich bin',ru:'Я / Меня зовут',ex:'Ich bin Thomas.',cat:'general'},
+      {de:'mein Name',ru:'моё имя',ex:'Mein Name ist Thomas.',cat:'general'},
       {de:'Woher kommen Sie?',ru:'Откуда вы?',ex:'Ich komme aus Tadschikistan.',cat:'general'},
       {de:'Freut mich',ru:'Приятно познакомиться',ex:'Freut mich!',cat:'general'},
       {de:'Guten Tag',ru:'Добрый день',ex:'Guten Tag, Herr Müller.',cat:'general'},

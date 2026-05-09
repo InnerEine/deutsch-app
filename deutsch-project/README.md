@@ -172,6 +172,19 @@ python -m http.server 8000
 
 ## Релизная проверка
 
+Быстрый статический smoke-тест (не требует Chrome):
+
+```bash
+cd deutsch-project
+node static-smoke.js
+```
+
+Он поднимает `python -m http.server` на свободном порту, загружает `index.html`,
+проверяет наличие всех ключевых DOM-элементов, что имя «Azamat/Азамат» больше не
+утекает в дефолты, и что все inline-скрипты парсятся как валидный JS.
+
+Полный e2e прогон в Chrome (требует установленный Chrome/Chromium):
+
 ```bash
 cd deutsch-project
 node --check js\data.js
@@ -179,8 +192,11 @@ node --check js\state.js
 node --check js\onboarding.js
 node --check js\app.js
 node --check js\practice.js
-node smoke-test.js
+CHROME_PATH=/path/to/chrome node smoke-test.js
 ```
+
+`smoke-test.js` теперь сам находит Chrome на Windows/macOS/Linux; если
+исполняемый файл не найден — он мягко выходит с `skipped: true`, а не падает.
 
 Для опционального backend дополнительно:
 
