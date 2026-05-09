@@ -44,6 +44,9 @@ app.config["OLLAMA_MODEL"] = os.getenv("OLLAMA_MODEL", "gemma3")
 app.config["OLLAMA_KEEP_ALIVE"] = os.getenv("OLLAMA_KEEP_ALIVE", "10m")
 app.config["OLLAMA_TIMEOUT"] = int(os.getenv("OLLAMA_TIMEOUT", "120"))
 app.config["AI_PROVIDER"] = os.getenv("AI_PROVIDER", "ollama")
+app.config["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY", "")
+app.config["GEMINI_MODEL"] = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+app.config["GEMINI_TIMEOUT"] = int(os.getenv("GEMINI_TIMEOUT", "120"))
 
 ALLOWED_LEVELS = {"A1", "A2", "B1", "B2", "C1", "C2"}
 
@@ -166,11 +169,63 @@ def ollama_request(system_prompt, messages, max_tokens=400):
         return None, str(exc)
 
 
+def gemini_request(system_prompt, messages, max_tokens=400):
+    api_key = app.config["GEMINI_API_KEY"]
+    if not api_key:
+        return None, "GEMINI_API_KEY is not configured."
+
+    model = app.config["GEMINI_MODEL"]
+    timeout = app.config["GEMINI_TIMEOUT"]
+    url = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{model}:generateContent"
+    )
+    contents = [
+        {
+            "role": "model" if item["role"] == "assistant" else "user",
+            "parts": [{"text": item["content"]}],
+        }
+        for item in messages
+        if item.get("content")
+    ]
+    try:
+        data = http_post_json(
+            url,
+            {
+                "systemInstruction": {"parts": [{"text": system_prompt}]},
+                "contents": contents,
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": max_tokens,
+                },
+            },
+            headers={"x-goog-api-key": api_key},
+            timeout=timeout,
+        )
+        parts = (
+            ((data.get("candidates") or [{}])[0].get("content") or {}).get("parts")
+            or []
+        )
+        text = "\n".join(part.get("text", "") for part in parts).strip()
+        if not text:
+            return None, "Gemini returned an empty response."
+        return text, None
+    except error.HTTPError as exc:
+        details = exc.read().decode("utf-8", errors="replace")
+        return None, f"Gemini HTTP {exc.code}: {details}"
+    except error.URLError:
+        return None, "Gemini is not reachable. Check network access and API key restrictions."
+    except Exception as exc:  # noqa: BLE001
+        return None, str(exc)
+
+
 def ai_request(system_prompt, messages, max_tokens=400):
     provider = app.config["AI_PROVIDER"]
-    if provider != "ollama":
-        return None, f"Unsupported AI_PROVIDER: {provider}"
-    return ollama_request(system_prompt, messages, max_tokens=max_tokens)
+    if provider == "ollama":
+        return ollama_request(system_prompt, messages, max_tokens=max_tokens)
+    if provider == "gemini":
+        return gemini_request(system_prompt, messages, max_tokens=max_tokens)
+    return None, f"Unsupported AI_PROVIDER: {provider}"
 
 
 @app.route("/api/health", methods=["GET"])
@@ -180,6 +235,8 @@ def health():
             "status": "ok",
             "ai_provider": app.config["AI_PROVIDER"],
             "ollama_model": app.config["OLLAMA_MODEL"],
+            "gemini_model": app.config["GEMINI_MODEL"],
+            "gemini_configured": bool(app.config["GEMINI_API_KEY"]),
         }
     )
 

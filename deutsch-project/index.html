@@ -787,6 +787,7 @@ body.light .plan-word.level-b1,.theme-light .plan-word.level-b1{color:#2563EB;te
 body.light .plan-word.level-b2,.theme-light .plan-word.level-b2{color:#059669;text-decoration-color:#059669;}
 body.light .plan-word.level-c1,.theme-light .plan-word.level-c1{color:#D97706;text-decoration-color:#D97706;}
 body.light .plan-word.level-c2,.theme-light .plan-word.level-c2{color:#DC2626;text-decoration-color:#DC2626;}
+.plan-word.plan-grammar-key{color:var(--gold)!important;text-decoration-color:var(--gold)!important;background:rgba(240,192,96,.12);border-color:rgba(240,192,96,.35);font-weight:800;}
 .plan-word.speaking{background:#ffe36a;color:#111;border-color:#ffd43b;}
 .plan-preview-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:18px 0;}
 .plan-preview-item{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:12px;font-weight:800;}
@@ -794,6 +795,25 @@ body.light .plan-word.level-c2,.theme-light .plan-word.level-c2{color:#DC2626;te
 .plan-intro-card{border:1px solid rgba(240,192,96,.35);background:rgba(240,192,96,.07);border-radius:12px;padding:16px 18px;margin:18px 0;display:grid;gap:12px;}
 .plan-intro-title{font-weight:800;color:var(--gold);font-size:16px;}
 .plan-intro-card ul{display:grid;gap:7px;margin:0;padding-left:22px;color:var(--text);}
+.plan-explain-card{border:1px solid rgba(240,192,96,.42);background:rgba(240,192,96,.08);border-left:4px solid var(--gold);border-radius:12px;padding:18px;display:grid;gap:14px;margin-top:18px;}
+.plan-explain-title{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--gold);}
+.plan-explain-section{display:grid;gap:6px;font-size:14px;line-height:1.6;}
+.plan-explain-example{border:1px solid rgba(240,192,96,.24);background:var(--bg3);border-radius:10px;padding:10px 12px;display:grid;gap:4px;}
+.plan-explain-forms{display:grid;gap:5px;border-top:1px solid rgba(240,192,96,.22);padding-top:12px;font-size:14px;}
+.plan-explain-card b,.plan-utterance-text b,.plan-content-text b{color:var(--gold);font-weight:900;}
+.plan-loading-card{min-height:320px;border:1px solid rgba(240,192,96,.32);background:linear-gradient(180deg,rgba(240,192,96,.08),rgba(255,255,255,.02));border-radius:12px;padding:34px 20px;display:grid;place-items:center;text-align:center;gap:16px;}
+.plan-loading-orb{width:34px;height:34px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 0 rgba(240,192,96,.48);animation:planOrbPulse 1.4s ease-in-out infinite;}
+.plan-loading-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--text);}
+.plan-loading-bar{width:min(260px,100%);height:12px;border-radius:999px;border:1px solid rgba(240,192,96,.34);background:var(--bg3);overflow:hidden;position:relative;}
+.plan-loading-bar::before{content:"";position:absolute;inset:0;width:42%;border-radius:999px;background:linear-gradient(90deg,var(--gold),rgba(240,192,96,.28));animation:planLoadingBar 1.15s ease-in-out infinite;}
+.plan-loading-copy{max-width:320px;color:var(--muted);font-size:14px;line-height:1.55;}
+.plan-error-card{border:1px solid rgba(240,85,85,.42);background:rgba(240,85,85,.08);border-radius:12px;padding:24px;display:grid;gap:14px;justify-items:start;}
+.plan-order-picked{min-height:44px;border:1px dashed var(--border2);background:var(--bg2);border-radius:10px;padding:10px 12px;color:var(--text);line-height:1.45;}
+.plan-order-picked:empty::before{content:"Нажимай слова по порядку";color:var(--muted);}
+.plan-writing-hints{border:1px solid var(--border);background:var(--bg3);border-radius:10px;padding:10px 12px;color:var(--muted);}
+.plan-writing-hints summary{cursor:pointer;font-weight:800;color:var(--text);}
+@keyframes planOrbPulse{0%,100%{transform:scale(.88);box-shadow:0 0 0 0 rgba(240,192,96,.42);}50%{transform:scale(1.08);box-shadow:0 0 0 13px rgba(240,192,96,0);}}
+@keyframes planLoadingBar{0%{transform:translateX(-105%);}100%{transform:translateX(245%);}}
 .plan-dialogue{display:grid;gap:12px;margin:16px 0;}
 .plan-utterance{border:1px solid var(--border);background:var(--bg3);border-radius:12px;padding:15px 16px;display:grid;gap:9px;}
 .plan-utterance-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
@@ -821,6 +841,10 @@ body.light .plan-word.level-c2,.theme-light .plan-word.level-c2{color:#DC2626;te
   .plan-progress-card,.plan-block-card,.plan-lesson-card,.plan-screen-card{padding:14px;}
   .plan-lesson-card{grid-template-columns:auto minmax(0,1fr);}
   .plan-lesson-card .btn{grid-column:1/-1;width:100%;}
+  .plan-loading-card{min-height:280px;padding:26px 14px;}
+  .plan-loading-title{font-size:21px;}
+  .plan-utterance-text{font-size:16px;line-height:1.7;}
+  .plan-explain-card,.plan-utterance,.plan-word-card{border-radius:10px;padding:13px;}
 }
 
 /* Misc */
@@ -1409,7 +1433,7 @@ a,button,input,textarea,select{font-family:inherit;}
 
 .sheet-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
@@ -2872,6 +2896,7 @@ window.initDeutschFirebaseChat();
 <div id="more-menu" class="bottom-sheet hidden">
   <div class="sheet-handle"></div>
   <div class="sheet-grid">
+    <button data-section="tasks">📝 Задания</button>
     <button data-section="phrases">💬 Фразы</button>
     <button data-section="repeat">🔄 Повторение</button>
     <button data-section="chat">💬 Чат</button>
@@ -3101,6 +3126,11 @@ window.initDeutschFirebaseChat();
             <option value="light">Белый</option>
             <option value="purple">Фиолетовый</option>
           </select>
+        </div>
+        <div style="margin-top:16px;">
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:10px;">Gemini API key</label>
+          <input class="ob-input" id="settingsGeminiKey" type="password" autocomplete="off" placeholder="Оставь пустым, чтобы использовать офлайн-уроки">
+          <div class="plan-status" id="geminiKeyStatus" style="margin-top:8px;"></div>
         </div>
       </div>
       <div class="section-label">Специальности</div>
@@ -3735,16 +3765,16 @@ const lessonsData = [
     category: 'Everyday',
     theory: `В немецком знакомстве важны короткие устойчивые формулы: Hallo, Guten Tag, Ich heiße... и Freut mich. Для нейтральной и вежливой речи используй Sie: Wie heißen Sie? Woher kommen Sie?
 
-Если говоришь с коллегой или новым знакомым в неформальной ситуации, можно использовать du: Wie heißt du? Ich bin Azamat. В A1 достаточно назвать имя, страну и профессию одной-двумя простыми фразами.`,
+Если говоришь с коллегой или новым знакомым в неформальной ситуации, можно использовать du: Wie heißt du? Ich bin Thomas. В A1 достаточно назвать имя, страну и профессию одной-двумя простыми фразами.`,
     examples: [
-      { de: 'Hallo, ich heiße Azamat.', ru: 'Привет, меня зовут Азамат.' },
+      { de: 'Hallo, ich heiße Thomas.', ru: 'Привет, меня зовут Томас.' },
       { de: 'Guten Tag, wie heißen Sie?', ru: 'Добрый день, как вас зовут?' },
       { de: 'Ich komme aus Pakistan.', ru: 'Я из Пакистана.' },
       { de: 'Freut mich, Sie kennenzulernen.', ru: 'Приятно с вами познакомиться.' },
     ],
     quiz: [
       { question: 'Как перевести “Guten Tag”?', options: ['Добрый день', 'Доброй ночи', 'До свидания', 'Спасибо'], correct: 0 },
-      { question: 'Выбери фразу “Меня зовут Азамат”.', options: ['Ich heiße Azamat.', 'Ich habe Azamat.', 'Ich komme Azamat.', 'Ich bin aus Azamat.'], correct: 0 },
+      { question: 'Выбери фразу “Меня зовут Томас”.', options: ['Ich heiße Thomas.', 'Ich habe Thomas.', 'Ich komme Thomas.', 'Ich bin aus Thomas.'], correct: 0 },
       { question: 'Что означает “Freut mich”?', options: ['Я устал', 'Приятно познакомиться', 'Где вокзал?', 'До завтра'], correct: 1 },
     ],
   },
@@ -3822,8 +3852,8 @@ const GENERAL_LESSONS = [
   { id:'g1', title:'Знакомство', de:'Vorstellung', color:'c-gold', type:'Базовый A1',
     words:[
       {de:'Hallo',ru:'Привет',ex:'Hallo! Wie geht\'s?',cat:'general'},
-      {de:'Ich bin',ru:'Я / Меня зовут',ex:'Ich bin Azamat.',cat:'general'},
-      {de:'mein Name',ru:'моё имя',ex:'Mein Name ist Azamat.',cat:'general'},
+      {de:'Ich bin',ru:'Я / Меня зовут',ex:'Ich bin Thomas.',cat:'general'},
+      {de:'mein Name',ru:'моё имя',ex:'Mein Name ist Thomas.',cat:'general'},
       {de:'Woher kommen Sie?',ru:'Откуда вы?',ex:'Ich komme aus Tadschikistan.',cat:'general'},
       {de:'Freut mich',ru:'Приятно познакомиться',ex:'Freut mich!',cat:'general'},
       {de:'Guten Tag',ru:'Добрый день',ex:'Guten Tag, Herr Müller.',cat:'general'},
@@ -4503,6 +4533,7 @@ const PHRASES = [
 window.DEUTSCH_CONFIG = {
   staticMode: true,
   apiUrl: '',
+  geminiApiKey: '',
 };
 
 </script>
@@ -8255,6 +8286,12 @@ const PAGE_TO_MOBILE_SECTION = {
   reading: 'reading',
   vocab: 'vocabulary',
   practice: 'practice',
+  homework: 'more',
+  phrases: 'more',
+  repetition: 'more',
+  chat: 'more',
+  login: 'more',
+  settings: 'more',
 };
 
 function syncMobileTabbar(name) {
@@ -9025,7 +9062,7 @@ const planData = {
         title: 'Кто я?',
         emoji: '👋',
         description: 'Знакомство, имя, страна, профессия',
-        grammar: 'sein, heißen, kommen aus',
+        grammar: 'sein, heißen, kommen aus — личные местоимения',
         lessons: [
           { id: 1, title: 'Привет по-немецки', type: 'dialogue' },
           { id: 2, title: 'Как тебя зовут?', type: 'dialogue' },
@@ -9117,33 +9154,33 @@ const planData = {
     title: 'A2 — Я справляюсь',
     description: 'Повседневные ситуации и общение',
     blocks: [
-      { id: 'a2_b1', title: 'Работа', emoji: '💼', grammar: 'Perfekt haben/sein + Partizip II' },
-      { id: 'a2_b2', title: 'Квартира', emoji: '🏠', grammar: 'Dativ: предлоги in/an/auf/neben/unter/über' },
+      { id: 'a2_b1', title: 'Работа', emoji: '💼', grammar: 'Perfekt с haben и sein + Partizip II' },
+      { id: 'a2_b2', title: 'Квартира', emoji: '🏠', grammar: 'Dativ с предлогами in/an/auf/neben/unter/über' },
       { id: 'a2_b3', title: 'Здоровье', emoji: '🏥', grammar: 'Modalverben: müssen/dürfen/sollen/können' },
       { id: 'a2_b4', title: 'Путешествия', emoji: '✈️', grammar: 'Komparativ и Superlativ' },
-      { id: 'a2_b5', title: 'Чувства', emoji: '💬', grammar: 'Союзы: weil/dass/wenn/obwohl' },
+      { id: 'a2_b5', title: 'Чувства', emoji: '💬', grammar: 'Союзы weil/dass/wenn/obwohl' },
     ],
   },
   B1: {
     title: 'B1 — Я понимаю',
     description: 'Сложные темы и свободное общение',
     blocks: [
-      { id: 'b1_b1', title: 'Медиа', emoji: '📱', grammar: 'Konjunktiv II: würde/könnte/sollte' },
-      { id: 'b1_b2', title: 'Карьера', emoji: '📊', grammar: 'Passiv Präsens/Präteritum' },
-      { id: 'b1_b3', title: 'Экология', emoji: '🌍', grammar: 'Infinitivkonstruktionen: um zu/ohne zu' },
-      { id: 'b1_b4', title: 'История', emoji: '🏛️', grammar: 'Plusquamperfekt' },
-      { id: 'b1_b5', title: 'Общество', emoji: '👥', grammar: 'Konjunktiv I — косвенная речь' },
+      { id: 'b1_b1', title: 'Медиа и мнения', emoji: '📱', grammar: 'Konjunktiv II: würde/könnte/sollte/wäre/hätte' },
+      { id: 'b1_b2', title: 'Карьера', emoji: '📊', grammar: 'Passiv Präsens и Präteritum: wird/wurde gemacht' },
+      { id: 'b1_b3', title: 'Экология', emoji: '🌍', grammar: 'Infinitivkonstruktionen: um zu/ohne zu/anstatt zu' },
+      { id: 'b1_b4', title: 'История', emoji: '🏛️', grammar: 'Plusquamperfekt: hatte/war + Partizip II' },
+      { id: 'b1_b5', title: 'Общество', emoji: '👥', grammar: 'Konjunktiv I — косвенная речь: er sagte, er sei/habe' },
     ],
   },
   B2: {
     title: 'B2 — Я свободен',
     description: 'Сложные тексты и профессиональный язык',
     blocks: [
-      { id: 'b2_b1', title: 'Политика', emoji: '🌐', grammar: 'Nominalstil — номинализация' },
-      { id: 'b2_b2', title: 'Экономика', emoji: '📈', grammar: 'Erweiterte Partizipialkonstruktionen' },
+      { id: 'b2_b1', title: 'Политика', emoji: '🌐', grammar: 'Nominalstil — номинализация глаголов' },
+      { id: 'b2_b2', title: 'Экономика', emoji: '📈', grammar: 'Partizipialkonstruktionen' },
       { id: 'b2_b3', title: 'Наука', emoji: '🔬', grammar: 'Konzessivsätze: obwohl/trotzdem/dennoch' },
       { id: 'b2_b4', title: 'Искусство', emoji: '🎨', grammar: 'Modalpartikeln: doch/ja/halt/eben' },
-      { id: 'b2_b5', title: 'Философия', emoji: '💭', grammar: 'Komplexe Satzgefüge — сложные конструкции' },
+      { id: 'b2_b5', title: 'Философия', emoji: '💭', grammar: 'Komplexe Satzgefüge' },
     ],
   },
 };
@@ -9194,6 +9231,21 @@ const PLAN_LEXICON = {
   nicht: { word: 'nicht', pronunciation: 'нихьт', wordClass: 'Negation', level: 'A1', translationRU: 'не', translationEN: 'not', example: 'Ich wohne nicht in Berlin.', exampleRU: 'Я не живу в Берлине.', exampleEN: 'I do not live in Berlin.' },
   nein: { word: 'nein', pronunciation: 'найн', wordClass: 'Antwort', level: 'A1', translationRU: 'нет', translationEN: 'no', example: 'Nein, ich bin nicht Arzt.', exampleRU: 'Нет, я не врач.', exampleEN: 'No, I am not a doctor.' },
 };
+
+Object.assign(PLAN_LEXICON, {
+  würde: { word: 'würde', pronunciation: 'вюрде', wordClass: 'Verb', level: 'B1', translationRU: 'бы (условное наклонение)', translationEN: 'would', example: 'Ich würde gerne reisen.', exampleRU: 'Я бы с удовольствием путешествовал.', exampleEN: 'I would like to travel.' },
+  könnte: { word: 'könnte', pronunciation: 'кённте', wordClass: 'Verb', level: 'B1', translationRU: 'мог бы / могла бы', translationEN: 'could', example: 'Das könnte helfen.', exampleRU: 'Это могло бы помочь.', exampleEN: 'That could help.' },
+  sollte: { word: 'sollte', pronunciation: 'зольте', wordClass: 'Verb', level: 'B1', translationRU: 'следовало бы / должен бы', translationEN: 'should', example: 'Du solltest mehr lesen.', exampleRU: 'Тебе следовало бы больше читать.', exampleEN: 'You should read more.' },
+  solltest: { word: 'solltest', pronunciation: 'зольтест', wordClass: 'Verb', level: 'B1', translationRU: 'тебе следовало бы', translationEN: 'you should', example: 'Du solltest mehr schlafen.', exampleRU: 'Тебе следовало бы больше спать.', exampleEN: 'You should sleep more.' },
+  wären: { word: 'wären', pronunciation: 'вэрен', wordClass: 'Verb', level: 'B1', translationRU: 'были бы', translationEN: 'would be', example: 'Wenn Sie Direktor wären...', exampleRU: 'Если бы вы были директором...', exampleEN: 'If you were the director...' },
+  wäre: { word: 'wäre', pronunciation: 'вэре', wordClass: 'Verb', level: 'B1', translationRU: 'было бы / был бы', translationEN: 'would be', example: 'Das wäre gut.', exampleRU: 'Это было бы хорошо.', exampleEN: 'That would be good.' },
+  hätte: { word: 'hätte', pronunciation: 'хэтте', wordClass: 'Verb', level: 'B1', translationRU: 'имел бы / было бы у меня', translationEN: 'would have', example: 'Ich hätte gerne mehr Zeit.', exampleRU: 'Я бы хотел иметь больше времени.', exampleEN: 'I would like to have more time.' },
+  Werbung: { word: 'die Werbung', pronunciation: 'ди вербунг', wordClass: 'Nomen', level: 'B1', translationRU: 'реклама', translationEN: 'advertising', example: 'Es gibt zu viel Werbung.', exampleRU: 'Слишком много рекламы.', exampleEN: 'There is too much advertising.' },
+  Meinungsfreiheit: { word: 'die Meinungsfreiheit', pronunciation: 'ди майнунгсфрайхайт', wordClass: 'Nomen', level: 'B1', translationRU: 'свобода слова', translationEN: 'freedom of speech', example: 'Meinungsfreiheit ist wichtig.', exampleRU: 'Свобода слова важна.', exampleEN: 'Freedom of speech is important.' },
+  Algorithmus: { word: 'der Algorithmus', pronunciation: 'дэр алгоритмус', wordClass: 'Nomen', level: 'B1', translationRU: 'алгоритм', translationEN: 'algorithm', example: 'Der Algorithmus zeigt dir passende Inhalte.', exampleRU: 'Алгоритм показывает тебе подходящий контент.', exampleEN: 'The algorithm shows you suitable content.' },
+  kritisch: { word: 'kritisch', pronunciation: 'критиш', wordClass: 'Adjektiv', level: 'B1', translationRU: 'критически / критичный', translationEN: 'critical', example: 'Man sollte kritisch denken.', exampleRU: 'Следовало бы мыслить критически.', exampleEN: 'One should think critically.' },
+  fördern: { word: 'fördern', pronunciation: 'фёрдерн', wordClass: 'Verb', level: 'B1', translationRU: 'продвигать / поддерживать', translationEN: 'to promote / support', example: 'Die Schule fördert kreatives Denken.', exampleRU: 'Школа поддерживает творческое мышление.', exampleEN: 'The school promotes creative thinking.' },
+});
 
 const PLAN_LESSON_CONTENT = {
   a1_b1: {
@@ -9317,6 +9369,63 @@ const PLAN_LESSON_CONTENT = {
       text: 'Hallo, ich heiße Mara. Ich komme aus Deutschland. Ich wohne in Berlin. Ich bin Lehrerin. Nein, ich arbeite heute nicht. Wie heißt du? Wo wohnst du? Was machst du?',
     },
   },
+  b1_b1: {
+    1: {
+      intro: ['Понять, зачем нужен Konjunktiv II', 'Прочитать интервью о социальных сетях', 'Узнать формы würde, könnte, sollte, wäre, hätte'],
+      grammar: 'Konjunktiv II',
+      minutes: 14,
+      outcomes: ['Узнать würde + Infinitiv', 'Отличать könnte/sollte/wäre/hätte', 'Высказывать мнение о медиа в условной форме'],
+      grammarHighlights: ['würde', 'würden', 'könnte', 'könnten', 'sollte', 'sollten', 'wäre', 'wären', 'hätte', 'hätten'],
+      explanation: {
+        title: 'Тема этого блока: Konjunktiv II',
+        sections: [
+          {
+            label: '1. Говоришь о нереальном / мечтах:',
+            de: 'Wenn ich Zeit hätte, würde ich reisen.',
+            ru: 'Если бы у меня было время, я бы путешествовал',
+          },
+          {
+            label: '2. Вежливые просьбы:',
+            de: 'Könnten Sie mir helfen?',
+            ru: 'Не могли бы вы помочь мне?',
+          },
+          {
+            label: '3. Советы:',
+            de: 'Du solltest mehr schlafen.',
+            ru: 'Тебе следовало бы больше спать',
+          },
+        ],
+        forms: [
+          'würde + Infinitiv = would/бы',
+          'könnte = could/мог бы',
+          'sollte = should/следовало бы',
+          'hätte = had/имел бы',
+          'wäre = were/was бы',
+        ],
+      },
+      dialogues: [
+        { speaker: 'Журналист', text: 'Was würden Sie ändern, wenn Sie Direktor von Instagram wären?', translationRU: 'Что бы вы изменили, если бы были директором Instagram?', translationEN: 'What would you change if you were the director of Instagram?' },
+        { speaker: 'Экономист', text: 'Ich würde weniger Werbung zeigen und mehr echte Nachrichten fördern.', translationRU: 'Я бы показывал меньше рекламы и продвигал больше настоящих новостей.', translationEN: 'I would show less advertising and promote more real news.' },
+        { speaker: 'Журналист', text: 'Könnten soziale Netzwerke ohne Algorithmen funktionieren?', translationRU: 'Могли бы социальные сети работать без алгоритмов?', translationEN: 'Could social networks function without algorithms?' },
+        { speaker: 'Экономист', text: 'Das wäre sehr schwierig. Aber es könnte die Meinungsfreiheit stärken.', translationRU: 'Это было бы очень сложно. Но это могло бы укрепить свободу слова.', translationEN: 'That would be very difficult. But it could strengthen freedom of speech.' },
+        { speaker: 'Журналист', text: 'Was sollten die Nutzer selbst tun?', translationRU: 'Что сами пользователи должны были бы делать?', translationEN: 'What should the users themselves do?' },
+        { speaker: 'Экономист', text: 'Sie sollten kritisch denken und nicht allem glauben, was sie lesen.', translationRU: 'Им следовало бы мыслить критически и не верить всему что они читают.', translationEN: 'They should think critically and not believe everything they read.' },
+      ],
+      exercises: [
+        { type: 'tf', q: 'Экономист хочет показывать больше рекламы', answer: false, explain: 'В тексте: er würde weniger Werbung zeigen' },
+        { type: 'choice', q: 'Wenn ich Zeit ___, würde ich reisen', options: ['hätte', 'habe', 'hatte', 'haben'], answer: 0, explain: 'В Konjunktiv II глагол haben → hätte' },
+        { type: 'input', q: 'Das ___ sehr schwierig (было бы)', answer: 'wäre', explain: 'sein в Konjunktiv II → wäre' },
+        { type: 'build', q: 'Составь предложение', words: ['würde', 'ich', 'mehr', 'Sport', 'machen'], answer: 'Ich würde mehr Sport machen', explain: 'würde стоит на 2-м месте, Infinitiv в конце' },
+        { type: 'choice', q: 'Не могли бы вы помочь мне?', options: ['Können Sie mir helfen?', 'Könnten Sie mir helfen?', 'Konnten Sie mir helfen?', 'Könntest du mir helfen?'], answer: 1, explain: 'Вежливая просьба = Könnten Sie' },
+      ],
+      newWords: ['würde', 'könnte', 'sollte', 'wäre', 'hätte', 'die Werbung', 'die Meinungsfreiheit', 'der Algorithmus', 'kritisch', 'fördern'],
+      writing: {
+        prompt: 'Напиши 3 предложения используя Konjunktiv II.\nПредставь: что бы ты изменил в социальных сетях?',
+        hints: 'Ich würde... / Ich könnte... / Es wäre besser wenn...',
+        terms: ['würde', 'könnte', 'sollte', 'wäre', 'hätte'],
+      },
+    },
+  },
 };
 
 const planWordBank = [
@@ -9356,12 +9465,417 @@ Object.values(planData).forEach((levelData) => {
     }))).map((lesson, index) => ({ ...lesson, type: lesson.type || planLessonTypes[index] }));
   });
 });
+planData.B1.blocks[0].lessons[0].title = 'Что такое Konjunktiv II?';
 
 let simplePlanScreen = { mode: 'main' };
 let planLessonStep = 1;
+let planLessonTextMode = 'explain';
 let planTranslateLang = 'RU';
 let planSpeechRate = 1;
 let planSpeechToken = 0;
+let planLessonLoadingKey = '';
+let planLessonError = null;
+let planLessonRequestId = 0;
+const generatedPlanLessons = new Map();
+const planLessonFallbackKeys = new Set();
+const GEMINI_KEY_STORAGE = 'deutschGeminiApiKey';
+const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+function getConfiguredGeminiApiKey() {
+  const configKey = String(BACKEND_CONFIG.geminiApiKey || '').trim();
+  const storedKey = String(localStorage.getItem(GEMINI_KEY_STORAGE) || localStorage.getItem('geminiApiKey') || '').trim();
+  return configKey || storedKey;
+}
+
+function hasGeminiApiKey() {
+  return !!getConfiguredGeminiApiKey();
+}
+
+function setGeminiApiKey(value) {
+  const key = String(value || '').trim();
+  if (key) {
+    localStorage.setItem(GEMINI_KEY_STORAGE, key);
+  } else {
+    localStorage.removeItem(GEMINI_KEY_STORAGE);
+    localStorage.removeItem('geminiApiKey');
+  }
+}
+
+async function generateLesson(blockTitle, grammarTopic, lessonTitle, lessonNumber, level) {
+  const geminiApiKey = getConfiguredGeminiApiKey();
+  if (!geminiApiKey) {
+    const error = new Error('Gemini API key is not configured.');
+    error.code = 'GEMINI_KEY_MISSING';
+    throw error;
+  }
+
+  const prompt = `
+Ты методист по немецкому языку. Создай урок строго в JSON формате.
+Не добавляй ничего кроме JSON.
+
+Урок: ${lessonTitle}
+Блок: ${blockTitle}
+Грамматика блока: ${grammarTopic}
+Уровень: ${level}
+Номер урока в блоке: ${lessonNumber}
+
+Верни JSON в точно таком формате:
+{
+  "explanation": {
+    "title": "Краткое название темы",
+    "text": "Объяснение грамматики простым языком (3-4 предложения)",
+    "examples": [
+      {"de": "немецкий пример", "ru": "перевод на русский", "en": "перевод на английский"},
+      {"de": "немецкий пример 2", "ru": "перевод", "en": "translation"},
+      {"de": "немецкий пример 3", "ru": "перевод", "en": "translation"}
+    ]
+  },
+  "dialogue": [
+    {"speaker": "Имя1", "text": "немецкий текст", "ru": "перевод", "en": "translation"},
+    {"speaker": "Имя2", "text": "немецкий текст", "ru": "перевод", "en": "translation"}
+  ],
+  "exercises": [
+    {
+      "type": "truefalse",
+      "question": "утверждение по тексту диалога",
+      "correct": true,
+      "explanation": "объяснение со ссылкой на текст"
+    },
+    {
+      "type": "choice",
+      "question": "вопрос с пропуском ___",
+      "options": ["вариант1", "вариант2", "вариант3", "вариант4"],
+      "correct": 0,
+      "explanation": "почему именно этот вариант"
+    },
+    {
+      "type": "input",
+      "question": "Вставь правильную форму: Wenn ich Zeit ___, würde ich reisen.",
+      "correct": "hätte",
+      "hint": "sein/haben в Konjunktiv II",
+      "explanation": "haben → hätte в Konjunktiv II"
+    },
+    {
+      "type": "order",
+      "question": "Составь предложение:",
+      "words": ["würde", "ich", "mehr", "lesen"],
+      "correct": "Ich würde mehr lesen.",
+      "explanation": "würde на 2-м месте, Infinitiv в конце"
+    },
+    {
+      "type": "translate",
+      "question": "Переведи на немецкий: 'Я бы путешествовал'",
+      "options": [
+        "Ich würde reisen.",
+        "Ich werde reisen.",
+        "Ich reise.",
+        "Ich bin gereist."
+      ],
+      "correct": 0,
+      "explanation": "бы = würde + Infinitiv"
+    }
+  ],
+  "vocabulary": [
+    {
+      "word": "немецкое слово",
+      "wordClass": "Verb/Nomen/Adjektiv",
+      "level": "${level}",
+      "ru": "перевод на русский",
+      "en": "translation",
+      "example": "пример предложения на немецком"
+    }
+  ],
+  "writingPrompt": "Задание написать 3 предложения используя грамматику урока",
+  "writingHints": ["Подсказка 1", "Подсказка 2", "Подсказка 3"]
+}
+
+ВАЖНЫЕ ПРАВИЛА:
+- Диалог строго по теме блока: ${blockTitle}
+- НЕ использовать имя Azamat в текстах
+- Персонажи диалога: нейтральные имена (Lena, Thomas, Sarah, Markus)
+  или роли (Журналист, Студент, Arzt)
+- Упражнения ТОЛЬКО на грамматику: ${grammarTopic}
+- Минимум 6 реплик в диалоге
+- Минимум 8 слов в словаре
+- Грамматические формы выделять: обернуть в <b> теги
+`;
+
+  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(geminiApiKey)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 4096,
+        responseMimeType: 'application/json',
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gemini API error ${response.status}`);
+  }
+  const data = await response.json();
+  const text = (data?.candidates?.[0]?.content?.parts || []).map((part) => part.text || '').join('\n').trim();
+  if (!text) throw new Error('Gemini вернул пустой урок');
+  const clean = text.replace(/```json|```/g, '').trim();
+  const firstBrace = clean.indexOf('{');
+  const lastBrace = clean.lastIndexOf('}');
+  const jsonText = firstBrace >= 0 && lastBrace > firstBrace ? clean.slice(firstBrace, lastBrace + 1) : clean;
+  return JSON.parse(jsonText);
+}
+
+function planLessonCacheKey(level, blockId, lessonNumber) {
+  return `lesson_${level}_${blockId}_${lessonNumber}`;
+}
+
+function replaceForbiddenLessonNames(value) {
+  return String(value ?? '').replace(/Azamat/gi, 'Thomas').replace(/Азамат/gi, 'Томас');
+}
+
+function stripGeminiTags(value) {
+  return replaceForbiddenLessonNames(value).replace(/<\/?b>/gi, '').replace(/<[^>]+>/g, '').trim();
+}
+
+function planInlineMarkup(value) {
+  return esc(replaceForbiddenLessonNames(value))
+    .replace(/&lt;b&gt;/gi, '<b>')
+    .replace(/&lt;\/b&gt;/gi, '</b>');
+}
+
+function extractGeminiBoldTerms(value) {
+  const terms = [];
+  String(value || '').replace(/<b>(.*?)<\/b>/gi, (_, inner) => {
+    const cleaned = stripGeminiTags(inner);
+    if (cleaned) terms.push(cleaned);
+    (cleaned.match(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?/g) || []).forEach((word) => terms.push(word));
+    return '';
+  });
+  return terms;
+}
+
+function uniquePlanTerms(items) {
+  const seen = new Set();
+  return (items || []).map(stripGeminiTags).filter((item) => {
+    const key = cleanTerm(item);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function normalizeGeminiBool(value) {
+  if (typeof value === 'boolean') return value;
+  return String(value).toLowerCase() === 'true' || String(value).toLowerCase() === 'верно';
+}
+
+function normalizeGeminiExercise(item = {}) {
+  const rawType = String(item.type || '').toLowerCase();
+  const question = stripGeminiTags(item.question || item.q || '');
+  const explanation = stripGeminiTags(item.explanation || item.explain || item.hint || '');
+  if (rawType === 'truefalse' || rawType === 'tf') {
+    return { type: 'tf', q: question, answer: normalizeGeminiBool(item.correct ?? item.answer), explain: explanation };
+  }
+  if (rawType === 'input') {
+    return { type: 'input', q: question, answer: stripGeminiTags(item.correct ?? item.answer ?? ''), hint: stripGeminiTags(item.hint || ''), explain: explanation };
+  }
+  if (rawType === 'order' || rawType === 'build') {
+    return {
+      type: 'order',
+      q: question,
+      words: (Array.isArray(item.words) ? item.words : []).map(stripGeminiTags).filter(Boolean),
+      answer: stripGeminiTags(item.correct ?? item.answer ?? ''),
+      explain: explanation,
+    };
+  }
+  const options = (Array.isArray(item.options) ? item.options : []).map(stripGeminiTags);
+  return {
+    type: rawType === 'translate' ? 'translate' : 'choice',
+    q: question,
+    options,
+    answer: Number.isFinite(Number(item.correct ?? item.answer)) ? Number(item.correct ?? item.answer) : 0,
+    explain: explanation,
+  };
+}
+
+function normalizeGeminiVocabulary(item = {}, fallbackLevel = 'A1') {
+  const word = stripGeminiTags(item.word || item.de || '');
+  if (!word) return null;
+  const translationRU = stripGeminiTags(item.ru || item.translationRU || item.translation || '');
+  const translationEN = stripGeminiTags(item.en || item.translationEN || item.translation || '');
+  const entry = {
+    word,
+    wordClass: stripGeminiTags(item.wordClass || item.type || 'Wort'),
+    level: normalizeLevelName(item.level || fallbackLevel),
+    translationRU,
+    translationEN,
+    example: stripGeminiTags(item.example || word),
+    exampleRU: translationRU,
+    exampleEN: translationEN,
+    pronunciation: estimatePronunciation(word),
+  };
+  PLAN_LEXICON[word] = entry;
+  PLAN_LEXICON[cleanTerm(word)] = entry;
+  return entry;
+}
+
+function normalizeGeminiLesson(raw = {}, meta = {}) {
+  const explanationRaw = raw.explanation || {};
+  const writingRaw = raw.writing || {};
+  const explanationExamples = (Array.isArray(explanationRaw.examples) ? explanationRaw.examples : []).map((item) => ({
+    de: replaceForbiddenLessonNames(item.de || ''),
+    ru: stripGeminiTags(item.ru || ''),
+    en: stripGeminiTags(item.en || ''),
+  }));
+  const rawDialogue = Array.isArray(raw.dialogue) ? raw.dialogue : Array.isArray(raw.dialogues) ? raw.dialogues : [];
+  const dialogue = rawDialogue.map((line) => ({
+    speaker: stripGeminiTags(line.speaker || 'Lena'),
+    text: stripGeminiTags(line.text || ''),
+    translationRU: stripGeminiTags(line.ru || line.translationRU || ''),
+    translationEN: stripGeminiTags(line.en || line.translationEN || ''),
+  })).filter((line) => line.text);
+  const vocabulary = (Array.isArray(raw.vocabulary) ? raw.vocabulary : [])
+    .map((item) => normalizeGeminiVocabulary(item, meta.level))
+    .filter(Boolean);
+  const boldTerms = [
+    ...extractGeminiBoldTerms(explanationRaw.text),
+    ...explanationExamples.flatMap((item) => extractGeminiBoldTerms(item.de)),
+    ...rawDialogue.flatMap((line) => extractGeminiBoldTerms(line.text)),
+    ...(Array.isArray(raw.exercises) ? raw.exercises : []).flatMap((item) => [
+      ...extractGeminiBoldTerms(item.question),
+      ...extractGeminiBoldTerms(item.correct),
+      ...(Array.isArray(item.options) ? item.options.flatMap(extractGeminiBoldTerms) : []),
+    ]),
+  ];
+  const grammarHighlights = uniquePlanTerms([
+    ...(Array.isArray(raw.grammarHighlights) ? raw.grammarHighlights : []),
+    ...boldTerms,
+    ...(String(meta.grammarTopic || '').match(/[A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?/g) || []),
+  ]);
+  const rawWritingHints = raw.writingHints ?? writingRaw.hints ?? [];
+  const writingHints = Array.isArray(rawWritingHints)
+    ? rawWritingHints.map(stripGeminiTags).filter(Boolean)
+    : String(rawWritingHints || '').split(/[;/|]/).map(stripGeminiTags).filter(Boolean);
+  return {
+    generated: true,
+    grammar: meta.grammarTopic || '',
+    minutes: 12,
+    intro: [
+      `Тема: ${stripGeminiTags(explanationRaw.title || meta.lessonTitle || 'урок')}`,
+      `Грамматика: ${meta.grammarTopic || ''}`,
+      'Диалог и упражнения собраны по теме блока',
+    ],
+    outcomes: [
+      `Понять тему: ${stripGeminiTags(explanationRaw.title || meta.grammarTopic || '')}`,
+      'Разобрать диалог на немецком',
+      'Закрепить грамматику в упражнениях',
+    ],
+    explanation: {
+      title: stripGeminiTags(explanationRaw.title || meta.lessonTitle || 'Тема урока'),
+      text: replaceForbiddenLessonNames(explanationRaw.text || ''),
+      examples: explanationExamples,
+      sections: Array.isArray(explanationRaw.sections) ? explanationRaw.sections : [],
+      forms: Array.isArray(explanationRaw.forms) ? explanationRaw.forms : [],
+    },
+    dialogues: dialogue,
+    exercises: (Array.isArray(raw.exercises) ? raw.exercises : []).map(normalizeGeminiExercise).filter((item) => item.q),
+    vocabulary,
+    newWords: vocabulary.map((item) => item.word),
+    writing: {
+      prompt: stripGeminiTags(raw.writingPrompt || writingRaw.prompt || 'Напиши 3 предложения, используя грамматику урока.'),
+      hints: writingHints,
+      terms: Array.isArray(writingRaw.terms) && writingRaw.terms.length ? writingRaw.terms : grammarHighlights,
+    },
+    grammarHighlights,
+    text: dialogue.map((line) => `${line.speaker}: ${line.text}`).join(' '),
+  };
+}
+
+function readCachedGeneratedPlanLesson(level, blockId, lessonNumber) {
+  const cacheKey = planLessonCacheKey(level, blockId, lessonNumber);
+  if (generatedPlanLessons.has(cacheKey)) return generatedPlanLessons.get(cacheKey);
+  const cached = localStorage.getItem(cacheKey);
+  if (!cached) return null;
+  try {
+    const block = getPlanBlock(level, blockId);
+    const lesson = getPlanLesson(level, blockId, lessonNumber);
+    const normalized = normalizeGeminiLesson(JSON.parse(cached), {
+      level,
+      blockId,
+      blockTitle: block?.title || '',
+      grammarTopic: block?.grammar || '',
+      lessonTitle: lesson?.title || '',
+      lessonNumber,
+    });
+    generatedPlanLessons.set(cacheKey, normalized);
+    return normalized;
+  } catch (error) {
+    localStorage.removeItem(cacheKey);
+    return null;
+  }
+}
+
+async function getLessonContent(level, blockId, lessonNumber, blockTitle, grammarTopic, lessonTitle, force = false) {
+  const cacheKey = planLessonCacheKey(level, blockId, lessonNumber);
+  if (!force) {
+    const cached = readCachedGeneratedPlanLesson(level, blockId, lessonNumber);
+    if (cached) return cached;
+  }
+  const lesson = await generateLesson(blockTitle, grammarTopic, lessonTitle, lessonNumber, level);
+  const normalized = normalizeGeminiLesson(lesson, { level, blockId, blockTitle, grammarTopic, lessonTitle, lessonNumber });
+  localStorage.setItem(cacheKey, JSON.stringify(normalized));
+  generatedPlanLessons.set(cacheKey, normalized);
+  return normalized;
+}
+
+function ensurePlanLessonContent(level, blockId, lessonNumber, force = false) {
+  const cacheKey = planLessonCacheKey(level, blockId, lessonNumber);
+  if (!hasGeminiApiKey()) {
+    planLessonError = null;
+    planLessonLoadingKey = '';
+    return Promise.resolve();
+  }
+  if (!force && readCachedGeneratedPlanLesson(level, blockId, lessonNumber)) {
+    planLessonError = null;
+    if (simplePlanScreen.mode === 'lesson' && simplePlanScreen.blockId === blockId && Number(simplePlanScreen.lessonId) === Number(lessonNumber)) renderPlan();
+    return Promise.resolve();
+  }
+  if (planLessonLoadingKey === cacheKey) return Promise.resolve();
+  const block = getPlanBlock(level, blockId);
+  const lesson = getPlanLesson(level, blockId, lessonNumber);
+  const requestId = ++planLessonRequestId;
+  planLessonLoadingKey = cacheKey;
+  planLessonError = null;
+  renderPlan();
+  return getLessonContent(level, blockId, lessonNumber, block?.title || '', block?.grammar || '', lesson?.title || '', force)
+    .then(() => {
+      if (requestId === planLessonRequestId) planLessonError = null;
+    })
+    .catch((error) => {
+      if (requestId === planLessonRequestId) {
+        planLessonError = { key: cacheKey, message: error?.message || 'Не удалось загрузить урок' };
+      }
+    })
+    .finally(() => {
+      if (requestId === planLessonRequestId) planLessonLoadingKey = '';
+      if (simplePlanScreen.mode === 'lesson' && simplePlanScreen.blockId === blockId && Number(simplePlanScreen.lessonId) === Number(lessonNumber)) renderPlan();
+    });
+}
+
+function retryPlanLesson(level, blockId, lessonNumber) {
+  planLessonFallbackKeys.delete(planLessonCacheKey(level, blockId, lessonNumber));
+  ensurePlanLessonContent(level, blockId, Number(lessonNumber), true);
+}
+
+function usePlanLessonFallback(level, blockId, lessonNumber) {
+  const cacheKey = planLessonCacheKey(level, blockId, Number(lessonNumber));
+  planLessonFallbackKeys.add(cacheKey);
+  planLessonError = null;
+  planLessonLoadingKey = '';
+  renderPlan();
+}
 
 function defaultPlanProgress() {
   return {
@@ -9534,12 +10048,13 @@ function planWordSet(level, blockId, lessonId = 1) {
   return Array.from({ length: 5 }, (_, index) => planWordBank[(offset + index) % planWordBank.length]);
 }
 
-function planClickableText(text, words, prefix = '') {
-  const entries = allPlanWords();
+function planClickableText(text, words, prefix = '', highlightTerms = []) {
+  const entries = [...(words || []), ...allPlanWords()];
   const map = new Map(entries.flatMap((word) => {
     const parts = String(word.word || '').split(/\s+/).map(cleanTerm).filter(Boolean);
     return [[cleanTerm(word.word), word], [cleanTerm(String(word.word || '').split(/\s+/).pop()), word], ...parts.map((part) => [part, word])];
   }));
+  const highlightSet = new Set((highlightTerms || []).map(cleanTerm));
   let index = 0;
   return String(text || '').split(/([A-Za-zÄÖÜäöüß]+(?:-[A-Za-zÄÖÜäöüß]+)?)/g).map((token) => {
     const found = map.get(cleanTerm(token)) || planLexiconEntry(token);
@@ -9547,7 +10062,8 @@ function planClickableText(text, words, prefix = '') {
     const id = prefix ? `${prefix}-w${index++}` : '';
     const level = normalizeLevelName(found.level || getWordLevel(found.word)).toLowerCase();
     const tone = wordToneClass(level.toUpperCase()).trim();
-    return `<button class="plan-word level-${esc(level)} word-${esc(level)} ${esc(tone)}" ${id ? `id="${esc(id)}"` : ''} onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
+    const grammarClass = highlightSet.has(cleanTerm(token)) ? 'plan-grammar-key' : '';
+    return `<button class="plan-word level-${esc(level)} word-${esc(level)} ${esc(tone)} ${grammarClass}" ${id ? `id="${esc(id)}"` : ''} onclick="showPlanWordPopup(${jsString(found.word)},event)">${esc(token)}</button>`;
   }).join('');
 }
 
@@ -9736,9 +10252,11 @@ function openSimplePlanBlock(level, blockId) {
 }
 
 function openSimplePlanLesson(level, blockId, lessonId) {
-  planLessonStep = 0;
+  planLessonStep = 1;
+  planLessonTextMode = 'explain';
   simplePlanScreen = { mode: 'lesson', level, blockId, lessonId: Number(lessonId) };
   renderPlan();
+  ensurePlanLessonContent(level, blockId, Number(lessonId));
 }
 
 function openSimplePlanBlockTest(level, blockId) {
@@ -9798,13 +10316,14 @@ function renderSimplePlanBlock(level, blockId) {
 function planLessonPayload(level, blockId, lessonId) {
   const block = getPlanBlock(level, blockId);
   const lesson = getPlanLesson(level, blockId, lessonId);
-  const content = planLessonContent(blockId, lessonId) || {};
-  const words = planWordSet(level, blockId, lessonId);
+  const generated = readCachedGeneratedPlanLesson(level, blockId, lessonId);
+  const content = generated || planLessonContent(blockId, lessonId) || {};
+  const words = generated?.vocabulary?.length ? generated.vocabulary : planWordSet(level, blockId, lessonId);
   const text = content.text || (content.dialogues || []).map((line) => `${line.speaker}: ${line.text}`).join(' ')
     || (lesson.type === 'dialogue'
     ? `Mara: Hallo, ich heiße Mara. Aziz: Guten Tag, ich komme aus Lahore. Mara: Arbeitest du heute? Aziz: Ja, ich arbeite und besuche später meine Familie. Mara: Sehr gut. Wir verstehen die Frage zusammen.`
     : lesson.type === 'grammar'
-      ? `Heute üben wir ${block.grammar}. Ich bin Azamat. Du bist freundlich. Wir haben eine Wohnung. Sie besucht das Museum. Diese Beispiele zeigen die Form im Alltag.`
+      ? `Heute üben wir ${block.grammar}. Ich bin Thomas. Du bist freundlich. Wir haben eine Wohnung. Sie besucht das Museum. Diese Beispiele zeigen die Form im Alltag.`
       : lesson.type === 'vocabulary'
         ? `Neue Wörter: ${words.map((word) => word.word).join(', ')}. Ich benutze diese Wörter in kurzen Sätzen und verstehe den Kontext.`
         : lesson.type === 'writing'
@@ -9813,10 +10332,61 @@ function planLessonPayload(level, blockId, lessonId) {
   return { block, lesson, words, text, content };
 }
 
+function renderPlanLessonLoading(level, blockId, lessonId, payload) {
+  const root = document.getElementById('planRoot');
+  const { block, lesson } = payload;
+  root.innerHTML = `
+    <div class="simple-plan">
+      <button class="module-back" onclick="openSimplePlanBlock(${jsString(level)},${jsString(blockId)})">← Назад</button>
+      <section class="plan-screen-card">
+        <div class="plan-title">${esc(lesson.title)}</div>
+        <div class="plan-sub">${esc(block.title)} · ${esc(block.grammar)}</div>
+        <div class="plan-loading-card" role="status" aria-live="polite">
+          <div class="plan-loading-orb"></div>
+          <div class="plan-loading-title">✨ Готовим урок для тебя...</div>
+          <div class="plan-loading-bar" aria-hidden="true"></div>
+          <div class="plan-loading-copy">Gemini составляет диалог и упражнения по теме урока</div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderPlanLessonError(level, blockId, lessonId, payload) {
+  const root = document.getElementById('planRoot');
+  const { block, lesson } = payload;
+  root.innerHTML = `
+    <div class="simple-plan">
+      <button class="module-back" onclick="openSimplePlanBlock(${jsString(level)},${jsString(blockId)})">← Назад</button>
+      <section class="plan-screen-card">
+        <div class="plan-title">${esc(lesson.title)}</div>
+        <div class="plan-sub">${esc(block.title)} · ${esc(block.grammar)}</div>
+        <div class="plan-error-card">
+          <div class="module-row-title">Не удалось загрузить урок.</div>
+          <div class="plan-sub">Проверь соединение и попробуй снова.</div>
+          <div class="btn-row">
+            <button class="btn btn-gold" onclick="retryPlanLesson(${jsString(level)},${jsString(blockId)},${Number(lessonId)})">Попробовать снова</button>
+            <button class="btn btn-ghost" onclick="usePlanLessonFallback(${jsString(level)},${jsString(blockId)},${Number(lessonId)})">Открыть офлайн-урок</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function renderSimplePlanLesson(level, blockId, lessonId) {
   const root = document.getElementById('planRoot');
+  const cacheKey = planLessonCacheKey(level, blockId, lessonId);
+  const generated = readCachedGeneratedPlanLesson(level, blockId, lessonId);
   const { block, lesson, words, text, content } = planLessonPayload(level, blockId, lessonId);
-  const maxStep = ['writing', 'review'].includes(lesson.type) ? 4 : 3;
+  const shouldGenerate = hasGeminiApiKey() && !planLessonFallbackKeys.has(cacheKey);
+  if (!generated && shouldGenerate) {
+    const payload = { block, lesson, words, text, content };
+    if (planLessonError?.key === cacheKey) return renderPlanLessonError(level, blockId, lessonId, payload);
+    if (planLessonLoadingKey !== cacheKey) setTimeout(() => ensurePlanLessonContent(level, blockId, Number(lessonId)), 0);
+    return renderPlanLessonLoading(level, blockId, lessonId, payload);
+  }
+  const maxStep = content.writing || ['writing', 'review'].includes(lesson.type) ? 4 : 3;
   if (planLessonStep === 0) return renderPlanLessonPreview(level, blockId, lessonId, { block, lesson, words, text, content, maxStep });
   if (planLessonStep > maxStep) planLessonStep = maxStep;
   root.innerHTML = `
@@ -9881,9 +10451,54 @@ function renderPlanRateControls() {
   </div>`;
 }
 
+function renderPlanLessonExplanation(explanation, showContinue = true) {
+  const examples = Array.isArray(explanation.examples) ? explanation.examples : [];
+  const sections = Array.isArray(explanation.sections) ? explanation.sections : [];
+  const forms = Array.isArray(explanation.forms) ? explanation.forms : [];
+  return `
+    <section class="plan-explain-card">
+      <div class="plan-explain-title">💡 ${esc(explanation.title || 'Тема урока')}</div>
+      ${explanation.text ? `<div class="plan-explain-section">${planInlineMarkup(explanation.text)}</div>` : ''}
+      ${sections.length ? `<div class="plan-explain-section">Главные идеи:</div>` : ''}
+      ${sections.map((section) => `
+        <div class="plan-explain-section">
+          <strong>${esc(section.label)}</strong>
+          <div class="plan-explain-example">
+            <div>${esc(section.de)}</div>
+            <div class="plan-translation">«${esc(section.ru)}»</div>
+          </div>
+        </div>
+      `).join('')}
+      ${examples.length ? `
+        <div class="plan-explain-section">
+          <strong>Примеры:</strong>
+          ${examples.map((item) => `
+            <div class="plan-explain-example">
+              <div><strong>${planInlineMarkup(item.de)}</strong></div>
+              <div class="plan-translation">🇷🇺 ${esc(item.ru || '')}</div>
+              <div class="plan-translation">🇬🇧 ${esc(item.en || '')}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      ${forms.length ? `<div class="plan-explain-forms">
+        <strong>Главные формы:</strong>
+        ${forms.map((form) => `<div>${esc(form)}</div>`).join('')}
+      </div>` : ''}
+      ${showContinue ? `<div class="btn-row">
+        <button class="btn btn-gold" onclick="planLessonTextMode='text';renderPlan()">Понятно, читаем текст →</button>
+      </div>` : ''}
+    </section>
+  `;
+}
+
 function renderPlanLessonStep(level, blockId, lessonId, step, payload) {
   if (step === 1) {
+    if (payload.content.explanation && !payload.content.generated && planLessonTextMode !== 'text') {
+      return renderPlanLessonExplanation(payload.content.explanation);
+    }
     return `
+      ${payload.content.explanation && payload.content.generated ? renderPlanLessonExplanation(payload.content.explanation, false) : ''}
       ${renderPlanLessonText(level, blockId, lessonId, payload)}
       <div class="btn-row"><button class="btn btn-gold" onclick="planLessonStep=2;renderPlan()">Далее →</button></div>
     `;
@@ -9912,6 +10527,9 @@ function renderPlanLessonStep(level, blockId, lessonId, step, payload) {
       </div>
     `;
   }
+  if (payload.content.writing) {
+    return renderPlanWritingTask(level, blockId, lessonId, payload.content.writing);
+  }
   return `
     <div class="plan-sub" style="margin-top:18px;">${lessonId === 9 ? 'Напиши 3 предложения о себе: Ich heiße... / Ich komme aus... / Ich bin...' : 'Напиши 2-3 предложения по теме урока.'}</div>
     <textarea class="module-textarea" id="planWriting"></textarea>
@@ -9928,20 +10546,20 @@ function renderPlanLessonText(level, blockId, lessonId, payload) {
       <ul>${intro.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
       <button class="btn btn-gold" onclick="speakPlanDialog(${jsString(blockId)},${lessonId})">🔊 Послушать весь диалог</button>
     </section>
-    ${dialogues.length ? `<div class="plan-dialogue">${dialogues.map((line, index) => renderPlanUtterance(line, index, blockId, lessonId, payload.words)).join('')}</div>`
-      : `<div class="plan-content-text" style="margin-top:18px;">${planClickableText(payload.text, payload.words, `plan-${blockId}-${lessonId}`)}</div>`}
+    ${dialogues.length ? `<div class="plan-dialogue">${dialogues.map((line, index) => renderPlanUtterance(line, index, blockId, lessonId, payload.words, payload.content)).join('')}</div>`
+      : `<div class="plan-content-text" style="margin-top:18px;">${planClickableText(payload.text, payload.words, `plan-${blockId}-${lessonId}`, payload.content.grammarHighlights)}</div>`}
   `;
 }
 
-function renderPlanUtterance(line, index, blockId, lessonId, words) {
-  const avatar = /Mara/i.test(line.speaker) ? '🧑' : '👨';
+function renderPlanUtterance(line, index, blockId, lessonId, words, content = {}) {
+  const avatar = /Журналист/i.test(line.speaker) ? '📰' : /Экономист/i.test(line.speaker) ? '📊' : /Mara/i.test(line.speaker) ? '🧑' : '👨';
   return `
     <article class="plan-utterance" id="plan-utt-${blockId}-${lessonId}-${index}">
       <div class="plan-utterance-head">
         <div class="plan-speaker">${avatar} ${esc(line.speaker)}</div>
         <button class="plan-speak-btn" onclick="speakPlanUtterance(${jsString(blockId)},${lessonId},${index})" aria-label="Озвучить реплику">🔊</button>
       </div>
-      <div class="plan-utterance-text">${planClickableText(line.text, words, `plan-${blockId}-${lessonId}-${index}`)}</div>
+      <div class="plan-utterance-text">${planClickableText(line.text, words, `plan-${blockId}-${lessonId}-${index}`, content.grammarHighlights)}</div>
       <div class="plan-translation">🇷🇺 ${esc(line.translationRU || '')}</div>
       <div class="plan-translation">🇬🇧 ${esc(line.translationEN || '')}</div>
     </article>
@@ -9954,7 +10572,8 @@ function setPlanSpeechRate(rate) {
 }
 
 function planDialogLines(blockId, lessonId) {
-  return planLessonContent(blockId, lessonId)?.dialogues || [];
+  const level = simplePlanScreen.level || 'A1';
+  return readCachedGeneratedPlanLesson(level, blockId, lessonId)?.dialogues || planLessonContent(blockId, lessonId)?.dialogues || [];
 }
 
 function clearPlanSpeechHighlight() {
@@ -10034,6 +10653,7 @@ function speakPlanText(text, scope, onDone = null, token = ++planSpeechToken, ca
 function buildPlanLessonExercises(payloadOrWords) {
   const payload = Array.isArray(payloadOrWords) ? { words: payloadOrWords, lesson: {} } : payloadOrWords;
   const words = payload.words;
+  if (Array.isArray(payload.content?.exercises)) return payload.content.exercises;
   if (Number(payload.lesson?.id) === 5) {
     return [
       { type: 'listen-choice', q: 'Услышь число и выбери ответ', speak: 'eins', options: ['eins', 'sieben', 'zwölf', 'zwanzig'], answer: 0, explain: 'eins = один.' },
@@ -10066,23 +10686,60 @@ function buildPlanLessonExercises(payloadOrWords) {
 }
 
 function renderPlanExercise(q, index) {
-  if (q.type === 'input') {
-    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><input class="module-input" id="planEx${index}"><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},${jsString(q.type)},${jsString(q.answer)},${jsString(q.explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
+  const type = q.type === 'truefalse' ? 'tf' : q.type === 'build' ? 'build' : q.type;
+  const question = q.q || q.question || '';
+  const explain = q.explain || q.explanation || q.hint || '';
+  const answer = q.answer ?? q.correct ?? 0;
+  const options = Array.isArray(q.options) ? q.options : [];
+  if (type === 'input') {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(question)}</div>${q.hint ? `<div class="plan-status">${esc(q.hint)}</div>` : ''}<input class="module-input" id="planEx${index}"><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'input',${jsString(answer)},${jsString(explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
   }
-  if (q.type === 'tf') {
-    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'tf','true',${jsString(q.explain)},'true')">Верно</button><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'tf','true',${jsString(q.explain)},'false')">Неверно</button></div><div id="planFb${index}"></div></div>`;
+  if (type === 'tf') {
+    const correct = String(answer === true || answer === 'true');
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(question)}</div><div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'tf',${jsString(correct)},${jsString(explain)},'true')">Верно</button><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'tf',${jsString(correct)},${jsString(explain)},'false')">Неверно</button></div><div id="planFb${index}"></div></div>`;
   }
-  if (q.type === 'build') {
-    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><input class="module-input" id="planEx${index}" placeholder="Ich ..."><div class="module-word-list">${q.words.map((word) => `<button class="module-word-chip" onclick="document.getElementById('planEx${index}').value=(document.getElementById('planEx${index}').value+' ${esc(word)}').trim()">${esc(word)}</button>`).join('')}</div><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'input',${jsString(q.answer)},${jsString(q.explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
+  if (type === 'order') {
+    const words = Array.isArray(q.words) ? q.words : [];
+    return `<div class="plan-word-card" id="planOrderCard${index}"><div>${index + 1}. ${esc(question)}</div><input type="hidden" id="planEx${index}"><div class="plan-order-picked" id="planOrderPicked${index}"></div><div class="module-word-list">${words.map((word) => `<button class="module-word-chip" onclick="selectPlanOrderWord(${index},${jsString(word)},this)">${esc(word)}</button>`).join('')}</div><div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="resetPlanOrder(${index})">Сбросить</button><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'input',${jsString(answer)},${jsString(explain)})">Проверить</button></div><div id="planFb${index}"></div></div>`;
   }
-  if (q.type === 'listen-choice') {
-    return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><button class="btn btn-gold btn-sm" onclick="speakPlanText(${jsString(q.speak)},this.closest('.plan-word-card'))">🔊 Слушать</button><div class="module-options">${q.options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(q.answer))},${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+  if (type === 'build') {
+    const words = Array.isArray(q.words) ? q.words : [];
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(question)}</div><input class="module-input" id="planEx${index}" placeholder="Ich ..."><div class="module-word-list">${words.map((word) => `<button class="module-word-chip" onclick="document.getElementById('planEx${index}').value=(document.getElementById('planEx${index}').value+' ${esc(word)}').trim()">${esc(word)}</button>`).join('')}</div><button class="btn btn-ghost btn-sm" onclick="checkPlanExercise(${index},'input',${jsString(answer)},${jsString(explain)})">Проверить</button><div id="planFb${index}"></div></div>`;
   }
-  if (q.type === 'translate') {
+  if (type === 'listen-choice') {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(question)}</div><button class="btn btn-gold btn-sm" onclick="speakPlanText(${jsString(q.speak)},this.closest('.plan-word-card'))">🔊 Слушать</button><div class="module-options">${options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(answer))},${jsString(explain)},${jsString(String(oi))},${jsString(options[Number(answer)] || answer)})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+  }
+  if (type === 'translate' && options.length) {
+    return `<div class="plan-word-card"><div>${index + 1}. ${esc(question)}</div><div class="module-options">${options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(answer))},${jsString(explain)},${jsString(String(oi))},${jsString(options[Number(answer)] || answer)})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+  }
+  if (type === 'translate') {
     const opts = planTranslateLang === 'RU' ? q.optionsRU : q.optionsEN;
-    return `<div class="plan-word-card"><div class="plan-card-top"><div>${index + 1}. ${esc(q.q)}</div><div><button class="vf-btn ${planTranslateLang === 'RU' ? 'on' : ''}" onclick="planTranslateLang='RU';renderPlan()">🇷🇺 RU</button><button class="vf-btn ${planTranslateLang === 'EN' ? 'on' : ''}" onclick="planTranslateLang='EN';renderPlan()">🇬🇧 EN</button></div></div><div class="module-options">${opts.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice','0',${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+    return `<div class="plan-word-card"><div class="plan-card-top"><div>${index + 1}. ${esc(question)}</div><div><button class="vf-btn ${planTranslateLang === 'RU' ? 'on' : ''}" onclick="planTranslateLang='RU';renderPlan()">🇷🇺 RU</button><button class="vf-btn ${planTranslateLang === 'EN' ? 'on' : ''}" onclick="planTranslateLang='EN';renderPlan()">🇬🇧 EN</button></div></div><div class="module-options">${(opts || []).map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice','0',${jsString(explain)},${jsString(String(oi))},${jsString((opts || [])[0] || '0')})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
   }
-  return `<div class="plan-word-card"><div>${index + 1}. ${esc(q.q)}</div><div class="module-options">${q.options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(q.answer))},${jsString(q.explain)},${jsString(String(oi))})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+  return `<div class="plan-word-card"><div>${index + 1}. ${esc(question)}</div><div class="module-options">${options.map((option, oi) => `<button class="module-option" onclick="checkPlanExercise(${index},'choice',${jsString(String(answer))},${jsString(explain)},${jsString(String(oi))},${jsString(options[Number(answer)] || answer)})">${esc(option)}</button>`).join('')}</div><div id="planFb${index}"></div></div>`;
+}
+
+function selectPlanOrderWord(index, word, button) {
+  const input = document.getElementById(`planEx${index}`);
+  if (!input) return;
+  input.value = `${input.value || ''} ${word}`.trim();
+  if (button) {
+    button.disabled = true;
+    button.classList.add('selected');
+  }
+  const picked = document.getElementById(`planOrderPicked${index}`);
+  if (picked) picked.textContent = input.value;
+}
+
+function resetPlanOrder(index) {
+  const input = document.getElementById(`planEx${index}`);
+  if (input) input.value = '';
+  const picked = document.getElementById(`planOrderPicked${index}`);
+  if (picked) picked.textContent = '';
+  document.querySelectorAll(`#planOrderCard${index} .module-word-chip`).forEach((button) => {
+    button.disabled = false;
+    button.classList.remove('selected');
+  });
 }
 
 function normalizePlanAnswer(value) {
@@ -10096,11 +10753,41 @@ function normalizePlanAnswer(value) {
     .trim();
 }
 
-function checkPlanExercise(index, type, answer, explain, chosen = null) {
+function checkPlanExercise(index, type, answer, explain, chosen = null, shown = null) {
   const value = chosen !== null ? chosen : document.getElementById(`planEx${index}`)?.value || '';
   const ok = type === 'input' ? normalizePlanAnswer(value) === normalizePlanAnswer(answer) : String(value) === String(answer);
   const fb = document.getElementById(`planFb${index}`);
-  if (fb) fb.innerHTML = `<div class="plan-feedback ${ok ? 'ok' : 'no'}">${ok ? '✓ Правильно!' : `✗ Неверно. Правильный ответ: ${esc(answer)}`} ${esc(explain || '')}</div>`;
+  const shownAnswer = shown || (answer === 'true' ? 'Верно' : answer === 'false' ? 'Неверно' : answer);
+  if (fb) fb.innerHTML = `<div class="plan-feedback ${ok ? 'ok' : 'no'}">${ok ? '✓ Правильно!' : `✗ Неверно. Правильный ответ: ${esc(shownAnswer)}`} ${esc(explain || '')}</div>`;
+}
+
+function renderPlanWritingTask(level, blockId, lessonId, writing) {
+  const hints = Array.isArray(writing.hints)
+    ? writing.hints
+    : String(writing.hints || '').split(/[;/|]/).map((item) => item.trim()).filter(Boolean);
+  return `
+    <div class="plan-word-card" style="margin-top:18px;">
+      <div class="module-row-title">Написать самому</div>
+      <div class="plan-sub">${esc(writing.prompt || 'Напиши 2-3 предложения по теме урока.').replace(/\n/g, '<br>')}</div>
+      ${hints.length ? `<details class="plan-writing-hints"><summary>Подсказки</summary><div class="plan-check-list">${hints.map((hint) => `<div>${esc(hint)}</div>`).join('')}</div></details>` : ''}
+      <textarea class="module-textarea" id="planWriting" placeholder="Ich würde..."></textarea>
+      <div id="planWritingFeedback"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="checkPlanWritingTask(${jsString((writing.terms || []).join('|'))})">Проверить</button>
+        <button class="btn btn-gold" onclick="completeSimplePlanLesson(${jsString(level)},${jsString(blockId)},${lessonId})">Завершить урок →</button>
+      </div>
+    </div>
+  `;
+}
+
+function checkPlanWritingTask(rawTerms = '') {
+  const text = normalizePlanAnswer(document.getElementById('planWriting')?.value || '');
+  const terms = String(rawTerms || '').split('|').filter(Boolean);
+  const used = terms.filter((term) => text.includes(normalizePlanAnswer(term)));
+  const fb = document.getElementById('planWritingFeedback');
+  if (!fb) return;
+  const ok = used.length >= 2;
+  fb.innerHTML = `<div class="plan-feedback ${ok ? 'ok' : 'no'}">${ok ? '✓ Отлично! Konjunktiv II использован' : '⚠️ Попробуй использовать: würde, könnte, wäre'}</div>`;
 }
 
 function completeSimplePlanLesson(level, blockId, lessonId) {
@@ -10757,6 +11444,10 @@ function renderSettings() {
   if (translationSelect) translationSelect.value = getTranslationLang();
   const themeSelect = document.getElementById('settingsThemeSelect');
   if (themeSelect) themeSelect.value = ['light', 'purple'].includes(S.theme) ? S.theme : 'dark';
+  const geminiInput = document.getElementById('settingsGeminiKey');
+  if (geminiInput) geminiInput.value = localStorage.getItem(GEMINI_KEY_STORAGE) || '';
+  const geminiStatus = document.getElementById('geminiKeyStatus');
+  if (geminiStatus) geminiStatus.textContent = hasGeminiApiKey() ? 'Gemini подключён для генерации уроков.' : 'Без ключа уроки открываются в офлайн-режиме.';
   const grid = document.getElementById('settingsSpecGrid');
   grid.innerHTML = '';
 
@@ -10784,6 +11475,7 @@ function saveSettings() {
   if (newName) S.name = newName;
   S.translationLang = document.getElementById('translationLangSelect')?.value === 'de' ? 'de' : 'ru';
   applyTheme(document.getElementById('settingsThemeSelect')?.value || 'dark');
+  setGeminiApiKey(document.getElementById('settingsGeminiKey')?.value || '');
   S.specs = SPECIALIZATIONS
     .filter((spec) => document.getElementById(`spec-${spec.id}`).checked)
     .map((spec) => spec.id);
@@ -12048,7 +12740,7 @@ if(S.onboardingDone){
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js?v=8-plan-buttons')
+  navigator.serviceWorker.register('./sw.js?v=9-gemini-mobile')
     .then(reg => console.log('SW registered'))
     .catch(err => console.log('SW registration failed'));
 }

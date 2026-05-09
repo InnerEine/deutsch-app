@@ -14,7 +14,7 @@ deutsch-project/
 │   ├── state.js        # Состояние приложения (localStorage)
 │   ├── onboarding.js   # Онбординг + тест уровня
 │   ├── app.js          # Основная логика: dashboard, план, задания, словарь
-│   ├── practice.js     # AI-диалоговый тренажёр (через backend + Ollama)
+│   ├── practice.js     # AI-диалоговый тренажёр (через backend + Ollama/Gemini)
 │   └── boot.js         # Инициализация приложения
 ├── manifest.json       # PWA манифест
 ├── sw.js               # Service Worker для офлайн
@@ -63,7 +63,9 @@ git push -u origin main
 - PWA/offline;
 - экспорт/импорт прогресса JSON.
 
-Backend нужен только для аккаунтов, синхронизации между устройствами и AI через Ollama.
+Для генерации новых уроков Gemini в static-only режиме ключ вводится в настройках приложения и хранится только в localStorage браузера. Если ключ не задан, уроки открываются в офлайн-режиме.
+
+Backend нужен только для аккаунтов, синхронизации между устройствами и AI через Ollama или Gemini.
 
 ## Опциональный запуск с backend
 
@@ -86,11 +88,19 @@ python app.py
 ```
 Бэкенд запустится на http://127.0.0.1:5000
 
-### 2. Запуск Ollama для AI
+### 2. Запуск Ollama или Gemini для AI
 ```bash
 ollama run gemma3
 ```
 Ollama по умолчанию поднимает локальный API на http://127.0.0.1:11434
+
+Для Gemini запусти backend с переменными:
+
+```bash
+set AI_PROVIDER=gemini
+set GEMINI_API_KEY=your_key_here
+python app.py
+```
 
 ### 3. Запуск фронтенда
 ```bash
@@ -100,8 +110,8 @@ python -m http.server 8000
 Открой http://localhost:8000 в браузере.
 
 ### 4. AI-функции
-- AI-диалоги и AI-проверка домашки идут через backend в локальный Ollama.
-- Если Ollama не запущен или модель не скачана, приложение всё равно работает, но AI-практика и AI-фидбек будут недоступны.
+- AI-диалоги и AI-проверка домашки идут через backend в локальный Ollama или Gemini.
+- Если AI-провайдер не настроен, приложение всё равно работает, но AI-практика и AI-фидбек будут недоступны.
 
 ### 5. Синхронизация
 - Перейди в "Аккаунт" → зарегистрируйся или войди.
@@ -116,7 +126,7 @@ python -m http.server 8000
 - [x] Домашние задания с локальным сохранением и опциональной AI-проверкой через backend
 - [x] Словарь с аудио и фильтрацией
 - [x] Разговорник
-- [x] AI-диалоговый тренажёр (9 сценариев, опционально через backend + Ollama)
+- [x] AI-диалоговый тренажёр (9 сценариев, опционально через backend + Ollama/Gemini)
 - [x] Интервальное повторение (Leitner system)
 - [x] PWA (офлайн, установка)
 - [x] Настройки профиля + геймификация (очки)
@@ -153,7 +163,7 @@ python -m http.server 8000
 ## Технологии
 
 - Vanilla HTML/CSS/JS — без фреймворков
-- Ollama (`gemma3` по умолчанию) — бесплатные локальные AI-диалоги
+- Ollama (`gemma3` по умолчанию) или Gemini (`gemini-2.5-flash`) — AI-диалоги через backend
 - localStorage — хранение прогресса
 - Google Fonts (Space Grotesk, Syne, IBM Plex Mono)
 - Flask + SQLAlchemy — бэкенд
@@ -179,7 +189,7 @@ cd backend
 python -m py_compile app.py
 ```
 
-Если backend будет включён в production, задай `JWT_SECRET_KEY`, при необходимости `CORS_ORIGINS`, `DATABASE_URL`, `FLASK_DEBUG=0`.
+Если backend будет включён в production, задай `JWT_SECRET_KEY`, при необходимости `CORS_ORIGINS`, `DATABASE_URL`, `FLASK_DEBUG=0`. Для Gemini добавь `AI_PROVIDER=gemini` и `GEMINI_API_KEY`.
 
 ## Переменные CSS
 

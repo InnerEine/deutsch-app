@@ -297,6 +297,92 @@ async function main() {
       vocabProgressKeys: Object.keys(S.vocabProgress).length
     })`);
 
+    await pageCmd('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 2,
+      mobile: true,
+    });
+    await pageCmd('Emulation.setTouchEmulationEnabled', { enabled: true });
+    await evalJs(`window.dispatchEvent(new Event('resize')); goPage('dashboard'); true;`);
+    await sleep(500);
+
+    const mobileState = await evalJs(`
+      (async () => {
+        const wait = () => new Promise((resolve) => setTimeout(resolve, 90));
+        const waitSheet = () => new Promise((resolve) => setTimeout(resolve, 360));
+        const activePage = () => document.querySelector('.page.on')?.id?.replace(/^page-/, '') || '';
+        const isVisible = (el) => {
+          if (!el) return false;
+          const rect = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+        };
+        const hitTarget = (el) => {
+          if (!isVisible(el)) return false;
+          const rect = el.getBoundingClientRect();
+          const x = Math.max(1, Math.min(window.innerWidth - 1, rect.left + rect.width / 2));
+          const y = Math.max(1, Math.min(window.innerHeight - 1, rect.top + rect.height / 2));
+          const top = document.elementFromPoint(x, y);
+          return top === el || el.contains(top);
+        };
+        const activeSection = () => document.querySelector('#mobile-tabbar .tab-btn.active')?.dataset.section || '';
+        const tabbar = document.getElementById('mobile-tabbar');
+        const more = document.querySelector('#mobile-tabbar .tab-btn[data-section="more"]');
+        const menu = document.getElementById('more-menu');
+        const checks = [];
+
+        for (const [section, expected] of [
+          ['home', 'dashboard'],
+          ['plan', 'plan'],
+          ['reading', 'reading'],
+          ['vocabulary', 'vocab'],
+          ['practice', 'practice'],
+        ]) {
+          const btn = document.querySelector(\`#mobile-tabbar .tab-btn[data-section="\${section}"]\`);
+          const check = { section, expected, visible: isVisible(btn), hit: hitTarget(btn) };
+          btn?.click();
+          await wait();
+          check.page = activePage();
+          check.active = activeSection();
+          checks.push(check);
+        }
+
+        more?.click();
+        await waitSheet();
+        const sheetOpened = isVisible(menu) && menu.classList.contains('open');
+
+        for (const [section, expected] of [
+          ['tasks', 'homework'],
+          ['phrases', 'phrases'],
+          ['repeat', 'repetition'],
+          ['chat', 'chat'],
+          ['profile', 'login'],
+          ['settings', 'settings'],
+        ]) {
+          if (!menu.classList.contains('open')) {
+            more?.click();
+            await waitSheet();
+          }
+          const btn = menu.querySelector(\`button[data-section="\${section}"]\`);
+          const check = { section, expected, visible: isVisible(btn), hit: hitTarget(btn) };
+          btn?.click();
+          await wait();
+          check.page = activePage();
+          check.active = activeSection();
+          checks.push(check);
+        }
+
+        return {
+          tabbarVisible: isVisible(tabbar),
+          moreVisible: isVisible(more),
+          moreHit: hitTarget(more),
+          sheetOpened,
+          checks,
+        };
+      })();
+    `);
+
     const smokeErrors = await evalJs(`window.__smokeErrors`);
     const exceptions = events
       .filter((event) => event.method === 'Runtime.exceptionThrown')
@@ -315,6 +401,7 @@ async function main() {
       loginState,
       aiState,
       repetitionState,
+      mobileState,
       smokeErrors,
       exceptions,
       logErrors: filteredLogErrors,
@@ -332,6 +419,11 @@ async function main() {
       loginState?.token ||
       !loginState?.exportVisible ||
       !aiState?.disabledMessage ||
+      !mobileState?.tabbarVisible ||
+      !mobileState?.moreVisible ||
+      !mobileState?.moreHit ||
+      !mobileState?.sheetOpened ||
+      !mobileState?.checks?.every((item) => item.visible && item.hit && item.page === item.expected && (item.active === item.section || item.active === 'more')) ||
       (smokeErrors && smokeErrors.length) ||
       exceptions.length ||
       filteredLogErrors.length;

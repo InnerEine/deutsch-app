@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deutsch-app-v8-plan-buttons';
+const CACHE_NAME = 'deutsch-app-v9-gemini-mobile';
 const urlsToCache = [
   './',
   './index.html',
