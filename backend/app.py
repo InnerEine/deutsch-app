@@ -169,7 +169,7 @@ def ollama_request(system_prompt, messages, max_tokens=400):
         return None, str(exc)
 
 
-def gemini_request(system_prompt, messages, max_tokens=400):
+def gemini_request(system_prompt, messages, max_tokens=400, generation_config=None):
     api_key = app.config["GEMINI_API_KEY"]
     if not api_key:
         return None, "GEMINI_API_KEY is not configured."
@@ -188,17 +188,19 @@ def gemini_request(system_prompt, messages, max_tokens=400):
         for item in messages
         if item.get("content")
     ]
+    gen_cfg = {"temperature": 0.7, "maxOutputTokens": max_tokens}
+    if isinstance(generation_config, dict):
+        gen_cfg.update(generation_config)
+    payload = {
+        "contents": contents,
+        "generationConfig": gen_cfg,
+    }
+    if system_prompt:
+        payload["systemInstruction"] = {"parts": [{"text": system_prompt}]}
     try:
         data = http_post_json(
             url,
-            {
-                "systemInstruction": {"parts": [{"text": system_prompt}]},
-                "contents": contents,
-                "generationConfig": {
-                    "temperature": 0.7,
-                    "maxOutputTokens": max_tokens,
-                },
-            },
+            payload,
             headers={"x-goog-api-key": api_key},
             timeout=timeout,
         )
@@ -219,12 +221,17 @@ def gemini_request(system_prompt, messages, max_tokens=400):
         return None, str(exc)
 
 
-def ai_request(system_prompt, messages, max_tokens=400):
+def ai_request(system_prompt, messages, max_tokens=400, generation_config=None):
     provider = app.config["AI_PROVIDER"]
     if provider == "ollama":
         return ollama_request(system_prompt, messages, max_tokens=max_tokens)
     if provider == "gemini":
-        return gemini_request(system_prompt, messages, max_tokens=max_tokens)
+        return gemini_request(
+            system_prompt,
+            messages,
+            max_tokens=max_tokens,
+            generation_config=generation_config,
+        )
     return None, f"Unsupported AI_PROVIDER: {provider}"
 
 
@@ -460,6 +467,45 @@ def ai_chat():
     messages.append({"role": "user", "content": user_message})
 
     text, err = ai_request(system_prompt, messages, max_tokens=max_tokens)
+    if err:
+        return jsonify({"error": err}), 503
+    return jsonify({"text": text})
+
+
+@app.route("/api/ai/generate", methods=["POST"])
+def ai_generate():
+    """Generic prompt -> text endpoint for the frontend.
+
+    Body:
+      {
+        "prompt": "...",
+        "system": "..." (optional),
+        "generationConfig": { "temperature": 0.7, "maxOutputTokens": 1000 } (optional)
+      }
+    """
+    data = json_body()
+    prompt = data.get("prompt") or ""
+    system_prompt = data.get("system") or ""
+    generation_config = data.get("generationConfig") or {}
+
+    if not prompt:
+        return jsonify({"error": "prompt is required"}), 400
+    if not isinstance(generation_config, dict):
+        return jsonify({"error": "generationConfig must be an object"}), 400
+
+    try:
+        max_tokens = int(generation_config.get("maxOutputTokens", 1000) or 1000)
+    except (TypeError, ValueError):
+        return jsonify({"error": "maxOutputTokens must be a number"}), 400
+    max_tokens = max(50, min(max_tokens, 8192))
+    generation_config["maxOutputTokens"] = max_tokens
+
+    text, err = ai_request(
+        system_prompt,
+        [{"role": "user", "content": prompt}],
+        max_tokens=max_tokens,
+        generation_config=generation_config,
+    )
     if err:
         return jsonify({"error": err}), 503
     return jsonify({"text": text})
