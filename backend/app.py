@@ -30,9 +30,31 @@ CORS(
     },
 )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL", "sqlite:///deutsch_app.db"
+def _normalize_database_url(url):
+    """Render/Heroku/Neon часто выдают URL в формате postgres://...
+    SQLAlchemy 2.x требует диалект postgresql:// (+psycopg2).
+    Также принудительно включаем sslmode=require для managed Postgres,
+    если он не задан явно (Render Postgres его требует).
+    """
+    if not url:
+        return "sqlite:///deutsch_app.db"
+    if url.startswith("postgres://"):
+        url = "postgresql+psycopg2://" + url[len("postgres://"):]
+    elif url.startswith("postgresql://") and "+psycopg2" not in url:
+        url = "postgresql+psycopg2://" + url[len("postgresql://"):]
+    if url.startswith("postgresql+psycopg2://") and "sslmode=" not in url:
+        url += ("&" if "?" in url else "?") + "sslmode=require"
+    return url
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = _normalize_database_url(
+    os.getenv("DATABASE_URL")
 )
+# Полезно для managed Postgres: переподключаться после простоя контейнера.
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 app.config["JWT_SECRET_KEY"] = os.getenv(
     "JWT_SECRET_KEY", "deutsch-dev-secret-key-please-change-123456"
 )
@@ -271,9 +293,17 @@ def ai_error_response(err):
 
 @app.route("/api/health", methods=["GET"])
 def health():
+    db_url = app.config["SQLALCHEMY_DATABASE_URI"]
+    if db_url.startswith("sqlite"):
+        db_backend = "sqlite"
+    elif db_url.startswith("postgresql"):
+        db_backend = "postgres"
+    else:
+        db_backend = "other"
     return jsonify(
         {
             "status": "ok",
+            "db": db_backend,
             "ai_provider": app.config["AI_PROVIDER"],
             "ollama_model": app.config["OLLAMA_MODEL"],
             "gemini_model": app.config["GEMINI_MODEL"],
