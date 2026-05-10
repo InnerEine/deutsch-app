@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deutsch-app-v10-gemini-practice';
+const CACHE_NAME = 'deutsch-app-v11-backend';
 const urlsToCache = [
   './',
   './index.html',
