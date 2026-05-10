@@ -5881,11 +5881,11 @@ function normalizeAIWritingReview(raw, text, fallbackReview = null) {
 
 async function buildAIWritingReview(text, grammarTopic, level, context = {}) {
   const fallback = buildWritingReview(text, context);
-  if (!hasGeminiApiKey()) {
+  if (!hasAIBackend()) {
     return {
       ...fallback,
       score: fallback.errors.length ? 72 : 88,
-      tip: 'Gemini-ключ не задан. Добавь ключ в настройках, чтобы получить AI-разбор.',
+      tip: 'AI-проверка сейчас офлайн. Подключи backend в настройках, чтобы получить AI-разбор.',
       aiMissing: true,
     };
   }
@@ -5901,11 +5901,11 @@ async function buildAIWritingReview(text, grammarTopic, level, context = {}) {
     }
     return normalizeAIWritingReview(raw, text, fallback);
   } catch (error) {
-    console.warn('Gemini text check failed:', error);
+    console.warn('AI text check failed:', error);
     return {
       ...fallback,
       score: fallback.errors.length ? 70 : 86,
-      tip: `AI-проверка сейчас недоступна: ${error.message || error}`,
+      tip: `AI-проверка сейчас недоступна: ${humanizeAIError(error)}`,
       aiError: true,
     };
   }
@@ -9638,16 +9638,44 @@ let planLessonError = null;
 let planLessonRequestId = 0;
 const generatedPlanLessons = new Map();
 const planLessonFallbackKeys = new Set();
-const GEMINI_API_KEY = 'AIzaSyAqsyiAsfrVoPKvJcJALklKdLSXMZiRFAU';
 const GEMINI_MODEL = 'gemini-2.5-flash';
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-function getConfiguredGeminiApiKey() {
-  return String(GEMINI_API_KEY || '').trim();
+function getBackendBaseUrl() {
+  const cfg = (typeof window !== 'undefined' && window.DEUTSCH_CONFIG) || {};
+  return String(cfg.apiUrl || '').replace(/\/+$/, '');
 }
 
+function hasAIBackend() {
+  return !!getBackendBaseUrl();
+}
+
+// Kept for backward compatibility with callers that check this flag.
 function hasGeminiApiKey() {
-  return !!getConfiguredGeminiApiKey();
+  return hasAIBackend();
+}
+
+function humanizeAIError(error) {
+  const message = String((error && error.message) || error || '').trim();
+  if (!message) return 'AI-сервис временно недоступен. Попробуй позже.';
+  if (/GEMINI_API_KEY is not configured/i.test(message)) {
+    return 'Админ не настроил ключ Gemini на сервере. AI временно недоступен.';
+  }
+  if (/Gemini HTTP 401|Gemini HTTP 403/i.test(message)) {
+    return 'Ключ Gemini недействителен или отключён. Обратись к админу.';
+  }
+  if (/Gemini HTTP 429/i.test(message)) {
+    return 'Слишком много запросов к Gemini. Подожди минуту и попробуй снова.';
+  }
+  if (/Gemini HTTP 5\d\d/i.test(message)) {
+    return 'Gemini сейчас отвечает с ошибкой. Попробуй ещё раз через минуту.';
+  }
+  if (/Gemini is not reachable|Failed to fetch|NetworkError/i.test(message)) {
+    return 'Нет связи с AI-сервером. Проверь интернет и попробуй снова.';
+  }
+  if (/empty response|пустой ответ/i.test(message)) {
+    return 'AI вернул пустой ответ. Попробуй ещё раз.';
+  }
+  return message;
 }
 
 function parseGeminiJsonText(text) {
@@ -9658,25 +9686,47 @@ function parseGeminiJsonText(text) {
   return JSON.parse(jsonText);
 }
 
-async function postGeminiPrompt(prompt, generationConfig = {}) {
-  if (!GEMINI_API_KEY) {
-    const error = new Error('Gemini API key is not configured.');
-    error.code = 'GEMINI_KEY_MISSING';
-    throw error;
+async function callAIBackend(prompt, generationConfig = {}, systemPrompt = '') {
+  const base = getBackendBaseUrl();
+  if (!base) {
+    const err = new Error('AI backend is not configured.');
+    err.code = 'AI_BACKEND_MISSING';
+    throw err;
   }
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig,
-    }),
-  });
-  if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
-  const data = await response.json();
-  const text = (data?.candidates?.[0]?.content?.parts || []).map((part) => part.text || '').join('\n').trim();
-  if (!text) throw new Error('Gemini вернул пустой ответ');
+  let response;
+  try {
+    response = await fetch(`${base}/api/ai/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        system: systemPrompt || undefined,
+        generationConfig,
+      }),
+    });
+  } catch (networkError) {
+    const err = new Error('Нет связи с AI-сервером.');
+    err.cause = networkError;
+    throw err;
+  }
+  if (!response.ok) {
+    let details = `HTTP ${response.status}`;
+    try {
+      const payload = await response.json();
+      if (payload && payload.error) details = payload.error;
+    } catch (_) {
+      // ignore parse errors
+    }
+    throw new Error(details);
+  }
+  const data = await response.json().catch(() => ({}));
+  const text = String(data.text || '').trim();
+  if (!text) throw new Error('AI вернул пустой ответ');
   return text;
+}
+
+async function postGeminiPrompt(prompt, generationConfig = {}) {
+  return callAIBackend(prompt, generationConfig);
 }
 
 async function checkTextWithAI(userText, grammarTopic, level) {
@@ -9708,20 +9758,10 @@ async function checkTextWithAI(userText, grammarTopic, level) {
 `;
 
   try {
-    const response = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 1000 },
-      }),
-    });
-    if (!response.ok) throw new Error(`Gemini API error ${response.status}`);
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = await callAIBackend(prompt, { temperature: 0.3, maxOutputTokens: 1000 });
     return parseGeminiJsonText(text);
   } catch (error) {
-    console.warn('Gemini text check failed:', error);
+    console.warn('AI text check failed:', error);
     return null;
   }
 }
@@ -12871,7 +12911,7 @@ async function callBackendAI(systemPrompt, userMessage, history) {
     'POST'
   );
   if (response && response.text) return response.text;
-  if (response && response.error) return `⚠️ Ошибка AI: ${response.error}`;
+  if (response && response.error) return `⚠️ Ошибка AI: ${humanizeAIError(response.error)}`;
   return '';
 }
 
@@ -12881,7 +12921,7 @@ async function callClaude(systemPrompt, userMessage, history) {
   if (sendBtn) sendBtn.disabled = true;
 
   try {
-    if (hasGeminiApiKey()) {
+    if (hasAIBackend()) {
       const prompt = buildGeminiPracticePrompt(systemPrompt, userMessage, history);
       const reply = await postGeminiPrompt(prompt, { temperature: 0.55, maxOutputTokens: 500 });
       if (reply) return reply.replace(/```[a-z]*|```/gi, '').trim();
@@ -12890,7 +12930,7 @@ async function callClaude(systemPrompt, userMessage, history) {
       const backendReply = await callBackendAI(systemPrompt, userMessage, history);
       if (backendReply) return backendReply;
     }
-    return '⚠️ AI сейчас недоступен. Проверь Gemini API key или подключение к интернету.';
+    return '⚠️ AI сейчас недоступен. Проверь подключение к интернету или настройку backend.';
   } catch (error) {
     if (typeof hasBackend === 'function' && hasBackend()) {
       try {
@@ -12898,7 +12938,7 @@ async function callClaude(systemPrompt, userMessage, history) {
         if (backendReply) return backendReply;
       } catch {}
     }
-    return `⚠️ Ошибка AI: ${error.message}`;
+    return `⚠️ Ошибка AI: ${humanizeAIError(error)}`;
   } finally {
     isTyping = false;
     if (sendBtn) sendBtn.disabled = false;
