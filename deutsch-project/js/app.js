@@ -1085,7 +1085,10 @@ async function apiRequest(endpoint, data = null, method = 'GET') {
     return { error: 'Backend is not connected in static-only mode.' };
   }
 
-  const url = `${S.apiUrl}${endpoint}`;
+  // Backend serves all routes under /api/*. Add the prefix if the caller
+  // didn't include it, so endpoints like '/ai/chat' resolve to '/api/ai/chat'.
+  const path = endpoint.startsWith('/api/') ? endpoint : `/api${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+  const url = `${S.apiUrl}${path}`;
   const headers = { 'Content-Type': 'application/json' };
   if (S.token) headers.Authorization = `Bearer ${S.token}`;
 

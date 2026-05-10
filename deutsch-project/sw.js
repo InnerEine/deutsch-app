@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deutsch-app-v11-backend';
+const CACHE_NAME = 'deutsch-app-v12-api-prefix';
 const urlsToCache = [
   './',
   './index.html',
