@@ -1314,10 +1314,13 @@ async function loginUser() {
   };
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
-  if (!email || !password) return toast('Заполните все поля');
+  if (!email || !password) {
+    toast('Заполните email и пароль');
+    return;
+  }
 
   const status = document.getElementById('loginStatus');
-  status.textContent = 'Вход...';
+  status.textContent = 'Входим… сервер мог уснуть, это занимает до минуты';
   const res = await apiRequest('/login', { email, password }, 'POST');
 
   if (res && res.token) {
@@ -1332,12 +1335,15 @@ async function loginUser() {
     S.hwAnswers = { ...localSnapshot.hwAnswers };
     saveS();
     await syncLocalDataToBackend();
+    status.textContent = '';
     toast('✅ Вход выполнен');
     await initApp();
     return;
   }
 
-  status.textContent = res?.error || 'Ошибка входа';
+  const message = res?.error || 'Ошибка входа. Попробуйте ещё раз';
+  status.textContent = message;
+  toast(message);
 }
 
 async function registerUser() {
@@ -1355,10 +1361,21 @@ async function registerUser() {
   };
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
-  if (!email || !password) return toast('Заполните все поля');
+  if (!email || !password) {
+    toast('Заполните email и пароль');
+    return;
+  }
+  if (!/.+@.+\..+/.test(email)) {
+    toast('Укажите корректный email, например name@example.com');
+    return;
+  }
+  if (password.length < 6) {
+    toast('Пароль должен быть не короче 6 символов');
+    return;
+  }
 
   const status = document.getElementById('loginStatus');
-  status.textContent = 'Регистрация...';
+  status.textContent = 'Регистрируем… сервер мог уснуть, это занимает до минуты';
   const res = await apiRequest('/register', { username: email.split('@')[0], email, password }, 'POST');
 
   if (res && res.token) {
@@ -1373,12 +1390,15 @@ async function registerUser() {
     S.hwAnswers = { ...localSnapshot.hwAnswers };
     saveS();
     await syncLocalDataToBackend();
+    status.textContent = '';
     toast('✅ Регистрация успешна');
     await initApp();
     return;
   }
 
-  status.textContent = res?.error || 'Ошибка регистрации';
+  const message = res?.error || 'Ошибка регистрации. Попробуйте ещё раз';
+  status.textContent = message;
+  toast(message);
 }
 
 function logoutUser() {

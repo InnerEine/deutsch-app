@@ -159,20 +159,23 @@ def ollama_request(system_prompt, messages, max_tokens=400):
         return text, None
     except error.HTTPError as exc:
         details = exc.read().decode("utf-8", errors="replace")
-        return None, f"Ollama HTTP {exc.code}: {details}"
+        return None, {"status": exc.code, "message": f"Ollama HTTP {exc.code}: {details}"}
     except error.URLError:
         return (
             None,
-            "Ollama is not reachable. Install Ollama, start it, and run a model like `ollama run gemma3`.",
+            {
+                "status": 502,
+                "message": "Ollama is not reachable. Install Ollama, start it, and run a model like `ollama run gemma3`.",
+            },
         )
     except Exception as exc:  # noqa: BLE001
-        return None, str(exc)
+        return None, {"status": 500, "message": str(exc)}
 
 
 def gemini_request(system_prompt, messages, max_tokens=400, generation_config=None):
     api_key = app.config["GEMINI_API_KEY"]
     if not api_key:
-        return None, "GEMINI_API_KEY is not configured."
+        return None, {"status": 500, "message": "GEMINI_API_KEY is not configured."}
 
     model = app.config["GEMINI_MODEL"]
     timeout = app.config["GEMINI_TIMEOUT"]
@@ -188,7 +191,14 @@ def gemini_request(system_prompt, messages, max_tokens=400, generation_config=No
         for item in messages
         if item.get("content")
     ]
-    gen_cfg = {"temperature": 0.7, "maxOutputTokens": max_tokens}
+    # thinkingBudget=0 отключает «размышления» и делает ответы моментальными.
+    # Работает для gemini-2.5-flash и flash-lite; для моделей без thinking поле
+    # молча игнорируется.
+    gen_cfg = {
+        "temperature": 0.7,
+        "maxOutputTokens": max_tokens,
+        "thinkingConfig": {"thinkingBudget": 0},
+    }
     if isinstance(generation_config, dict):
         gen_cfg.update(generation_config)
     payload = {
@@ -210,15 +220,24 @@ def gemini_request(system_prompt, messages, max_tokens=400, generation_config=No
         )
         text = "\n".join(part.get("text", "") for part in parts).strip()
         if not text:
-            return None, "Gemini returned an empty response."
+            return None, {"status": 502, "message": "Gemini returned an empty response."}
         return text, None
     except error.HTTPError as exc:
         details = exc.read().decode("utf-8", errors="replace")
-        return None, f"Gemini HTTP {exc.code}: {details}"
+        if exc.code == 429:
+            message = "Слишком много запросов к Gemini. Попробуй через минуту."
+        elif 500 <= exc.code < 600:
+            message = "Gemini временно недоступен. Попробуй ещё раз."
+        else:
+            message = f"Gemini HTTP {exc.code}: {details}"
+        return None, {"status": exc.code, "message": message, "details": details}
     except error.URLError:
-        return None, "Gemini is not reachable. Check network access and API key restrictions."
+        return None, {
+            "status": 502,
+            "message": "Gemini is not reachable. Check network access and API key restrictions.",
+        }
     except Exception as exc:  # noqa: BLE001
-        return None, str(exc)
+        return None, {"status": 500, "message": str(exc)}
 
 
 def ai_request(system_prompt, messages, max_tokens=400, generation_config=None):
@@ -232,7 +251,22 @@ def ai_request(system_prompt, messages, max_tokens=400, generation_config=None):
             max_tokens=max_tokens,
             generation_config=generation_config,
         )
-    return None, f"Unsupported AI_PROVIDER: {provider}"
+    return None, {"status": 500, "message": f"Unsupported AI_PROVIDER: {provider}"}
+
+
+def ai_error_response(err):
+    """Преобразует {status, message} из ai_request в flask response."""
+    if isinstance(err, dict):
+        status = err.get("status", 503)
+        # Пробрасываем только «безопасные» коды; остальные заворачиваем в 502.
+        if status not in (400, 401, 403, 404, 408, 409, 429, 500, 502, 503, 504):
+            status = 502
+        body = {"error": err.get("message") or "AI request failed"}
+        if status == 429:
+            body["retry_after_seconds"] = 30
+        return jsonify(body), status
+    # Обратная совместимость, если где-то остались строки.
+    return jsonify({"error": str(err)}), 503
 
 
 @app.route("/api/health", methods=["GET"])
@@ -253,18 +287,26 @@ def register():
     data = json_body()
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
-    username = (data.get("username") or email.split("@")[0] or "").strip()
+    requested_username = (data.get("username") or email.split("@")[0] or "").strip()
 
-    if not email or not password or not username:
-        return jsonify({"error": "username, email and password are required"}), 400
+    if not email or not password or not requested_username:
+        return jsonify({"error": "Нужно заполнить имя пользователя, email и пароль"}), 400
     if "@" not in email or "." not in email.rsplit("@", 1)[-1]:
-        return jsonify({"error": "Valid email is required"}), 400
+        return jsonify({"error": "Укажи корректный email"}), 400
     if len(password) < 6:
-        return jsonify({"error": "Password must be at least 6 characters"}), 400
+        return jsonify({"error": "Пароль должен быть не короче 6 символов"}), 400
     if User.query.filter_by(email=email).first():
-        return jsonify({"error": "Email already exists"}), 400
-    if User.query.filter_by(username=username).first():
-        return jsonify({"error": "Username already exists"}), 400
+        return jsonify({"error": "Аккаунт с таким email уже существует"}), 409
+
+    # Если ник занят — добавляем суффикс, чтобы регистрация не падала только
+    # из-за совпадения username по email-префиксу с другим пользователем.
+    username = requested_username
+    suffix = 1
+    while User.query.filter_by(username=username).first():
+        suffix += 1
+        username = f"{requested_username}{suffix}"
+        if suffix > 1000:
+            return jsonify({"error": "Не удалось подобрать уникальный username"}), 500
 
     user = User(
         username=username,
@@ -283,7 +325,7 @@ def login():
     password = data.get("password") or ""
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
-        return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify({"error": "Неверный email или пароль"}), 401
     return jsonify(build_auth_payload(user))
 
 
@@ -468,7 +510,7 @@ def ai_chat():
 
     text, err = ai_request(system_prompt, messages, max_tokens=max_tokens)
     if err:
-        return jsonify({"error": err}), 503
+        return ai_error_response(err)
     return jsonify({"text": text})
 
 
@@ -507,7 +549,7 @@ def ai_generate():
         generation_config=generation_config,
     )
     if err:
-        return jsonify({"error": err}), 503
+        return ai_error_response(err)
     return jsonify({"text": text})
 
 
@@ -538,7 +580,7 @@ def ai_homework_feedback():
         max_tokens=350,
     )
     if err:
-        return jsonify({"error": err}), 503
+        return ai_error_response(err)
     return jsonify({"text": text})
 
 
